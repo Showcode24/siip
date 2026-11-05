@@ -1,0 +1,18 @@
+{
+  "name": "@siip/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zod schemas, enums and helpers shared by the SIIP backend and frontend.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

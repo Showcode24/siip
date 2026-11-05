@@ -1,0 +1,2009 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SIIP · Direction A, charcoal &amp; orange (expressive prototype)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ───────────── Tokens (Direction A: Bridge) ───────────── */
+      :root {
+        --grey-950: #141518;
+        --grey-900: #1e2024;
+        --grey-800: #2a2d32;
+        --grey-700: #3b3e44;
+        --grey-500: #5e636b;
+        --grey-400: #8a9099;
+        --grey-300: #a0a6ae;
+        --grey-200: #d5d8dc;
+        --grey-100: #eeeff0;
+        --grey-50: #f7f7f6;
+        --orange-500: #e8650c;
+        --orange-600: #c94f08;
+        --orange-700: #a8460a;
+        --orange-100: #fdebdd;
+        --charcoal: #3b3e44;
+        --ink: #1e2024;
+        --muted: #5e636b;
+        --line: #e2e3e5;
+        --paper: #f7f7f6;
+        --white: #ffffff;
+        --success: #1f7a3d;
+        --display: "Lexend", system-ui, sans-serif;
+        --body: "Source Sans 3", system-ui, sans-serif;
+        --r-sm: 12px;
+        --r-md: 18px;
+        --r-lg: 28px;
+        --r-xl: 40px;
+        --shadow-1: 0 1px 2px rgba(20, 21, 24, 0.06), 0 8px 24px rgba(20, 21, 24, 0.08);
+        --shadow-2: 0 2px 6px rgba(20, 21, 24, 0.12), 0 24px 60px rgba(20, 21, 24, 0.28);
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: var(--body);
+        color: var(--ink);
+        background: var(--paper);
+        font-size: 17px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--display);
+        letter-spacing: -0.035em;
+        line-height: 1.04;
+        font-weight: 600;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      svg.ic {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font: 600 13px/1 var(--body);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--orange-500);
+      }
+      .sample {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* ───────────── Buttons ───────────── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 0 8px 0 24px;
+        border-radius: 999px;
+        font: 600 16px var(--body);
+        border: 0;
+        cursor: pointer;
+        transition:
+          transform 160ms var(--ease-out),
+          background-color 200ms ease,
+          box-shadow 200ms ease;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn:focus-visible,
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--orange-500);
+        outline-offset: 3px;
+      }
+      .btn .knob {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        transition: transform 300ms var(--ease-out);
+      }
+      .btn-orange {
+        background: var(--orange-600);
+        color: var(--white);
+      }
+      .btn-orange .knob {
+        background: var(--white);
+        color: var(--orange-600);
+      }
+      .btn-dark {
+        background: var(--grey-900);
+        color: var(--white);
+      }
+      .btn-dark .knob {
+        background: var(--orange-500);
+        color: var(--grey-900);
+      }
+      .btn-glass {
+        padding: 0 24px;
+        background: rgba(255, 255, 255, 0.14);
+        color: var(--white);
+        box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.45);
+      }
+      .btn-ghost {
+        padding: 0 24px;
+        background: transparent;
+        color: var(--ink);
+        box-shadow: inset 0 0 0 1.5px var(--line);
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .btn-orange:hover {
+          background: var(--orange-700);
+        }
+        .btn-dark:hover {
+          background: var(--grey-700);
+        }
+        .btn:hover .knob {
+          transform: translateX(3px) rotate(-45deg);
+        }
+        .btn-glass:hover {
+          background: rgba(255, 255, 255, 0.24);
+        }
+        .btn-ghost:hover {
+          box-shadow: inset 0 0 0 1.5px var(--ink);
+        }
+      }
+
+      /* ───────────── Nav ───────────── */
+      .nav {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+        width: min(1168px, calc(100% - 32px));
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 10px 10px 10px 22px;
+        border-radius: 999px;
+        color: var(--white);
+        transition:
+          background-color 300ms ease,
+          color 300ms ease,
+          box-shadow 300ms ease;
+      }
+      .nav.solid {
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+        box-shadow: var(--shadow-1);
+        backdrop-filter: saturate(1.4) blur(12px);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font: 700 19px var(--display);
+        letter-spacing: -0.02em;
+      }
+      .logo-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: var(--white);
+        display: grid;
+        place-items: center;
+      }
+      .nav.solid .logo-mark {
+        background: var(--grey-100);
+      }
+      .logo .o {
+        color: var(--orange-500);
+      }
+      .nav.solid .logo .o {
+        color: var(--orange-700);
+      }
+      .logo .b {
+        color: inherit;
+      }
+      .nav-links {
+        display: flex;
+        gap: 28px;
+        margin-left: auto;
+        font-size: 15px;
+        font-weight: 500;
+      }
+      .nav-links a {
+        opacity: 0.85;
+        transition: opacity 150ms ease;
+      }
+      .nav-links a:hover {
+        opacity: 1;
+      }
+      .nav .btn {
+        min-height: 44px;
+        padding: 0 20px;
+      }
+
+      /* ───────────── Hero ───────────── */
+      .hero {
+        position: relative;
+        margin: 10px;
+        border-radius: var(--r-xl);
+        overflow: hidden;
+        color: var(--white);
+        min-height: max(860px, 100svh);
+        isolation: isolate;
+        background:
+          radial-gradient(55% 45% at 50% 100%, rgba(232, 101, 12, 0.45), transparent 70%),
+          radial-gradient(35% 30% at 85% 10%, rgba(232, 101, 12, 0.14), transparent 70%),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 72px),
+          linear-gradient(180deg, var(--grey-950) 0%, var(--grey-900) 55%, var(--grey-800) 100%);
+      }
+      .cloud {
+        position: absolute;
+        border-radius: 50%;
+        background: var(--orange-500);
+        filter: blur(70px);
+        opacity: 0.22;
+        z-index: -1;
+        animation: drift 40s linear infinite alternate;
+      }
+      @keyframes drift {
+        to {
+          transform: translateX(60px);
+        }
+      }
+      .hero-copy {
+        padding-top: 170px;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+      }
+      .hero h1 {
+        font-size: clamp(44px, 7.4vw, 104px);
+        max-width: 14ch;
+        margin: 18px auto 0;
+        text-wrap: balance;
+      }
+      .hero h1 .w {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(24px);
+        filter: blur(8px);
+        animation: wordIn 900ms var(--ease-out) forwards;
+      }
+      .hero h1 .accent {
+        color: var(--orange-500);
+      }
+      @keyframes wordIn {
+        to {
+          opacity: 1;
+          transform: none;
+          filter: blur(0);
+        }
+      }
+      .hero .lede {
+        max-width: 52ch;
+        margin: 22px auto 0;
+        font-size: 20px;
+        color: #c9ccd1;
+        opacity: 0;
+        animation: fadeUp 800ms var(--ease-out) 700ms forwards;
+      }
+      .hero .ctas {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 32px;
+        opacity: 0;
+        animation: fadeUp 800ms var(--ease-out) 850ms forwards;
+      }
+      .hero .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px 8px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+        font-size: 14px;
+        font-weight: 600;
+        opacity: 0;
+        animation: fadeUp 700ms var(--ease-out) 100ms forwards;
+      }
+      .hero .pill b {
+        background: var(--orange-500);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 12px;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* 3D card arc */
+      .arc {
+        position: relative;
+        height: 330px;
+        margin-top: 56px;
+        perspective: 1400px;
+      }
+      .arc-inner {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .fcard {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: var(--w, 190px);
+        background: var(--white);
+        color: var(--ink);
+        border-radius: var(--r-md);
+        padding: 16px;
+        box-shadow: var(--shadow-2);
+        transform: translate(-50%, -50%) translateX(var(--x)) translateZ(var(--z)) rotateY(var(--ry))
+          translateY(var(--y, 0px));
+        opacity: 0;
+        animation: cardIn 1100ms var(--ease-out) forwards;
+        animation-delay: var(--d);
+      }
+      .fcard .float {
+        animation: bob 6s ease-in-out infinite;
+        animation-delay: var(--d);
+      }
+      @keyframes cardIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -50%) translateX(calc(var(--x) * 0.3)) translateZ(-300px) rotateY(0deg)
+            translateY(80px);
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes bob {
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+      .fcard h5 {
+        font: 600 13px var(--display);
+        letter-spacing: -0.01em;
+        color: var(--muted);
+      }
+      .fcard .big {
+        font: 600 34px/1 var(--display);
+        letter-spacing: -0.04em;
+        margin-top: 8px;
+      }
+      .fcard .bar {
+        height: 7px;
+        border-radius: 4px;
+        background: var(--grey-100);
+        margin-top: 12px;
+        overflow: hidden;
+      }
+      .fcard .bar i {
+        display: block;
+        height: 100%;
+        background: var(--orange-600);
+        border-radius: inherit;
+      }
+      .fcard .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-top: 8px;
+        color: var(--muted);
+      }
+      .fcard.dark {
+        background: var(--grey-700);
+        color: var(--white);
+        box-shadow:
+          var(--shadow-2),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      }
+      .fcard.dark h5 {
+        color: #d5d8dc;
+      }
+      .fcard.orange {
+        background: var(--orange-500);
+        color: var(--ink);
+      }
+      .fcard.orange h5 {
+        color: rgba(27, 29, 33, 0.75);
+      }
+      .fcard.photo {
+        padding: 0;
+        overflow: hidden;
+      }
+      .photo-slot {
+        aspect-ratio: 4/5;
+        background: linear-gradient(160deg, var(--grey-100), #f7e3d3);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 12px;
+      }
+      .fcard.photo .cap {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+      .check {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--success);
+        color: #fff;
+        display: grid;
+        place-items: center;
+      }
+      .check svg.ic {
+        width: 16px;
+        height: 16px;
+        stroke-width: 3;
+      }
+      .rating {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.85);
+        opacity: 0;
+        animation: fadeUp 700ms var(--ease-out) 1500ms forwards;
+      }
+
+      /* ───────────── Marquee ───────────── */
+      .marquee {
+        padding: 44px 0 8px;
+        overflow: hidden;
+        mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+      }
+      .marquee-track {
+        display: flex;
+        gap: 64px;
+        width: max-content;
+        animation: scroll 38s linear infinite;
+      }
+      .marquee:hover .marquee-track {
+        animation-play-state: paused;
+      }
+      .mlogo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font: 600 20px var(--display);
+        color: #8a8f96;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+      }
+      .mlogo i {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: #c9cdd2;
+        display: block;
+      }
+      .mlogo:nth-child(3n) i {
+        border-radius: 50%;
+      }
+      .mlogo:nth-child(4n) i {
+        border-radius: 4px 14px;
+      }
+      @keyframes scroll {
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* ───────────── Statement ───────────── */
+      .statement {
+        padding: 140px 0 120px;
+        text-align: center;
+      }
+      .statement h2 {
+        font-size: clamp(32px, 4.6vw, 62px);
+        max-width: 20ch;
+        margin: 22px auto 0;
+        line-height: 1.14;
+      }
+      .statement .word {
+        color: #c9ccd1;
+        transition: color 400ms ease;
+      }
+      .statement .word.lit {
+        color: var(--ink);
+      }
+      .chip {
+        display: inline-grid;
+        place-items: center;
+        width: 1.15em;
+        height: 0.85em;
+        border-radius: 999px;
+        vertical-align: -0.08em;
+        margin: 0 0.08em;
+      }
+      .chip svg.ic {
+        width: 0.5em;
+        height: 0.5em;
+        stroke-width: 2.4;
+      }
+      .chip.dark {
+        background: var(--grey-800);
+        color: #fff;
+      }
+      .chip.orange {
+        background: var(--orange-500);
+        color: var(--ink);
+      }
+      .chip.charcoal {
+        background: var(--charcoal);
+        color: #fff;
+      }
+
+      /* ───────────── Reveal utility ───────────── */
+      .reveal {
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+          opacity 900ms var(--ease-out),
+          transform 900ms var(--ease-out);
+        transition-delay: var(--delay, 0ms);
+      }
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+      .clip-reveal {
+        clip-path: inset(0 0 100% 0 round var(--r-lg));
+        transition: clip-path 1100ms var(--ease-in-out);
+      }
+      .clip-reveal.in {
+        clip-path: inset(0 0 0 0 round var(--r-lg));
+      }
+
+      /* ───────────── Bento ───────────── */
+      .bento {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 16px;
+      }
+      .tile {
+        border-radius: var(--r-lg);
+        padding: 28px;
+        min-height: 240px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+      }
+      .tile .num {
+        font: 600 clamp(48px, 5.4vw, 76px)/1 var(--display);
+        letter-spacing: -0.05em;
+        font-variant-numeric: tabular-nums;
+      }
+      .tile p {
+        font-size: 16px;
+        max-width: 28ch;
+      }
+      .tile.photo {
+        grid-row: span 2;
+        padding: 0;
+        background: var(--grey-800);
+        color: #fff;
+      }
+      .tile.photo .photo-slot {
+        position: absolute;
+        inset: 0;
+        aspect-ratio: auto;
+        background: linear-gradient(180deg, var(--grey-700), var(--grey-900));
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .tile.photo .over {
+        position: relative;
+        margin: auto 20px 20px;
+        background: var(--white);
+        color: var(--ink);
+        border-radius: var(--r-md);
+        padding: 22px;
+      }
+      .tile.light {
+        background: var(--white);
+        box-shadow: var(--shadow-1);
+      }
+      .tile.orange {
+        background: var(--orange-500);
+        color: var(--ink);
+      }
+      .tile.ink {
+        background: var(--ink);
+        color: #fff;
+        flex-direction: row;
+        align-items: center;
+        min-height: 120px;
+      }
+      .tile.ink p {
+        color: #c8ccd1;
+      }
+      .avatars {
+        display: flex;
+      }
+      .avatars i {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        margin-left: -10px;
+        background: linear-gradient(135deg, #f2c29b, #8c5a3c);
+      }
+      .avatars i:first-child {
+        margin-left: 0;
+      }
+      .avatars i:nth-child(2) {
+        background: linear-gradient(135deg, #c99069, #5a3a28);
+      }
+      .avatars i:nth-child(3) {
+        background: linear-gradient(135deg, #e3b48e, #704830);
+      }
+
+      /* ───────────── Sticky journey ───────────── */
+      .journey {
+        padding: 160px 0 80px;
+      }
+      .journey-head {
+        text-align: center;
+        margin-bottom: 56px;
+      }
+      .journey-head h2 {
+        font-size: clamp(36px, 5vw, 68px);
+        margin-top: 18px;
+      }
+      .journey-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 64px;
+      }
+      .sticky {
+        position: sticky;
+        top: 110px;
+        height: calc(100svh - 140px);
+        display: grid;
+        place-items: center;
+      }
+      .phone {
+        width: min(340px, 90%);
+        aspect-ratio: 9/18.5;
+        border-radius: 48px;
+        background: var(--ink);
+        padding: 12px;
+        box-shadow: var(--shadow-2);
+        position: relative;
+      }
+      .screen {
+        position: relative;
+        height: 100%;
+        border-radius: 38px;
+        background: var(--paper);
+        overflow: hidden;
+      }
+      .screen .state {
+        position: absolute;
+        inset: 0;
+        padding: 46px 18px 18px;
+        opacity: 0;
+        transform: scale(0.97);
+        filter: blur(4px);
+        transition:
+          opacity 500ms var(--ease-out),
+          transform 500ms var(--ease-out),
+          filter 500ms var(--ease-out);
+      }
+      .screen .state.on {
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+      .screen .tracker {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin: 10px 0 18px;
+      }
+      .screen .tracker i {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line);
+        transition: background-color 400ms ease;
+      }
+      .screen .tracker i.done {
+        background: var(--grey-800);
+      }
+      .screen .tracker i.now {
+        background: var(--orange-500);
+      }
+      .scard {
+        background: #fff;
+        border-radius: var(--r-md);
+        padding: 16px;
+        box-shadow: var(--shadow-1);
+      }
+      .scard + .scard {
+        margin-top: 12px;
+      }
+      .scard small {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .scard h4 {
+        font-size: 21px;
+        margin: 6px 0 4px;
+        letter-spacing: -0.02em;
+      }
+      .scard p {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .scard .mini-btn {
+        margin-top: 12px;
+        height: 42px;
+        border-radius: 999px;
+        background: var(--grey-800);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .steps {
+        position: relative;
+        padding-left: 44px;
+      }
+      .steps::before {
+        content: "";
+        position: absolute;
+        left: 15px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background: var(--line);
+      }
+      .steps .fill {
+        position: absolute;
+        left: 15px;
+        top: 8px;
+        width: 2px;
+        height: 0;
+        background: var(--orange-500);
+      }
+      .step {
+        min-height: 62svh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        opacity: 0.35;
+        transition: opacity 500ms ease;
+      }
+      .step.active {
+        opacity: 1;
+      }
+      .step .dot {
+        position: absolute;
+        left: -44px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        display: grid;
+        place-items: center;
+        font: 600 13px var(--display);
+        color: var(--muted);
+        transition:
+          background-color 400ms ease,
+          border-color 400ms ease,
+          color 400ms ease;
+      }
+      .step.passed .dot {
+        background: var(--grey-800);
+        border-color: var(--grey-800);
+        color: #fff;
+      }
+      .step.active .dot {
+        background: var(--orange-600);
+        border-color: var(--orange-600);
+        color: #fff;
+      }
+      .step h3 {
+        font-size: clamp(28px, 3vw, 40px);
+      }
+      .step p {
+        margin-top: 12px;
+        max-width: 42ch;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      /* ───────────── Companies ───────────── */
+      .companies {
+        padding: 120px 0;
+      }
+      .band {
+        margin: 10px;
+        border-radius: var(--r-xl);
+        background: var(--grey-100);
+      }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 56px;
+        align-items: center;
+      }
+      .split h2 {
+        font-size: clamp(34px, 4.4vw, 58px);
+        margin: 18px 0 18px;
+      }
+      .split p.lead {
+        font-size: 19px;
+        color: var(--muted);
+        max-width: 46ch;
+      }
+      .ticks {
+        list-style: none;
+        padding: 0;
+        margin: 26px 0 32px;
+        display: grid;
+        gap: 12px;
+      }
+      .ticks li {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .ticks li span.t {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--orange-100);
+        color: var(--orange-700);
+        display: grid;
+        place-items: center;
+        flex: none;
+        margin-top: 2px;
+      }
+      .ticks svg.ic {
+        width: 15px;
+        height: 15px;
+        stroke-width: 3;
+      }
+      .match {
+        background: #fff;
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow-2);
+        padding: 28px;
+      }
+      .match-top {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+      }
+      .dial {
+        width: 108px;
+        height: 108px;
+        flex: none;
+        position: relative;
+      }
+      .dial svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+      .dial .val {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font: 600 30px var(--display);
+        letter-spacing: -0.04em;
+      }
+      .dial circle {
+        fill: none;
+        stroke-width: 10;
+      }
+      .dial .track {
+        stroke: var(--grey-100);
+      }
+      .dial .prog {
+        stroke: var(--orange-500);
+        stroke-linecap: round;
+        stroke-dasharray: 289;
+        stroke-dashoffset: 289;
+        transition: stroke-dashoffset 1600ms var(--ease-out);
+      }
+      .match.in .dial .prog {
+        stroke-dashoffset: calc(289 - 289 * 0.87);
+      }
+      .factor {
+        margin-top: 16px;
+      }
+      .factor .lbl {
+        display: flex;
+        justify-content: space-between;
+        font-size: 15px;
+      }
+      .factor .lbl span:last-child {
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .factor .track {
+        height: 8px;
+        background: var(--grey-50);
+        border-radius: 4px;
+        margin-top: 6px;
+        overflow: hidden;
+      }
+      .factor .track i {
+        display: block;
+        height: 100%;
+        width: var(--v);
+        background: var(--grey-800);
+        border-radius: inherit;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 1200ms var(--ease-out);
+        transition-delay: var(--delay);
+      }
+      .match.in .factor .track i {
+        transform: scaleX(1);
+      }
+      .factor.o .track i {
+        background: var(--orange-500);
+      }
+      .locked {
+        margin-top: 22px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: var(--r-sm);
+        background: var(--paper);
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .match-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .match-actions .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 0 18px;
+        min-height: 48px;
+      }
+
+      /* ───────────── Certificate ───────────── */
+      .cert-sec {
+        padding: 40px 0 140px;
+      }
+      .cert-box {
+        border-radius: var(--r-xl);
+        background: var(--grey-900);
+        color: #fff;
+        padding: 64px;
+        display: grid;
+        grid-template-columns: 1fr 1.1fr;
+        gap: 48px;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .cert-box h2 {
+        font-size: clamp(32px, 4vw, 52px);
+        margin: 16px 0;
+      }
+      .cert-box p {
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .cert-box .eyebrow {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .verify {
+        margin-top: 26px;
+        display: flex;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        padding: 6px;
+        max-width: 420px;
+      }
+      .verify input {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        border: 0;
+        color: #fff;
+        font: 500 16px var(--body);
+        padding: 0 16px;
+        letter-spacing: 0.08em;
+      }
+      .verify input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0;
+      }
+      .verify .btn {
+        min-height: 46px;
+        padding: 0 20px;
+      }
+      .tilt-zone {
+        perspective: 1200px;
+      }
+      .cert {
+        background: #fffdf9;
+        color: var(--ink);
+        border-radius: var(--r-md);
+        padding: 36px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+        position: relative;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .cert::before {
+        content: "";
+        position: absolute;
+        inset: 10px;
+        border: 1.5px solid #e8dcc8;
+        border-radius: 12px;
+        pointer-events: none;
+      }
+      .cert .seal {
+        position: absolute;
+        right: 28px;
+        top: 28px;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--orange-500);
+        display: grid;
+        place-items: center;
+        color: var(--ink);
+        transform: translateZ(40px);
+      }
+      .cert small {
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .cert h4 {
+        font-size: 30px;
+        margin: 14px 0 6px;
+        transform: translateZ(24px);
+      }
+      .cert p {
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .cert .meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 28px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .cert .ok {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        color: var(--success);
+        font-weight: 600;
+        font-size: 13px;
+        margin-top: 16px;
+      }
+      .cert .glare {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        background: radial-gradient(
+          circle at var(--gx, 50%) var(--gy, 0%),
+          rgba(255, 255, 255, 0.55),
+          transparent 50%
+        );
+        opacity: 0;
+        transition: opacity 300ms ease;
+      }
+      .tilt-zone:hover .glare {
+        opacity: 1;
+      }
+
+      /* ───────────── Final CTA + footer ───────────── */
+      .final {
+        margin: 10px;
+        border-radius: var(--r-xl);
+        background: var(--orange-500);
+        color: var(--ink);
+        text-align: center;
+        padding: 120px 24px;
+        position: relative;
+        overflow: hidden;
+      }
+      .final h2 {
+        font-size: clamp(40px, 6.4vw, 92px);
+        max-width: 14ch;
+        margin: 0 auto;
+      }
+      .final p {
+        max-width: 46ch;
+        margin: 20px auto 34px;
+        font-size: 19px;
+      }
+      .final .arches {
+        position: absolute;
+        left: 50%;
+        bottom: -30px;
+        width: min(900px, 120%);
+        transform: translateX(-50%);
+        opacity: 0.18;
+      }
+      footer {
+        padding: 40px 0 60px;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 15px;
+        flex-wrap: wrap;
+      }
+
+      /* ───────────── Responsive ───────────── */
+      @media (max-width: 900px) {
+        .nav-links {
+          display: none;
+        }
+        .nav {
+          gap: 12px;
+        }
+        .nav .btn {
+          margin-left: auto;
+        }
+        .hero-copy {
+          padding-top: 130px;
+        }
+        .hero .lede {
+          font-size: 18px;
+        }
+        .arc {
+          height: 300px;
+        }
+        .arc-inner {
+          transform: scale(0.62);
+        }
+        .fcard {
+          --w: 170px !important;
+        }
+        .fcard.hide-sm {
+          display: none;
+        }
+        .bento {
+          grid-template-columns: 1fr;
+        }
+        .tile.photo {
+          grid-row: auto;
+          min-height: 420px;
+        }
+        .journey-grid {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        .sticky {
+          top: 76px;
+          height: 56svh;
+          z-index: 2;
+          background: linear-gradient(var(--paper) 85%, transparent);
+        }
+        .phone {
+          width: auto;
+          height: 92%;
+        }
+        .step {
+          min-height: 48svh;
+        }
+        .split,
+        .cert-box {
+          grid-template-columns: 1fr;
+        }
+        .cert-box {
+          padding: 36px 24px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 1ms !important;
+          scroll-behavior: auto !important;
+        }
+        .marquee-track {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Nav -->
+    <nav class="nav" id="nav" aria-label="Main">
+      <a class="logo" href="#top" aria-label="SkillzBridge home">
+        <span class="logo-mark"
+          ><svg width="22" height="22" viewBox="0 0 40 24" aria-hidden="true">
+            <path d="M2 20 Q20 2 38 20" fill="none" stroke="#3B3E44" stroke-width="4" />
+            <path
+              d="M10 20a4 4 0 0 1 8 0M22 20a4 4 0 0 1 8 0"
+              fill="none"
+              stroke="#3B3E44"
+              stroke-width="3"
+            />
+            <path d="M8 23h24" stroke="#E8650C" stroke-width="2.5" stroke-linecap="round" /></svg
+        ></span>
+        <span><span class="o">Skillz</span><span class="b">Bridge</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#journey">How it works</a><a href="#companies">For companies</a
+        ><a href="#verify">Verify a certificate</a><a href="#top">Sign in</a>
+      </div>
+      <a class="btn btn-orange" href="#top">Apply free</a>
+    </nav>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="cloud" style="width: 380px; height: 120px; left: -60px; top: 62%"></div>
+        <div
+          class="cloud"
+          style="width: 300px; height: 90px; right: -40px; top: 70%; animation-duration: 55s"
+        ></div>
+        <div class="hero-copy wrap">
+          <span class="pill"><b>New</b> Cohort 3 applications are open</span>
+          <h1 id="hero-title" data-words>
+            From graduate to <span class="accent">hired</span>, in seven clear steps.
+          </h1>
+          <p class="lede">
+            SIIP is a free programme that trains Nigerian graduates and NYSC members, then places them in
+            three-month internships with verified companies.
+          </p>
+          <div class="ctas">
+            <a class="btn btn-orange" href="#journey"
+              >Start your application
+              <span class="knob"
+                ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+            ></a>
+            <a class="btn btn-glass" href="#companies">I'm hiring interns</a>
+          </div>
+        </div>
+
+        <div class="arc" aria-hidden="true">
+          <div class="arc-inner" id="arc">
+            <div class="fcard hide-sm" style="--x: -560px; --z: -260px; --ry: 38deg; --d: 300ms; --w: 160px">
+              <div class="float">
+                <h5>Skills in demand</h5>
+                <div class="big">Excel</div>
+                <div class="row"><span>Openings</span><span>48</span></div>
+              </div>
+            </div>
+            <div class="fcard" style="--x: -370px; --z: -110px; --ry: 26deg; --d: 420ms">
+              <div class="float">
+                <h5>Application</h5>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px">
+                  <span class="check"
+                    ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" /></svg></span
+                  ><b>Shortlisted</b>
+                </div>
+                <div class="row"><span>Cohort 3</span><span>Today</span></div>
+              </div>
+            </div>
+            <div class="fcard photo" style="--x: -185px; --z: -20px; --ry: 13deg; --d: 540ms; --w: 180px">
+              <div class="float">
+                <div class="photo-slot">Photo slot: graduate portrait</div>
+                <div class="cap"><b>Amaka O.</b> · Mass Comm, UNILAG</div>
+              </div>
+            </div>
+            <div class="fcard" style="--x: 0px; --z: 30px; --ry: 0deg; --d: 660ms; --w: 210px">
+              <div class="float">
+                <h5>Training progress</h5>
+                <div class="big">6/10</div>
+                <div class="bar"><i style="width: 60%"></i></div>
+                <div class="row"><span>Lessons done</span><span>60%</span></div>
+              </div>
+            </div>
+            <div class="fcard dark" style="--x: 185px; --z: -20px; --ry: -13deg; --d: 780ms; --w: 180px">
+              <div class="float">
+                <h5>Match score</h5>
+                <div class="big">87<span style="font-size: 18px">%</span></div>
+                <div class="row" style="color: #d5d8dc"><span>Skills</span><span>38/40</span></div>
+                <div class="row" style="color: #d5d8dc"><span>Location</span><span>10/10</span></div>
+              </div>
+            </div>
+            <div class="fcard orange" style="--x: 370px; --z: -110px; --ry: -26deg; --d: 900ms">
+              <div class="float">
+                <h5>Placed at</h5>
+                <div class="big" style="font-size: 24px">Lagos Media Hub</div>
+                <div class="row" style="color: rgba(27, 29, 33, 0.75)">
+                  <span>Starts</span><span>5 Jan</span>
+                </div>
+              </div>
+            </div>
+            <div class="fcard hide-sm" style="--x: 560px; --z: -260px; --ry: -38deg; --d: 1020ms; --w: 160px">
+              <div class="float">
+                <h5>Certificate</h5>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px">
+                  <span class="check"
+                    ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" /></svg></span
+                  ><b>Verified</b>
+                </div>
+                <div class="row"><span>SIIP-2026</span><span>K7QX</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="rating">
+          Free for every graduate · 36 states + FCT · <span class="sample">(sample figures)</span>
+        </p>
+      </section>
+
+      <!-- Marquee -->
+      <div class="marquee" aria-label="Partner companies (placeholders)">
+        <div class="marquee-track">
+          <span class="mlogo"><i></i>Lagos Media Hub</span><span class="mlogo"><i></i>Abuja Biz Co.</span
+          ><span class="mlogo"><i></i>PH Energy Partners</span><span class="mlogo"><i></i>Naija Fintech</span
+          ><span class="mlogo"><i></i>Kano Agro Ltd</span><span class="mlogo"><i></i>Eko Creative</span
+          ><span class="mlogo"><i></i>Ibadan Retail</span>
+          <span class="mlogo" aria-hidden="true"><i></i>Lagos Media Hub</span
+          ><span class="mlogo" aria-hidden="true"><i></i>Abuja Biz Co.</span
+          ><span class="mlogo" aria-hidden="true"><i></i>PH Energy Partners</span
+          ><span class="mlogo" aria-hidden="true"><i></i>Naija Fintech</span
+          ><span class="mlogo" aria-hidden="true"><i></i>Kano Agro Ltd</span
+          ><span class="mlogo" aria-hidden="true"><i></i>Eko Creative</span
+          ><span class="mlogo" aria-hidden="true"><i></i>Ibadan Retail</span>
+        </div>
+      </div>
+
+      <!-- Statement -->
+      <section class="statement wrap">
+        <span class="eyebrow reveal">Why SIIP</span>
+        <h2 id="statement">
+          We build the bridge
+          <span class="chip charcoal"
+            ><svg class="ic" viewBox="0 0 24 24">
+              <path d="M2 18 Q12 6 22 18" />
+              <path d="M2 18h20" /></svg
+          ></span>
+          from the classroom
+          <span class="chip dark"
+            ><svg class="ic" viewBox="0 0 24 24">
+              <path d="M2 9l10-5 10 5-10 5z" />
+              <path d="M6 11v5c3 2 9 2 12 0v-5" /></svg
+          ></span>
+          to real work
+          <span class="chip orange"
+            ><svg class="ic" viewBox="0 0 24 24">
+              <path
+                d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"
+              /></svg></span
+          >, so talented graduates stop waiting and start working.
+        </h2>
+      </section>
+
+      <!-- Bento -->
+      <section class="wrap" aria-label="Programme in numbers">
+        <div class="bento">
+          <div class="tile photo reveal">
+            <div class="photo-slot">Photo slot: interns at a partner company</div>
+            <div class="over">
+              <div class="num" data-count="1200" data-suffix="+">0</div>
+              <p>Graduates trained across Nigeria <span class="sample">(sample)</span></p>
+            </div>
+          </div>
+          <div class="tile light reveal" style="--delay: 80ms">
+            <span class="eyebrow">Cost to graduates</span>
+            <div class="num">₦<span data-count="0">0</span></div>
+            <p>Training, assessment, placement and certificate are completely free.</p>
+          </div>
+          <div class="tile orange reveal" style="--delay: 160ms">
+            <span class="eyebrow" style="color: rgba(27, 29, 33, 0.7)">Placement rate</span>
+            <div class="num" data-count="82" data-suffix="%">0</div>
+            <p>
+              Of qualified graduates placed with a partner company <span style="opacity: 0.7">(sample)</span>.
+            </p>
+          </div>
+          <div class="tile light reveal" style="--delay: 240ms">
+            <span class="eyebrow">Verified partners</span>
+            <div class="num" data-count="140" data-suffix="+">0</div>
+            <div class="avatars"><i></i><i></i><i></i></div>
+          </div>
+          <div class="tile ink reveal" style="--delay: 320ms">
+            <p>Internship length, with monthly check-ins and a final evaluation</p>
+            <div class="num" style="margin-left: auto">
+              <span data-count="3">0</span><span style="font-size: 0.4em; letter-spacing: 0"> months</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Journey (sticky) -->
+      <section class="journey wrap" id="journey" aria-labelledby="journey-title">
+        <div class="journey-head">
+          <span class="eyebrow reveal">How it works</span>
+          <h2 id="journey-title" class="reveal" style="--delay: 80ms">Seven steps. One clear path.</h2>
+        </div>
+        <div class="journey-grid">
+          <div class="sticky">
+            <div class="phone" aria-hidden="true">
+              <div class="screen" id="screen">
+                <div class="state on" data-state="0">
+                  <b>Welcome, Amaka</b>
+                  <div class="tracker"><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                  <div class="scard">
+                    <small>Step 1</small>
+                    <h4>Build your profile</h4>
+                    <p>Education, NYSC status, skills and your CV.</p>
+                    <div
+                      class="bar"
+                      style="height: 7px; background: var(--grey-100); border-radius: 4px; margin-top: 12px"
+                    >
+                      <i
+                        style="
+                          display: block;
+                          height: 100%;
+                          width: 72%;
+                          background: var(--grey-800);
+                          border-radius: 4px;
+                        "
+                      ></i>
+                    </div>
+                  </div>
+                  <div class="scard">
+                    <small>Profile strength</small>
+                    <h4>72%</h4>
+                    <p>Add your CV to reach 87%.</p>
+                  </div>
+                </div>
+                <div class="state" data-state="1">
+                  <b>Screening</b>
+                  <div class="tracker">
+                    <i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                  <div class="scard">
+                    <small>Screening test</small>
+                    <h4>20 questions · 30 min</h4>
+                    <p>Timed, fair and scored instantly.</p>
+                    <div class="mini-btn">Start test</div>
+                  </div>
+                </div>
+                <div class="state" data-state="2">
+                  <b>Training</b>
+                  <div class="tracker">
+                    <i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i>
+                  </div>
+                  <div class="scard">
+                    <small>Continue</small>
+                    <h4>Writing a great work email</h4>
+                    <p>Lesson 7 of 10 · 12 min</p>
+                    <div class="mini-btn">Continue lesson</div>
+                  </div>
+                  <div class="scard">
+                    <small>Progress</small>
+                    <h4>60%</h4>
+                  </div>
+                </div>
+                <div class="state" data-state="3">
+                  <b>Final assessment</b>
+                  <div class="tracker">
+                    <i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i
+                    ><i></i><i></i>
+                  </div>
+                  <div class="scard" style="text-align: center">
+                    <small>Your result</small>
+                    <h4 style="font-size: 44px; color: var(--success)">84%</h4>
+                    <p>Passed. You're qualified for placement.</p>
+                  </div>
+                </div>
+                <div class="state" data-state="4">
+                  <b>Matching</b>
+                  <div class="tracker">
+                    <i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i
+                    ><i class="now"></i><i></i><i></i>
+                  </div>
+                  <div class="scard">
+                    <small>Matched with</small>
+                    <h4>Lagos Media Hub</h4>
+                    <p>Social Media Intern · Ikeja · Hybrid</p>
+                  </div>
+                  <div class="scard">
+                    <small>Status</small>
+                    <h4>Awaiting company</h4>
+                    <p>Most companies reply within 3 days.</p>
+                  </div>
+                </div>
+                <div class="state" data-state="5">
+                  <b>Internship</b>
+                  <div class="tracker">
+                    <i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i
+                    ><i class="done"></i><i class="now"></i><i></i>
+                  </div>
+                  <div class="scard">
+                    <small>Month 2 of 3</small>
+                    <h4>Internship in progress</h4>
+                    <div
+                      class="bar"
+                      style="height: 7px; background: var(--grey-100); border-radius: 4px; margin-top: 10px"
+                    >
+                      <i
+                        style="
+                          display: block;
+                          height: 100%;
+                          width: 45%;
+                          background: var(--grey-800);
+                          border-radius: 4px;
+                        "
+                      ></i>
+                    </div>
+                    <div class="mini-btn">Submit check-in</div>
+                  </div>
+                </div>
+                <div class="state" data-state="6">
+                  <b>Certified</b>
+                  <div class="tracker">
+                    <i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i
+                    ><i class="done"></i><i class="done"></i><i class="done"></i>
+                  </div>
+                  <div class="scard" style="text-align: center">
+                    <small>Congratulations</small>
+                    <h4>Certificate issued</h4>
+                    <p>Verification code K7QX-29MD</p>
+                    <div class="mini-btn" style="background: var(--orange-500); color: var(--ink)">
+                      Download PDF
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="steps" id="steps">
+            <div class="fill" id="fill"></div>
+            <div class="step">
+              <span class="dot">1</span>
+              <h3>Register and build your profile</h3>
+              <p>
+                Sign up free, tell us about your degree, NYSC status and skills, and upload your CV. Your
+                profile strength shows what to add next.
+              </p>
+            </div>
+            <div class="step">
+              <span class="dot">2</span>
+              <h3>Take the screening test</h3>
+              <p>A short, timed test, scored instantly and fairly. Then our team reviews your application.</p>
+            </div>
+            <div class="step">
+              <span class="dot">3</span>
+              <h3>Train for real work</h3>
+              <p>
+                Practical courses in digital, office and workplace skills. Learn at your own pace on your
+                phone, and pick up where you stopped.
+              </p>
+            </div>
+            <div class="step">
+              <span class="dot">4</span>
+              <h3>Pass the final assessment</h3>
+              <p>Show what you've learned. Pass, and you qualify for placement with a partner company.</p>
+            </div>
+            <div class="step">
+              <span class="dot">5</span>
+              <h3>Get matched to a company</h3>
+              <p>
+                We match you to openings by skills, discipline, location and availability, then the company
+                accepts you.
+              </p>
+            </div>
+            <div class="step">
+              <span class="dot">6</span>
+              <h3>Do a three-month internship</h3>
+              <p>
+                Work with a supervisor, share monthly check-ins, and some interns are offered permanent roles.
+              </p>
+            </div>
+            <div class="step">
+              <span class="dot">7</span>
+              <h3>Earn a verified certificate</h3>
+              <p>Employers can confirm it's genuine in seconds with your verification code.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Companies -->
+      <section class="companies band" id="companies" aria-labelledby="co-title">
+        <div class="wrap">
+          <div class="split">
+            <div>
+              <span class="eyebrow reveal">For companies</span>
+              <h2 id="co-title" class="reveal" style="--delay: 80ms">
+                Trained, assessed graduates, matched to your openings.
+              </h2>
+              <p class="lead reveal" style="--delay: 160ms">
+                Post an opening with the skills you need. We send you graduates who have already passed
+                screening, training and a final assessment, with a clear score that shows why they fit.
+              </p>
+              <ul class="ticks reveal" style="--delay: 240ms">
+                <li>
+                  <span class="t"
+                    ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" /></svg></span
+                  >Free to partner. No recruitment fees.
+                </li>
+                <li>
+                  <span class="t"
+                    ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" /></svg></span
+                  >See exactly why each graduate was matched.
+                </li>
+                <li>
+                  <span class="t"
+                    ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" /></svg></span
+                  >Simple monthly check-ins and one final evaluation.
+                </li>
+              </ul>
+              <a class="btn btn-dark reveal" style="--delay: 320ms" href="#companies"
+                >Become a partner
+                <span class="knob"
+                  ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+              ></a>
+            </div>
+            <div class="match reveal" id="match" style="--delay: 120ms">
+              <div class="match-top">
+                <div class="dial">
+                  <svg viewBox="0 0 108 108">
+                    <circle class="track" cx="54" cy="54" r="46" />
+                    <circle class="prog" cx="54" cy="54" r="46" /></svg
+                  ><span class="val"><span data-count="87">0</span>%</span>
+                </div>
+                <div>
+                  <small class="eyebrow">Proposed match</small>
+                  <h3 style="font-size: 24px; margin-top: 8px">Chidinma O.</h3>
+                  <p style="color: var(--muted); font-size: 15px">Mass Communication · UNILAG · 2:1</p>
+                </div>
+              </div>
+              <div class="factor">
+                <div class="lbl"><span>Skills</span><span>38 / 40</span></div>
+                <div class="track"><i style="--v: 95%; --delay: 200ms"></i></div>
+              </div>
+              <div class="factor">
+                <div class="lbl"><span>Final assessment</span><span>17 / 20</span></div>
+                <div class="track"><i style="--v: 85%; --delay: 300ms"></i></div>
+              </div>
+              <div class="factor">
+                <div class="lbl"><span>Discipline</span><span>15 / 15</span></div>
+                <div class="track"><i style="--v: 100%; --delay: 400ms"></i></div>
+              </div>
+              <div class="factor o">
+                <div class="lbl"><span>Location and availability</span><span>17 / 20</span></div>
+                <div class="track"><i style="--v: 85%; --delay: 500ms"></i></div>
+              </div>
+              <div class="locked">
+                <svg class="ic" viewBox="0 0 24 24">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg
+                >Phone, email and CV are shared once you accept.
+              </div>
+              <div class="match-actions">
+                <button class="btn btn-ghost">Decline</button
+                ><button class="btn btn-orange" style="padding: 0 18px">Accept match</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Certificate -->
+      <section class="cert-sec wrap" id="verify" aria-labelledby="cert-title">
+        <div class="cert-box clip-reveal">
+          <div>
+            <span class="eyebrow">For employers</span>
+            <h2 id="cert-title">Every certificate can be checked in seconds.</h2>
+            <p>
+              Enter the code printed on a SIIP certificate to confirm the name, cohort, company and issue
+              date.
+            </p>
+            <form class="verify" onsubmit="event.preventDefault()">
+              <label for="code" style="position: absolute; left: -9999px">Verification code</label
+              ><input id="code" placeholder="e.g. K7QX-29MD" autocomplete="off" /><button
+                class="btn btn-orange"
+                type="submit"
+              >
+                Verify
+              </button>
+            </form>
+          </div>
+          <div class="tilt-zone" id="tilt">
+            <div class="cert" id="cert">
+              <span class="seal" aria-hidden="true"
+                ><svg class="ic" viewBox="0 0 24 24" style="width: 30px; height: 30px">
+                  <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" />
+                  <path d="M9 12l2 2 4-4" /></svg
+              ></span>
+              <small>Certificate of completion</small>
+              <h4>Zainab Musa</h4>
+              <p>Completed SIIP Cohort 2 and a three-month internship as Content Intern at Acme Media.</p>
+              <span class="ok"
+                ><svg class="ic" viewBox="0 0 24 24" style="width: 16px; height: 16px">
+                  <path d="M5 12l5 5 9-10" /></svg
+                >Verified genuine</span
+              >
+              <div class="meta"><span>Serial SIIP-2026-8HKM2QPA</span><span>Issued 2 April 2026</span></div>
+              <div class="glare"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Final CTA -->
+    <section class="final" aria-labelledby="final-title">
+      <h2 id="final-title" class="reveal">Your career starts with one free application.</h2>
+      <p class="reveal" style="--delay: 100ms">
+        It takes about 10 minutes. You'll need your degree details and a PDF of your CV.
+      </p>
+      <a class="btn btn-dark reveal" style="--delay: 200ms" href="#top"
+        >Start your application
+        <span class="knob"
+          ><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span
+      ></a>
+      <svg class="arches" viewBox="0 0 400 120" aria-hidden="true">
+        <path d="M0 110 Q200 10 400 110" fill="none" stroke="#1B1D21" stroke-width="10" />
+        <path
+          d="M90 110a28 28 0 0 1 56 0M172 110a28 28 0 0 1 56 0M254 110a28 28 0 0 1 56 0"
+          fill="none"
+          stroke="#1B1D21"
+          stroke-width="8"
+        />
+      </svg>
+    </section>
+    <footer class="wrap">
+      <span>© 2026 SkillzBridge Trades Africa · SIIP</span><span>Privacy · Terms · Contact</span>
+    </footer>
+
+    <script>
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Hero headline: split into words and stagger them in.
+      const h1 = document.querySelector("[data-words]");
+      let i = 0;
+      (function split(node) {
+        [...node.childNodes].forEach((n) => {
+          if (n.nodeType === 3) {
+            const frag = document.createDocumentFragment();
+            n.textContent.split(/(\s+)/).forEach((part) => {
+              if (!part.trim()) {
+                frag.append(part);
+                return;
+              }
+              const s = document.createElement("span");
+              s.className = "w";
+              s.textContent = part;
+              s.style.animationDelay = `${150 + i++ * 70}ms`;
+              frag.append(s);
+            });
+            n.replaceWith(frag);
+          } else if (n.nodeType === 1) {
+            n.classList.add("w");
+            n.style.animationDelay = `${150 + i++ * 70}ms`;
+          }
+        });
+      })(h1);
+
+      // Nav turns solid once the hero is mostly scrolled past.
+      const nav = document.getElementById("nav");
+      const onScrollNav = () => nav.classList.toggle("solid", scrollY > innerHeight * 0.6);
+      addEventListener("scroll", onScrollNav, { passive: true });
+      onScrollNav();
+
+      // Card arc follows the pointer with spring-like smoothing (decorative only).
+      const arc = document.getElementById("arc");
+      if (!reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        let tx = 0,
+          ty = 0,
+          x = 0,
+          y = 0;
+        addEventListener("pointermove", (e) => {
+          tx = (e.clientX / innerWidth - 0.5) * 10;
+          ty = (e.clientY / innerHeight - 0.5) * -6;
+        });
+        (function loop() {
+          x += (tx - x) * 0.06;
+          y += (ty - y) * 0.06;
+          arc.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+          requestAnimationFrame(loop);
+        })();
+      }
+
+      // Reveal on scroll (once).
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add("in");
+            e.target.querySelectorAll("[data-count]").forEach(countUp);
+            if (e.target.matches("[data-count]")) countUp(e.target);
+            io.unobserve(e.target);
+          }),
+        { rootMargin: "0px 0px -12% 0px" },
+      );
+      document.querySelectorAll(".reveal, .clip-reveal, .match").forEach((el) => io.observe(el));
+
+      // Count-up numbers (tabular figures, so nothing shifts).
+      function countUp(el) {
+        if (el.dataset.done) return;
+        el.dataset.done = "1";
+        const end = +el.dataset.count,
+          suffix = el.dataset.suffix || "";
+        if (reduce || end === 0) {
+          el.textContent = end.toLocaleString("en-NG") + suffix;
+          return;
+        }
+        const t0 = performance.now(),
+          dur = 1400;
+        (function tick(t) {
+          const p = Math.min(1, (t - t0) / dur),
+            eased = 1 - Math.pow(1 - p, 4);
+          el.textContent = Math.round(end * eased).toLocaleString("en-NG") + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        })(t0);
+      }
+
+      // Statement: words light up as the sentence scrolls through the viewport.
+      const st = document.getElementById("statement");
+      (function wrapWords(node) {
+        [...node.childNodes].forEach((n) => {
+          if (n.nodeType !== 3) return;
+          const frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach((p) => {
+            if (!p.trim()) {
+              frag.append(p);
+              return;
+            }
+            const s = document.createElement("span");
+            s.className = "word";
+            s.textContent = p;
+            frag.append(s);
+          });
+          n.replaceWith(frag);
+        });
+      })(st);
+      const words = [...st.querySelectorAll(".word")];
+      function lightWords() {
+        const r = st.getBoundingClientRect();
+        const progress = Math.min(
+          1,
+          Math.max(0, (innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.35)),
+        );
+        const lit = Math.round(progress * words.length);
+        words.forEach((w, idx) => w.classList.toggle("lit", reduce || idx < lit));
+      }
+      addEventListener("scroll", lightWords, { passive: true });
+      lightWords();
+
+      // Sticky journey: the step nearest the middle of the screen drives the phone.
+      const steps = [...document.querySelectorAll(".step")],
+        states = [...document.querySelectorAll(".state")],
+        fill = document.getElementById("fill");
+      let current = -1;
+      function updateJourney() {
+        const mid = innerHeight * 0.5;
+        let active = 0;
+        steps.forEach((s, idx) => {
+          if (s.getBoundingClientRect().top < mid) active = idx;
+        });
+        if (active !== current) {
+          current = active;
+          steps.forEach((s, idx) => {
+            s.classList.toggle("active", idx === active);
+            s.classList.toggle("passed", idx < active);
+          });
+          states.forEach((s, idx) => s.classList.toggle("on", idx === active));
+        }
+        const box = document.getElementById("steps").getBoundingClientRect();
+        const p = Math.min(1, Math.max(0, (mid - box.top) / box.height));
+        fill.style.height = `${p * (box.height - 16)}px`;
+      }
+      addEventListener("scroll", updateJourney, { passive: true });
+      updateJourney();
+
+      // Certificate tilt + glare (pointer devices only).
+      const tilt = document.getElementById("tilt"),
+        cert = document.getElementById("cert");
+      if (!reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        let rx = 0,
+          ry = 0,
+          trx = 0,
+          try_ = 0,
+          raf;
+        tilt.addEventListener("pointermove", (e) => {
+          const r = tilt.getBoundingClientRect(),
+            px = (e.clientX - r.left) / r.width,
+            py = (e.clientY - r.top) / r.height;
+          try_ = (px - 0.5) * 14;
+          trx = (0.5 - py) * 10;
+          cert.style.setProperty("--gx", `${px * 100}%`);
+          cert.style.setProperty("--gy", `${py * 100}%`);
+          if (!raf) loop();
+        });
+        tilt.addEventListener("pointerleave", () => {
+          trx = 0;
+          try_ = 0;
+        });
+        function loop() {
+          rx += (trx - rx) * 0.12;
+          ry += (try_ - ry) * 0.12;
+          cert.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+          raf = Math.abs(trx - rx) + Math.abs(try_ - ry) > 0.01 ? requestAnimationFrame(loop) : null;
+        }
+      }
+    </script>
+  </body>
+</html>

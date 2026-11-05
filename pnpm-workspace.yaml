@@ -1,0 +1,11 @@
+packages:
+  - backend
+  - frontend
+  - shared
+
+onlyBuiltDependencies:
+  - "@prisma/engines"
+  - prisma
+  - esbuild
+  - embedded-postgres
+  - "@embedded-postgres/windows-x64"

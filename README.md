@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SIIP
 
-## Getting Started
+A free graduate internship and development programme for Nigeria. This repository holds both apps:
 
-First, run the development server:
+| Folder                 | What it is                                                                                                            | Runs on               |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| [backend/](backend/)   | The API: Next.js route handlers, Prisma, Better Auth, emails, PDFs, cron. See [backend/README.md](backend/README.md). | http://localhost:4000 |
+| [frontend/](frontend/) | The web app for graduates, companies and admins (being built).                                                        | http://localhost:3000 |
+| [shared/](shared/)     | Zod schemas, status enums and Nigerian helpers used by both, so forms and the API validate the same way.              | —                     |
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install            # installs every package (pnpm workspace)
+pnpm db:local           # local Postgres on port 5433 (keep this terminal open)
+pnpm --filter @siip/backend db:deploy
+pnpm --filter @siip/backend db:seed
+pnpm dev:backend        # API on :4000
+pnpm dev:frontend       # web app on :3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How the two apps connect
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The frontend proxies every `/api/*` request to the backend via a Next.js rewrite. The browser only ever talks to the frontend's domain, so Better Auth's session cookies are first-party and no CORS or cross-domain cookie setup is needed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+On Vercel, deploy them as **two projects** from this repo:
 
-## Learn More
+- **Backend:** root directory `backend`.
+- **Frontend:** root directory `frontend`, with `API_URL` set to the backend's URL.
+- **The backend's `APP_URL`** must be the frontend's public URL, because email links point there.
 
-To learn more about Next.js, take a look at the following resources:
+## Common commands (from the repo root)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command          | What it does                                                |
+| ---------------- | ----------------------------------------------------------- |
+| `pnpm typecheck` | Type-check every package.                                   |
+| `pnpm lint`      | Lint every package.                                         |
+| `pnpm test`      | Backend unit and integration tests (needs `pnpm db:local`). |
+| `pnpm format`    | Prettier across the repo.                                   |

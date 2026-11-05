@@ -1,0 +1,9 @@
+backend/src/generated
+shared/src/enums.ts
+**/.next
+**/.local-pg
+pnpm-lock.yaml
+backend/prisma/migrations
+backend/src/server/openapi/openapi.json
+.claude
+skills-lock.json

@@ -1,0 +1,1202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SIIP / SkillzBridge: three visual directions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=Schibsted+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #e7e7e4;
+        color: #222;
+      }
+      .page-head {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 40px 24px 8px;
+      }
+      .page-head h1 {
+        font-size: 22px;
+      }
+      .page-head p {
+        color: #555;
+        margin-top: 6px;
+        max-width: 75ch;
+        line-height: 1.5;
+      }
+      .dir {
+        max-width: 1280px;
+        margin: 32px auto;
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--body);
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.08);
+        transition:
+          background 0.25s,
+          color 0.25s;
+      }
+      .meta {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 32px;
+        padding: 32px;
+        border-bottom: 1px solid var(--border);
+      }
+      .tag {
+        font: 600 12px/1 var(--body);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .meta h2 {
+        font-family: var(--display);
+        font-weight: var(--dw);
+        letter-spacing: var(--tracking);
+        font-size: 32px;
+        line-height: 1.15;
+        margin: 10px 0 8px;
+      }
+      .meta p {
+        color: var(--muted);
+        line-height: 1.6;
+        max-width: 60ch;
+      }
+      .facts {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 16px;
+        font-size: 14px;
+      }
+      .facts dt {
+        color: var(--muted);
+      }
+      .facts dd {
+        font-weight: 500;
+      }
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        align-content: start;
+      }
+      .sw {
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        background: var(--surface);
+      }
+      .sw i {
+        display: block;
+        height: 40px;
+      }
+      .sw span {
+        display: block;
+        padding: 6px 8px;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+      .sw b {
+        display: block;
+        font-weight: 600;
+      }
+      .toggle {
+        margin-top: 14px;
+        font: 500 14px var(--body);
+        padding: 10px 14px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        cursor: pointer;
+        min-height: 44px;
+      }
+      .toggle:focus-visible,
+      .btn:focus-visible {
+        outline: 3px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .stage {
+        display: grid;
+        grid-template-columns: 1fr 390px;
+        gap: 32px;
+        padding: 32px;
+        align-items: start;
+      }
+      .label {
+        font: 500 12px var(--body);
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+      .wm {
+        font-family: var(--display);
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+      .wm-o {
+        color: var(--orange-text);
+      }
+      .wm-b {
+        color: var(--blue);
+      }
+      .site {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 16px 28px;
+        border-bottom: 1px solid var(--border);
+      }
+      .navlinks {
+        display: flex;
+        gap: 20px;
+        margin-left: auto;
+        font-size: 15px;
+        color: var(--muted);
+      }
+      .hero {
+        position: relative;
+        padding: 48px 44px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 32px;
+        min-height: 400px;
+      }
+      .hero h3 {
+        font-family: var(--display);
+        font-weight: var(--dw);
+        letter-spacing: var(--tracking);
+        font-size: 48px;
+        line-height: 1.06;
+      }
+      .hero h3 em {
+        font-style: normal;
+        color: var(--orange-text);
+      }
+      .hero p {
+        margin-top: 18px;
+        font-size: 18px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 44ch;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 48px;
+        padding: 0 20px;
+        border-radius: var(--radius);
+        font: 600 16px var(--body);
+        border: 0;
+        cursor: pointer;
+        text-decoration: none;
+        transition: transform 0.15s ease-out;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-sm {
+        min-height: 44px;
+        padding: 0 16px;
+        font-size: 15px;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text);
+        box-shadow: inset 0 0 0 1.5px var(--border);
+      }
+      .trust {
+        margin-top: 24px;
+        font-size: 14px;
+        color: var(--muted);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .photo {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        background: var(--primary-soft);
+        display: grid;
+        place-items: end center;
+        color: var(--muted);
+        font-size: 13px;
+        text-align: center;
+        padding: 16px;
+        min-height: 300px;
+      }
+      .photo small {
+        position: relative;
+        display: block;
+        max-width: 24ch;
+      }
+      .arches {
+        position: absolute;
+        left: 50%;
+        top: 22%;
+        width: 82%;
+        transform: translateX(-50%);
+        opacity: 0.9;
+      }
+      svg.ic {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        flex: none;
+      }
+      .phone {
+        width: 390px;
+        border-radius: 36px;
+        background: var(--bg);
+        padding: 14px;
+        box-shadow:
+          0 0 0 10px #1b1b1b,
+          0 20px 40px rgba(0, 0, 0, 0.18);
+      }
+      .appbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 6px 14px;
+      }
+      .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary-soft);
+        color: var(--blue);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .greet {
+        padding: 0 6px 14px;
+      }
+      .greet h4 {
+        font-family: var(--display);
+        font-weight: var(--dw);
+        letter-spacing: var(--tracking);
+        font-size: 26px;
+        line-height: 1.15;
+      }
+      .greet p {
+        color: var(--muted);
+        margin-top: 4px;
+        font-size: 16px;
+      }
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+      .card + .card {
+        margin-top: 14px;
+      }
+      .stepline {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+        margin: 6px 0 16px;
+      }
+      .stepline i {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--border);
+      }
+      .stepline i.done {
+        background: var(--blue);
+      }
+      .stepline i.now {
+        background: var(--now);
+      }
+      .eyebrow {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+      }
+      .card h5 {
+        font-family: var(--display);
+        font-weight: var(--dw);
+        letter-spacing: var(--tracking);
+        font-size: 22px;
+        margin: 4px 0;
+      }
+      .card p {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+      .progress {
+        margin: 16px 0;
+        height: 8px;
+        border-radius: 4px;
+        background: var(--primary-soft);
+        overflow: hidden;
+      }
+      .progress b {
+        display: block;
+        height: 100%;
+        width: 60%;
+        background: var(--primary);
+        border-radius: inherit;
+      }
+      .card .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-top: 1px solid var(--border);
+        font-size: 15px;
+      }
+      .row:first-of-type {
+        border-top: 0;
+      }
+      .pill {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--text);
+      }
+      .tabbar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 14px;
+        padding: 10px 0 2px;
+        border-top: 1px solid var(--border);
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .tabbar div {
+        display: grid;
+        justify-items: center;
+        gap: 4px;
+        min-height: 44px;
+      }
+      .tabbar .on {
+        color: var(--blue);
+        font-weight: 600;
+      }
+      .verdict {
+        padding: 0 32px 32px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      .verdict h6 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .verdict ul {
+        padding-left: 18px;
+      }
+      /* Direction character */
+      [data-dir="A"] .card:first-of-type {
+        border-top: 4px solid var(--orange);
+      }
+      [data-dir="B"] .photo {
+        background:
+          repeating-linear-gradient(
+            45deg,
+            transparent 0 14px,
+            color-mix(in srgb, var(--orange) 16%, transparent) 14px 16px
+          ),
+          var(--primary-soft);
+      }
+      [data-dir="B"] .hero h3 em {
+        background: var(--orange);
+        color: #1b1d21;
+        padding: 0 0.14em;
+        border-radius: 8px;
+      }
+      [data-dir="B"] .eyebrow {
+        color: var(--orange-text);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 12px;
+      }
+      [data-dir="C"] .hero {
+        background-image:
+          linear-gradient(var(--border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 32px 32px;
+      }
+      [data-dir="C"] .kicker,
+      [data-dir="C"] .eyebrow {
+        font: 500 12px var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      [data-dir="C"] .kicker {
+        color: var(--blue);
+        margin-bottom: 14px;
+      }
+      [data-dir="C"] .photo {
+        border: 1px dashed var(--muted);
+        background: color-mix(in srgb, var(--surface) 85%, transparent);
+      }
+      [data-dir="C"] .hero h3 em {
+        color: var(--blue);
+      }
+      @media (max-width: 1000px) {
+        .meta,
+        .stage,
+        .verdict,
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .phone {
+          width: 100%;
+          max-width: 390px;
+        }
+        .hero h3 {
+          font-size: 36px;
+        }
+        .navlinks {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+
+      [data-dir="A"] {
+        --bg: #f7f6f3;
+        --surface: #ffffff;
+        --text: #1b1d21;
+        --muted: #5e636b;
+        --border: #e4e2dd;
+        --blue: #0a4c8c;
+        --orange: #e8650c;
+        --orange-text: #a8460a;
+        --primary: var(--blue);
+        --on-primary: #ffffff;
+        --primary-soft: color-mix(in srgb, var(--blue) 10%, var(--surface));
+        --now: var(--orange);
+        --radius: 12px;
+        --radius-lg: 18px;
+        --shadow: 0 1px 2px rgba(27, 29, 33, 0.06), 0 8px 24px rgba(27, 29, 33, 0.08);
+        --display: "Lexend", system-ui, sans-serif;
+        --body: "Source Sans 3", system-ui, sans-serif;
+        --mono: var(--body);
+        --dw: 600;
+        --tracking: -0.02em;
+      }
+      [data-dir="A"].dark {
+        --bg: #121417;
+        --surface: #1b1e23;
+        --text: #eef0f2;
+        --muted: #a0a6ae;
+        --border: #2c3036;
+        --blue: #6fa8e8;
+        --orange: #ff8a3d;
+        --orange-text: #ff8a3d;
+        --on-primary: #0b1524;
+        --charcoal: #8a9099;
+        --shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.45);
+      }
+      [data-dir="B"] {
+        --bg: #fbf7f2;
+        --surface: #ffffff;
+        --text: #1b1d21;
+        --muted: #5e636b;
+        --border: #e9e1d7;
+        --blue: #0a4c8c;
+        --orange: #e8650c;
+        --orange-text: #a8460a;
+        --charcoal: #3b3e44;
+        --primary: var(--orange);
+        --on-primary: #1b1d21;
+        --primary-soft: color-mix(in srgb, var(--orange) 14%, var(--surface));
+        --now: var(--blue);
+        --radius: 14px;
+        --radius-lg: 24px;
+        --shadow: 0 0 0 1.5px var(--charcoal), 4px 4px 0 var(--charcoal);
+        --display: "Bricolage Grotesque", system-ui, sans-serif;
+        --body: "Figtree", system-ui, sans-serif;
+        --mono: var(--body);
+        --dw: 800;
+        --tracking: -0.03em;
+      }
+      [data-dir="B"].dark {
+        --bg: #121417;
+        --surface: #1b1e23;
+        --text: #eef0f2;
+        --muted: #a0a6ae;
+        --border: #2c3036;
+        --blue: #6fa8e8;
+        --orange: #ff8a3d;
+        --orange-text: #ff8a3d;
+        --on-primary: #1b1d21;
+        --charcoal: #8a9099;
+        --shadow: 0 0 0 1px var(--border);
+      }
+      [data-dir="C"] {
+        --bg: #f5f6f8;
+        --surface: #ffffff;
+        --text: #1b1d21;
+        --muted: #5e636b;
+        --border: #dfe2e7;
+        --blue: #0a4c8c;
+        --orange: #e8650c;
+        --orange-text: #a8460a;
+        --charcoal: #3b3e44;
+        --primary: var(--blue);
+        --on-primary: #ffffff;
+        --primary-soft: color-mix(in srgb, var(--blue) 9%, var(--surface));
+        --now: var(--orange);
+        --radius: 6px;
+        --radius-lg: 10px;
+        --shadow: 0 0 0 1px var(--border);
+        --display: "Schibsted Grotesk", system-ui, sans-serif;
+        --body: "IBM Plex Sans", system-ui, sans-serif;
+        --mono: "IBM Plex Mono", monospace;
+        --dw: 700;
+        --tracking: -0.02em;
+      }
+      [data-dir="C"].dark {
+        --bg: #121417;
+        --surface: #1b1e23;
+        --text: #eef0f2;
+        --muted: #a0a6ae;
+        --border: #2c3036;
+        --blue: #6fa8e8;
+        --orange: #ff8a3d;
+        --orange-text: #ff8a3d;
+        --on-primary: #0b1524;
+        --charcoal: #8a9099;
+        --shadow: 0 0 0 1px var(--border);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>Three directions built on the SkillzBridge logo colours</h1>
+      <p>
+        All three use the same brand colours from the logo: orange, royal blue, charcoal and water blue. They
+        differ in which colour leads, typography, shape and depth. Every text pair passes WCAG AA in light and
+        dark. Logo orange is too light for white text, so orange buttons carry dark text, and orange text uses
+        a deeper shade (#A8460A). "Switch to dark" previews dark mode. The wordmark is a text placeholder
+        until I have the logo file.
+      </p>
+    </header>
+
+    <section class="dir motif-arches" data-dir="A" id="A">
+      <div class="meta">
+        <div>
+          <div class="tag">Direction A</div>
+          <h2>Bridge: blue-led, calm and trustworthy</h2>
+          <p>
+            Logo blue leads every action, so the product feels dependable to graduates, parents and HR
+            managers alike. Orange is the spark: it marks the current step, highlights and celebrations. The
+            headline font is Lexend, a rounded geometric face that echoes the logo's friendly wordmark, and it
+            was designed for reading ease.
+          </p>
+          <dl class="facts">
+            <dt>Display</dt>
+            <dd>Lexend (rounded geometric, like the logo)</dd>
+            <dt>Text</dt>
+            <dd>Source Sans 3, 16px+ body</dd>
+            <dt>Radius</dt>
+            <dd>12px controls / 18px cards</dd>
+            <dt>Shadow</dt>
+            <dd>Soft, low elevation</dd>
+            <dt>Motif</dt>
+            <dd>Bridge arches and the water lines from the logo</dd>
+          </dl>
+          <button class="toggle" onclick="this.closest('.dir').classList.toggle('dark')">
+            Switch to dark / light
+          </button>
+        </div>
+        <div class="swatches">
+          <div class="sw">
+            <i style="background: #0a4c8c"></i><span><b>Logo blue</b>#0A4C8C · white text 8.7:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #e8650c"></i><span><b>Logo orange</b>#E8650C · dark text 5.1:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #a8460a"></i><span><b>Orange (text)</b>#A8460A · 5.5:1 on bg</span>
+          </div>
+          <div class="sw">
+            <i style="background: #3b3e44"></i><span><b>Charcoal</b>#3B3E44 · 9.9:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1b1d21"></i><span><b>Ink (text)</b>#1B1D21 · 15.6:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #5e636b"></i><span><b>Muted text</b>#5E636B · 5.6:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1d7bc1"></i><span><b>Water blue</b>#1D7BC1 · decorative</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1f7a3d"></i><span><b>Success</b>#1F7A3D · 5.1:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #a45c00"></i><span><b>Warning</b>#A45C00 · 4.8:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #b42318"></i><span><b>Danger</b>#B42318 · 6.2:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #6fa8e8"></i><span><b>Blue (dark mode)</b>#6FA8E8 · 7.4:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #ff8a3d"></i><span><b>Orange (dark mode)</b>#FF8A3D · 7.9:1</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div>
+          <div class="label">Landing hero · desktop</div>
+          <div class="site">
+            <nav class="nav">
+              <span class="wm"><span class="wm-o">Skillz</span><span class="wm-b">Bridge</span></span
+              ><span class="navlinks"
+                ><span>How it works</span><span>For companies</span><span>Verify a certificate</span></span
+              ><a class="btn btn-sm btn-ghost" href="#A">Sign in</a>
+            </nav>
+            <div class="hero">
+              <div>
+                <h3>From graduate to <em>hired</em>, in seven clear steps.</h3>
+                <p>
+                  SIIP is a free programme that trains Nigerian graduates and places them in three-month
+                  internships with verified companies.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-primary" href="#A"
+                    >Start your application
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" /></svg
+                  ></a>
+                  <a class="btn btn-ghost" href="#A">I'm hiring interns</a>
+                </div>
+                <div class="trust">
+                  <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                  100% free. We never ask graduates to pay.
+                </div>
+              </div>
+              <div class="photo">
+                <svg class="arches" viewBox="0 0 400 120" aria-hidden="true">
+                  <path
+                    d="M0 110 Q200 10 400 110"
+                    fill="none"
+                    stroke="var(--charcoal,#3B3E44)"
+                    stroke-width="14"
+                  />
+                  <path
+                    d="M90 110a28 28 0 0 1 56 0M172 110a28 28 0 0 1 56 0M254 110a28 28 0 0 1 56 0"
+                    fill="none"
+                    stroke="var(--charcoal,#3B3E44)"
+                    stroke-width="10"
+                  />
+                  <path
+                    d="M80 118h240M130 126h140"
+                    stroke="#1D7BC1"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  /></svg
+                ><small>Photo slot: graduate at a Lagos workplace</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="label">Graduate dashboard · 390px</div>
+          <div class="phone">
+            <div class="appbar">
+              <span class="wm"><span class="wm-o">Skillz</span><span class="wm-b">Bridge</span></span>
+              <div class="avatar">AO</div>
+            </div>
+            <div class="greet">
+              <h4>Good morning, Amaka</h4>
+              <p>You're on step 3 of 7: Training.</p>
+            </div>
+            <div class="card">
+              <div class="eyebrow"><span>Your next step</span><span>Step 3 of 7</span></div>
+              <div class="stepline">
+                <i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i>
+              </div>
+              <h5>Finish your training</h5>
+              <p>6 of 10 lessons done. Next: "Writing a great work email".</p>
+              <div class="progress"><b></b></div>
+              <button class="btn btn-primary">Continue lesson 7</button>
+            </div>
+            <div class="card">
+              <div class="row"><span>Final assessment opens</span><span class="pill">12 Dec</span></div>
+              <div class="row"><span>Internships start</span><span class="pill">5 Jan</span></div>
+            </div>
+            <div class="tabbar">
+              <div class="on">
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" fill="currentColor" /></svg
+                ><span>Home</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Training</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Placement</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Profile</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="verdict">
+        <div>
+          <h6>Strengths</h6>
+          <ul>
+            <li>Safest for trust: blue actions read as official and reliable.</li>
+            <li>Orange stays special, so 'your next step' always pops.</li>
+            <li>Works equally well for graduates and admin tables.</li>
+          </ul>
+        </div>
+        <div>
+          <h6>Watch-outs</h6>
+          <ul>
+            <li>
+              Closest to a conventional product; personality comes from the arches, orange moments and copy.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <section class="dir motif-stripes" data-dir="B" id="B">
+      <div class="meta">
+        <div>
+          <div class="tag">Direction B</div>
+          <h2>Workshop: orange-led, energetic and hands-on</h2>
+          <p>
+            Leads with the logo's orange, the colour of the gear and the trades. Blue carries links and
+            secondary actions. Bold grotesque headings, crisp charcoal offset shadows and arch shapes make it
+            feel like a confident African creative workshop. Speaks most directly to young graduates and to
+            the 'Trades' side of the brand.
+          </p>
+          <dl class="facts">
+            <dt>Display</dt>
+            <dd>Bricolage Grotesque (expressive)</dd>
+            <dt>Text</dt>
+            <dd>Figtree, 16px+ body</dd>
+            <dt>Radius</dt>
+            <dd>14px controls / 24px cards</dd>
+            <dt>Shadow</dt>
+            <dd>Hard charcoal offset, no blur</dd>
+            <dt>Motif</dt>
+            <dd>Gear-tooth corners, arch shapes, highlighter marks</dd>
+          </dl>
+          <button class="toggle" onclick="this.closest('.dir').classList.toggle('dark')">
+            Switch to dark / light
+          </button>
+        </div>
+        <div class="swatches">
+          <div class="sw">
+            <i style="background: #0a4c8c"></i><span><b>Logo blue</b>#0A4C8C · white text 8.7:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #e8650c"></i><span><b>Logo orange</b>#E8650C · dark text 5.1:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #a8460a"></i><span><b>Orange (text)</b>#A8460A · 5.5:1 on bg</span>
+          </div>
+          <div class="sw">
+            <i style="background: #3b3e44"></i><span><b>Charcoal</b>#3B3E44 · 9.9:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1b1d21"></i><span><b>Ink (text)</b>#1B1D21 · 15.6:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #5e636b"></i><span><b>Muted text</b>#5E636B · 5.6:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1d7bc1"></i><span><b>Water blue</b>#1D7BC1 · decorative</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1f7a3d"></i><span><b>Success</b>#1F7A3D · 5.1:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #a45c00"></i><span><b>Warning</b>#A45C00 · 4.8:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #b42318"></i><span><b>Danger</b>#B42318 · 6.2:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #6fa8e8"></i><span><b>Blue (dark mode)</b>#6FA8E8 · 7.4:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #ff8a3d"></i><span><b>Orange (dark mode)</b>#FF8A3D · 7.9:1</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div>
+          <div class="label">Landing hero · desktop</div>
+          <div class="site">
+            <nav class="nav">
+              <span class="wm"><span class="wm-o">Skillz</span><span class="wm-b">Bridge</span></span
+              ><span class="navlinks"
+                ><span>How it works</span><span>For companies</span><span>Verify a certificate</span></span
+              ><a class="btn btn-sm btn-ghost" href="#B">Sign in</a>
+            </nav>
+            <div class="hero">
+              <div>
+                <h3>From graduate to <em>hired</em>, in seven clear steps.</h3>
+                <p>
+                  SIIP is a free programme that trains Nigerian graduates and places them in three-month
+                  internships with verified companies.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-primary" href="#B"
+                    >Start your application
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" /></svg
+                  ></a>
+                  <a class="btn btn-ghost" href="#B">I'm hiring interns</a>
+                </div>
+                <div class="trust">
+                  <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                  100% free. We never ask graduates to pay.
+                </div>
+              </div>
+              <div class="photo">
+                <svg class="arches" viewBox="0 0 400 120" aria-hidden="true">
+                  <path
+                    d="M0 110 Q200 10 400 110"
+                    fill="none"
+                    stroke="var(--charcoal,#3B3E44)"
+                    stroke-width="14"
+                  />
+                  <path
+                    d="M90 110a28 28 0 0 1 56 0M172 110a28 28 0 0 1 56 0M254 110a28 28 0 0 1 56 0"
+                    fill="none"
+                    stroke="var(--charcoal,#3B3E44)"
+                    stroke-width="10"
+                  />
+                  <path
+                    d="M80 118h240M130 126h140"
+                    stroke="#1D7BC1"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  /></svg
+                ><small>Photo slot: graduate at a Lagos workplace</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="label">Graduate dashboard · 390px</div>
+          <div class="phone">
+            <div class="appbar">
+              <span class="wm"><span class="wm-o">Skillz</span><span class="wm-b">Bridge</span></span>
+              <div class="avatar">AO</div>
+            </div>
+            <div class="greet">
+              <h4>Good morning, Amaka</h4>
+              <p>You're on step 3 of 7: Training.</p>
+            </div>
+            <div class="card">
+              <div class="eyebrow"><span>Your next step</span><span>Step 3 of 7</span></div>
+              <div class="stepline">
+                <i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i>
+              </div>
+              <h5>Finish your training</h5>
+              <p>6 of 10 lessons done. Next: "Writing a great work email".</p>
+              <div class="progress"><b></b></div>
+              <button class="btn btn-primary">Continue lesson 7</button>
+            </div>
+            <div class="card">
+              <div class="row"><span>Final assessment opens</span><span class="pill">12 Dec</span></div>
+              <div class="row"><span>Internships start</span><span class="pill">5 Jan</span></div>
+            </div>
+            <div class="tabbar">
+              <div class="on">
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" fill="currentColor" /></svg
+                ><span>Home</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Training</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Placement</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Profile</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="verdict">
+        <div>
+          <h6>Strengths</h6>
+          <ul>
+            <li>Most distinctive and memorable; nobody will mistake it for a template.</li>
+            <li>Energy suits young graduates and social sharing.</li>
+          </ul>
+        </div>
+        <div>
+          <h6>Watch-outs</h6>
+          <ul>
+            <li>Orange buttons need dark text (white on logo orange fails contrast).</li>
+            <li>Some HR managers may find it less 'corporate'; admin tables would tone the shadows down.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <section class="dir motif-grid" data-dir="C" id="C">
+      <div class="meta">
+        <div>
+          <div class="tag">Direction C</div>
+          <h2>Blueprint: charcoal-led, precise and calm</h2>
+          <p>
+            The bridge's charcoal frames the interface, logo blue drives actions and orange is reserved for
+            status and the current step. Tight grotesque headings, monospaced data labels, hairline borders
+            instead of shadows and a faint blueprint grid, in the spirit of Linear, Stripe and Mercury. Best
+            for dense company and admin dashboards.
+          </p>
+          <dl class="facts">
+            <dt>Display</dt>
+            <dd>Schibsted Grotesk</dd>
+            <dt>Text</dt>
+            <dd>IBM Plex Sans + Plex Mono for data</dd>
+            <dt>Radius</dt>
+            <dd>6px controls / 10px cards</dd>
+            <dt>Shadow</dt>
+            <dd>None: 1px hairlines</dd>
+            <dt>Motif</dt>
+            <dd>Blueprint grid, mono labels</dd>
+          </dl>
+          <button class="toggle" onclick="this.closest('.dir').classList.toggle('dark')">
+            Switch to dark / light
+          </button>
+        </div>
+        <div class="swatches">
+          <div class="sw">
+            <i style="background: #0a4c8c"></i><span><b>Logo blue</b>#0A4C8C · white text 8.7:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #e8650c"></i><span><b>Logo orange</b>#E8650C · dark text 5.1:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #a8460a"></i><span><b>Orange (text)</b>#A8460A · 5.5:1 on bg</span>
+          </div>
+          <div class="sw">
+            <i style="background: #3b3e44"></i><span><b>Charcoal</b>#3B3E44 · 9.9:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1b1d21"></i><span><b>Ink (text)</b>#1B1D21 · 15.6:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #5e636b"></i><span><b>Muted text</b>#5E636B · 5.6:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1d7bc1"></i><span><b>Water blue</b>#1D7BC1 · decorative</span>
+          </div>
+          <div class="sw">
+            <i style="background: #1f7a3d"></i><span><b>Success</b>#1F7A3D · 5.1:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #a45c00"></i><span><b>Warning</b>#A45C00 · 4.8:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #b42318"></i><span><b>Danger</b>#B42318 · 6.2:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #6fa8e8"></i><span><b>Blue (dark mode)</b>#6FA8E8 · 7.4:1</span>
+          </div>
+          <div class="sw">
+            <i style="background: #ff8a3d"></i><span><b>Orange (dark mode)</b>#FF8A3D · 7.9:1</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage">
+        <div>
+          <div class="label">Landing hero · desktop</div>
+          <div class="site">
+            <nav class="nav">
+              <span class="wm"><span class="wm-o">Skillz</span><span class="wm-b">Bridge</span></span
+              ><span class="navlinks"
+                ><span>How it works</span><span>For companies</span><span>Verify a certificate</span></span
+              ><a class="btn btn-sm btn-ghost" href="#C">Sign in</a>
+            </nav>
+            <div class="hero">
+              <div>
+                <div class="kicker">Free graduate programme · Nigeria</div>
+                <h3>From graduate to <em>hired</em>, in seven clear steps.</h3>
+                <p>
+                  SIIP is a free programme that trains Nigerian graduates and places them in three-month
+                  internships with verified companies.
+                </p>
+                <div class="actions">
+                  <a class="btn btn-primary" href="#C"
+                    >Start your application
+                    <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6" /></svg
+                  ></a>
+                  <a class="btn btn-ghost" href="#C">I'm hiring interns</a>
+                </div>
+                <div class="trust">
+                  <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" />
+                    <path d="M9 12l2 2 4-4" />
+                  </svg>
+                  100% free. We never ask graduates to pay.
+                </div>
+              </div>
+              <div class="photo">
+                <svg class="arches" viewBox="0 0 400 120" aria-hidden="true">
+                  <path
+                    d="M0 110 Q200 10 400 110"
+                    fill="none"
+                    stroke="var(--charcoal,#3B3E44)"
+                    stroke-width="14"
+                  />
+                  <path
+                    d="M90 110a28 28 0 0 1 56 0M172 110a28 28 0 0 1 56 0M254 110a28 28 0 0 1 56 0"
+                    fill="none"
+                    stroke="var(--charcoal,#3B3E44)"
+                    stroke-width="10"
+                  />
+                  <path
+                    d="M80 118h240M130 126h140"
+                    stroke="#1D7BC1"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  /></svg
+                ><small>Photo slot: graduate at a Lagos workplace</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="label">Graduate dashboard · 390px</div>
+          <div class="phone">
+            <div class="appbar">
+              <span class="wm"><span class="wm-o">Skillz</span><span class="wm-b">Bridge</span></span>
+              <div class="avatar">AO</div>
+            </div>
+            <div class="greet">
+              <h4>Good morning, Amaka</h4>
+              <p>You're on step 3 of 7: Training.</p>
+            </div>
+            <div class="card">
+              <div class="eyebrow"><span>Your next step</span><span>Step 3 of 7</span></div>
+              <div class="stepline">
+                <i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i>
+              </div>
+              <h5>Finish your training</h5>
+              <p>6 of 10 lessons done. Next: "Writing a great work email".</p>
+              <div class="progress"><b></b></div>
+              <button class="btn btn-primary">Continue lesson 7</button>
+            </div>
+            <div class="card">
+              <div class="row"><span>Final assessment opens</span><span class="pill">12 Dec</span></div>
+              <div class="row"><span>Internships start</span><span class="pill">5 Jan</span></div>
+            </div>
+            <div class="tabbar">
+              <div class="on">
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" fill="currentColor" /></svg
+                ><span>Home</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Training</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Placement</span>
+              </div>
+              <div>
+                <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" /></svg
+                ><span>Profile</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="verdict">
+        <div>
+          <h6>Strengths</h6>
+          <ul>
+            <li>Best for data-heavy company and admin screens; looks like a funded product.</li>
+            <li>Lightest to load.</li>
+          </ul>
+        </div>
+        <div>
+          <h6>Watch-outs</h6>
+          <ul>
+            <li>Least warm of the three; warmth must come from photos and friendly copy.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

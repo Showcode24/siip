@@ -1,0 +1,15 @@
+# Local Postgres for development and integration tests (Neon is used in deployed environments).
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: siip
+      POSTGRES_PASSWORD: siip
+      POSTGRES_DB: siip
+    ports:
+      - "5433:5432"
+    volumes:
+      - siip-pg:/var/lib/postgresql/data
+      - ./scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+volumes:
+  siip-pg:

@@ -3,6 +3,7 @@
 // Landing-page motion pieces. Everything is visible without JavaScript and
 // with reduced motion; motion only adds the entrance and scroll effects.
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const reduced = () => typeof window !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -329,9 +330,91 @@ export function Tilt({ children, className }: { children: ReactNode; className?:
           className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           style={{
             background:
-              "radial-gradient(circle at var(--gx,50%) var(--gy,0%), rgb(255 255 255 / 0.5), transparent 50%)",
+              "radial-gradient(circle at var(--gx,50%) var(--gy,0%), var(--sheen), transparent 50%)",
           }}
         />
+      </div>
+    </div>
+  );
+}
+
+export interface ScreenStep {
+  title: string;
+  body: string;
+  src: string;
+  alt: string;
+}
+
+/**
+ * The journey, told with real product screens. Desktop: the step list scrolls
+ * past a pinned screen that crossfades to match the step in the middle of the
+ * viewport. Phone and no-JS: each step shows its own screen inline.
+ */
+export function ScreenSteps({ steps }: { steps: ScreenStep[] }) {
+  const [active, setActive] = useState(0);
+  const listRef = useRef<HTMLOListElement>(null);
+  useEffect(() => {
+    const items = [...listRef.current!.querySelectorAll<HTMLElement>("[data-step]")];
+    const update = () => {
+      const mid = innerHeight * 0.5;
+      let a = 0;
+      items.forEach((it, i) => {
+        if (it.getBoundingClientRect().top < mid) a = i;
+      });
+      setActive(a);
+    };
+    update();
+    addEventListener("scroll", update, { passive: true });
+    return () => removeEventListener("scroll", update);
+  }, []);
+  return (
+    <div className="grid gap-16 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <ol ref={listRef} className="grid">
+        {steps.map((s, i) => (
+          <li
+            key={s.title}
+            data-step
+            className={cn(
+              "flex min-h-0 flex-col justify-center border-t border-border py-10 transition-opacity duration-300 lg:min-h-[52svh] lg:py-0",
+              i === active ? "lg:opacity-100" : "lg:opacity-45",
+            )}
+          >
+            <p className="font-display text-lg font-semibold text-brand-text tabular-nums">Step {i + 1}</p>
+            <h3 className="mt-2 text-[28px] leading-tight sm:text-[34px]">{s.title}</h3>
+            <p className="mt-3 max-w-md text-lg text-muted-foreground">{s.body}</p>
+            <Image
+              src={s.src}
+              alt={s.alt}
+              width={2880}
+              height={1800}
+              sizes="100vw"
+              className="mt-6 rounded-lg border border-border lg:hidden"
+            />
+          </li>
+        ))}
+      </ol>
+      <div className="hidden lg:block">
+        <div className="sticky top-[calc(50svh-min(22vw,300px))]">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+            {steps.map((s, i) => (
+              <Image
+                key={s.src + i}
+                src={s.src}
+                alt={i === active ? s.alt : ""}
+                aria-hidden={i !== active || undefined}
+                fill
+                sizes="(min-width: 1024px) 58vw, 1px"
+                className={cn(
+                  "object-cover object-top transition-[opacity,transform] duration-500 ease-[var(--ease-out)] motion-reduce:transition-none",
+                  i === active ? "scale-100 opacity-100" : "scale-[1.02] opacity-0",
+                )}
+              />
+            ))}
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Screens from the SIIP app, shown with sample data.
+          </p>
+        </div>
       </div>
     </div>
   );

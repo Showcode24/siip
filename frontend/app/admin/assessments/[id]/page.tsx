@@ -66,7 +66,7 @@ export default function AssessmentBuilderPage() {
             <PageHeader
               breadcrumbs={[{ label: "Assessments", href: "/admin/assessments" }, { label: a.title }]}
               title={a.title}
-              description={`${a.type === "FINAL" ? "Final assessment" : "Screening test"} · ${a._count.attempts} attempts`}
+              description={`${a.type === "FINAL" ? "Final assessment" : "Screening test"}, ${a._count.attempts} attempts`}
               actions={
                 <label className="flex h-11 items-center gap-3 rounded-full border border-border px-4 text-[15px] font-semibold">
                   Published{" "}
@@ -97,7 +97,7 @@ export default function AssessmentBuilderPage() {
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold">{qq.prompt}</p>
                           <p className="text-sm text-muted-foreground">
-                            {TYPE_LABEL[qq.type]} · {qq.points} point{qq.points > 1 ? "s" : ""}
+                            {TYPE_LABEL[qq.type]}, {qq.points} point{qq.points > 1 ? "s" : ""}
                           </p>
                         </div>
                         {!locked ? (
@@ -460,7 +460,7 @@ function Attempts({ id }: { id: string }) {
       header: "Score",
       cell: ({ row }) =>
         row.original.percentage === null ? (
-          "—"
+          "Not scored"
         ) : (
           <span className="tabular-nums">{row.original.percentage}%</span>
         ),
@@ -470,7 +470,7 @@ function Attempts({ id }: { id: string }) {
       header: "Result",
       cell: ({ row }) =>
         row.original.passed === null ? (
-          "—"
+          "Not scored"
         ) : (
           <Badge tone={row.original.passed ? "success" : "danger"}>
             {row.original.passed ? "Passed" : "Not passed"}

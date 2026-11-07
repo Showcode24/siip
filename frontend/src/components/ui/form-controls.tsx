@@ -11,7 +11,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 const control =
-  "w-full rounded-md border border-border-strong bg-surface px-3.5 text-foreground placeholder:text-muted-foreground " +
+  "w-full rounded-md border border-field-edge bg-surface px-3.5 text-foreground placeholder:text-muted-foreground " +
   "transition-[border-color,box-shadow] duration-150 outline-none " +
   "focus-visible:border-brand focus-visible:shadow-[0_0_0_3px_var(--primary-soft)] focus-visible:outline-none " +
   "aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:shadow-[0_0_0_3px_var(--danger-soft)] " +
@@ -50,7 +50,7 @@ export function Checkbox({ className, ...props }: ComponentProps<typeof Checkbox
   return (
     <CheckboxPrimitive.Root
       className={cn(
-        "peer grid size-5 shrink-0 place-items-center rounded-[6px] border-[1.5px] border-border-strong bg-surface transition-colors",
+        "peer grid size-5 shrink-0 place-items-center rounded-[6px] border-[1.5px] border-field-edge bg-surface transition-colors",
         "data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
         "data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground",
         "relative after:absolute after:-inset-3 after:content-['']", // 44px touch target

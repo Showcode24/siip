@@ -156,7 +156,7 @@ export default function AssessmentsAdminPage() {
                       </div>
                       <h2 className="text-xl">{a.title}</h2>
                       <p className="text-sm text-muted-foreground">
-                        {a._count.questions} questions · {a.timeLimitMinutes} min · pass {a.passMark}% ·{" "}
+                        {a._count.questions} questions, {a.timeLimitMinutes} min, pass {a.passMark}%,{" "}
                         {a._count.attempts} attempts
                       </p>
                     </CardBody>

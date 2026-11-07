@@ -38,6 +38,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "15.5.29",
     "eslint-config-prettier": "^10.1.8",
+    "puppeteer-core": "^25.16.0",
     "tailwindcss": "~4.1.18",
     "typescript": "^5.9.3"
   }

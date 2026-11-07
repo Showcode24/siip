@@ -42,7 +42,9 @@ Every text/background pair passes WCAG AA in both themes.
 - **What animates:** only `transform` and `opacity`. Nothing scales up from 0.
 - **Hover:** hover effects are gated to devices with a mouse.
 - **Reduced motion:** honoured everywhere. The command menu (Ctrl/Cmd K) has no animation because it's used many times a day.
-- **Landing page:** word-by-word headline reveal, a 3D card arc that follows the pointer, a sentence that lights up word by word on scroll, a fixed phone that changes screen as the steps scroll past, and a tilting certificate. All of it is visible without JavaScript.
+- **Portal interactions** ([src/components/motion](src/components/motion)): pages fade up 10px when the route changes. The active sidebar item, tab underline and segmented filter pill spring from the old choice to the new one. Stat figures count up once. Proposed matches spring to the bottom of the suggestion list. Tables focus their search box when you press "/", and Escape clears it.
+- **Landing page:** one moving idea. The seven steps scroll past a pinned screen that crossfades between real captures of the app ([public/screens](public/screens), sample data). Everything is visible without JavaScript.
+- **Theme:** dark mode is `data-theme="dark"` on `<html>`, set before first paint. Light-theme focus rings are orange-700. Dark bands set `--ring` to orange-500 so the ring stays at 3:1 or better. Form controls draw their edge in `--field-edge`, which is also 3:1 or better.
 
 ## Components ([src/components/ui](src/components/ui))
 

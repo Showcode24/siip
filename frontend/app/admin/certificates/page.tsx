@@ -73,7 +73,7 @@ export default function CertificatesAdminPage() {
                               {p.graduate.firstName} {p.graduate.lastName}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {p.opening.title} at {p.company.name} · ended{" "}
+                              {p.opening.title} at {p.company.name}, ended{" "}
                               {formatDate(p.endedAt ?? p.endDate)}
                             </p>
                           </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { NavHighlight, PageTransition } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import {
   CommandMenu,
@@ -53,7 +54,7 @@ export function AppShell({
       {sections.map((s, i) => (
         <div key={i}>
           {s.title && !compact ? (
-            <p className="mb-2 px-3 text-xs font-semibold tracking-wider text-white/50 uppercase">
+            <p className="mb-2 px-3 text-[13px] font-medium text-white/55">
               {s.title}
             </p>
           ) : null}
@@ -67,13 +68,14 @@ export function AppShell({
                     aria-current={active ? "page" : undefined}
                     title={compact ? item.label : undefined}
                     className={cn(
-                      "flex h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-white/75 transition-colors hover:bg-white/8 hover:text-white",
-                      active && "bg-white/10 text-white",
+                      "relative flex h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-white/75 transition-colors duration-150 hover:bg-white/8 hover:text-white",
+                      active && "text-white hover:bg-transparent",
                       compact && "justify-center px-0",
                     )}
                   >
-                    <item.icon className={cn("size-[18px] shrink-0", active && "text-orange")} />
-                    {compact ? <span className="sr-only">{item.label}</span> : item.label}
+                    {active ? <NavHighlight id={`${area}-${compact ? "c" : "f"}`} className="bg-white/10" /> : null}
+                    <item.icon className={cn("relative size-[18px] shrink-0", active && "text-orange")} />
+                    {compact ? <span className="sr-only">{item.label}</span> : <span className="relative">{item.label}</span>}
                   </Link>
                 </li>
               );
@@ -90,7 +92,7 @@ export function AppShell({
         {/* Desktop sidebar */}
         <aside
           className={cn(
-            "sticky top-0 hidden h-dvh shrink-0 flex-col bg-night-2 p-3 text-white transition-[width] duration-200 ease-out lg:flex",
+            "fixed inset-y-0 left-0 z-30 hidden flex-col bg-night-2 p-3 text-white [--ring:var(--orange-500)] lg:flex",
             collapsed ? "w-[76px]" : "w-64",
           )}
         >
@@ -119,11 +121,11 @@ export function AppShell({
         {mobileOpen ? (
           <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal aria-label="Menu">
             <button
-              className="absolute inset-0 bg-[rgb(20_21_24/0.55)]"
+              className="absolute inset-0 bg-scrim"
               aria-label="Close menu"
               onClick={() => setMobileOpen(false)}
             />
-            <aside className="absolute inset-y-0 left-0 flex w-72 animate-[sheet-in-left_280ms_var(--ease-drawer)] flex-col bg-night-2 p-3 text-white">
+            <aside className="absolute inset-y-0 left-0 flex w-72 [--ring:var(--orange-500)] animate-[sheet-in-left_280ms_var(--ease-drawer)] flex-col bg-night-2 p-3 text-white">
               <div className="flex h-14 items-center justify-between px-2">
                 <Logo inverse />
                 <button
@@ -139,7 +141,7 @@ export function AppShell({
           </div>
         ) : null}
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className={cn("flex min-w-0 flex-1 flex-col", collapsed ? "lg:pl-[76px]" : "lg:pl-64")}>
           <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background/90 px-3 backdrop-blur sm:px-6">
             <Button
               variant="ghost"
@@ -158,7 +160,7 @@ export function AppShell({
           </header>
           {banner}
           <main id="main" className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </main>
         </div>
       </div>

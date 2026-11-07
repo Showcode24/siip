@@ -20,7 +20,7 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "SIIP · From graduate to hired | SkillzBridge Trades Africa", template: "%s · SIIP" },
+  title: { default: "SIIP: from graduate to hired | SkillzBridge Trades Africa", template: "%s | SIIP" },
   description:
     "SIIP is a free programme that trains Nigerian graduates and NYSC members, then places them in three-month internships with verified companies.",
   openGraph: {
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <a
           href="#main"
-          className="sr-only z-[100] rounded-md bg-surface px-4 py-2 focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+          className="fixed top-3 left-3 z-[100] -translate-y-24 rounded-md bg-surface px-4 py-2 font-semibold shadow-lg focus:translate-y-0"
         >
           Skip to main content
         </a>

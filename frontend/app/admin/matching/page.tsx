@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, MapPin, Search, Send } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { adminApi } from "@/client/api/admin";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge, Card, CardBody, EmptyState, PageHeader, Skeleton } from "@/components/ui/display";
 import { Input, Select } from "@/components/ui/form-controls";
 import { AVAILABILITY, WORK_MODE } from "@/lib/labels";
+import { SPRING } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
 export default function MatchingPage() {
@@ -53,7 +55,7 @@ export default function MatchingPage() {
             <Select aria-label="Opening" value={active ?? ""} onChange={(e) => setSelected(e.target.value)}>
               {list.map((o) => (
                 <option key={o.id} value={o.id}>
-                  {o.title} · {o.company?.name}
+                  {o.title}, {o.company?.name}
                 </option>
               ))}
             </Select>
@@ -78,7 +80,7 @@ export default function MatchingPage() {
                     <p className="mt-2 flex items-center justify-between text-sm">
                       <span className="flex items-center gap-1 text-muted-foreground">
                         <MapPin className="size-3.5" />
-                        {o.state} · {WORK_MODE[o.workMode]}
+                        {o.state}, {WORK_MODE[o.workMode]}
                       </span>
                       <span className="tabular-nums">
                         {o._count.placements}/{o.slots} filled
@@ -111,6 +113,7 @@ function Suggestions({ openingId }: { openingId: string }) {
   const key = ["admin", "suggestions", openingId];
   const q = useQuery({ queryKey: key, queryFn: () => adminApi.getSuggestions(openingId, 30) });
   const [proposed, setProposed] = useState<Set<string>>(new Set());
+  const reduce = useReducedMotion();
   const propose = useMutation({
     mutationFn: (s: Suggestion) => adminApi.proposeMatch(openingId, s.applicationId),
     onSuccess: (_, s) => {
@@ -142,11 +145,18 @@ function Suggestions({ openingId }: { openingId: string }) {
             />
           ) : (
             <ol className="grid gap-3">
-              {suggestions.map((s, i) => {
+              {[...suggestions]
+                .sort((a, b) => Number(proposed.has(a.applicationId)) - Number(proposed.has(b.applicationId)))
+                .map((s) => {
                 const done = proposed.has(s.applicationId);
+                const i = suggestions.indexOf(s);
                 return (
-                  <li
+                  <motion.li
                     key={s.applicationId}
+                    layout={!reduce}
+                    initial={reduce ? false : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ ...SPRING, delay: reduce ? 0 : Math.min(i, 8) * 0.04, layout: SPRING }}
                     className={cn(
                       "rounded-xl border border-border bg-surface shadow-sm transition-opacity",
                       done && "opacity-60",
@@ -164,7 +174,7 @@ function Suggestions({ openingId }: { openingId: string }) {
                         <p className="truncate text-sm text-muted-foreground">
                           {[s.graduate.courseOfStudy, s.graduate.institution, s.graduate.stateOfResidence]
                             .filter(Boolean)
-                            .join(" · ")}
+                            .join(", ")}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {s.graduate.skills.slice(0, 3).map((k) => (
@@ -207,7 +217,7 @@ function Suggestions({ openingId }: { openingId: string }) {
                         <ScoreBreakdownList breakdown={s.breakdown} />
                       </div>
                     </details>
-                  </li>
+                  </motion.li>
                 );
               })}
             </ol>

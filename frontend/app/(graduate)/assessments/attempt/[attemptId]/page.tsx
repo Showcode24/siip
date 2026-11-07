@@ -204,7 +204,7 @@ function Exam({ attempt }: { attempt: AttemptView }) {
         <CardBody key={q.id} className="grid gap-5">
           <p className="text-sm font-semibold text-muted-foreground">
             Question {index + 1} of {questions.length}
-            {q.type === "MULTIPLE_CHOICE" ? " · choose all that apply" : ""}
+            {q.type === "MULTIPLE_CHOICE" ? ", choose all that apply" : ""}
           </p>
           <h1 className="text-xl leading-snug sm:text-2xl" id={`q-${q.id}`}>
             {q.prompt}

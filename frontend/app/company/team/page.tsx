@@ -75,7 +75,7 @@ export default function TeamPage() {
                         <p className="font-semibold">{m.user.name}</p>
                         <p className="truncate text-sm text-muted-foreground">
                           {m.user.email}
-                          {m.jobTitle ? ` · ${m.jobTitle}` : ""}
+                          {m.jobTitle ? `, ${m.jobTitle}` : ""}
                         </p>
                       </div>
                       <Badge tone={m.role === "OWNER" ? "dark" : "neutral"}>

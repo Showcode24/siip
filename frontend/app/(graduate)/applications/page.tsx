@@ -50,7 +50,7 @@ export default function ApplicationsPage() {
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold">{a.cohort.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          Applied {formatDate(a.createdAt)} · updated {formatDate(a.statusChangedAt)}
+                          Applied {formatDate(a.createdAt)}, updated {formatDate(a.statusChangedAt)}
                         </p>
                       </div>
                       <StatusPill map={APPLICATION_STATUS} value={a.status} />

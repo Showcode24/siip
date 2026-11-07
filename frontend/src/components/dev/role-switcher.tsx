@@ -4,7 +4,7 @@ import { Check, Users, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { USE_MOCKS } from "@/client/api/http";
-import { currentPersona, homeFor, setPersona, useResetSession } from "@/client/session";
+import { currentPersona, homeFor, isCaptureMode, setPersona, useResetSession } from "@/client/session";
 import { cn } from "@/lib/utils";
 
 interface PersonaInfo {
@@ -20,6 +20,8 @@ export function DevRoleSwitcher() {
   const [active, setActive] = useState<string | null>(null);
   const router = useRouter();
   const reset = useResetSession();
+  const [capture, setCapture] = useState<boolean | null>(null);
+  useEffect(() => setCapture(isCaptureMode()), []);
 
   useEffect(() => {
     if (!open || list.length) return;
@@ -31,7 +33,8 @@ export function DevRoleSwitcher() {
   }, [open, list.length]);
   useEffect(() => setActive(currentPersona()), [open]);
 
-  if (!USE_MOCKS) return null;
+  // Hidden when not mocking, and in screenshot capture mode (?capture=1), decided after mount.
+  if (!USE_MOCKS || capture !== false) return null;
 
   async function choose(key: string | null) {
     setPersona(key);
@@ -51,7 +54,7 @@ export function DevRoleSwitcher() {
           aria-label="Switch demo account"
         >
           <div className="flex items-center justify-between px-3 py-2">
-            <p className="text-sm font-semibold">Demo accounts · dev only</p>
+            <p className="text-sm font-semibold">Demo accounts, dev only</p>
             <button
               className="grid size-9 place-items-center rounded-full hover:bg-surface-muted"
               onClick={() => setOpen(false)}

@@ -2,7 +2,8 @@
 
 import { X } from "lucide-react";
 import { Dialog as D, DropdownMenu as DM, Tabs as T, Tooltip as TT } from "radix-ui";
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { createContext, useContext, useId, useState, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
@@ -13,7 +14,7 @@ export const DialogTrigger = D.Trigger;
 export const DialogClose = D.Close;
 
 const overlay =
-  "fixed inset-0 z-50 bg-[rgb(20_21_24/0.55)] data-[state=open]:animate-[overlay-in_200ms_ease-out] data-[state=closed]:animate-[overlay-out_150ms_ease-in]";
+  "fixed inset-0 z-50 bg-scrim data-[state=open]:animate-[overlay-in_200ms_ease-out] data-[state=closed]:animate-[overlay-out_150ms_ease-in]";
 
 export function DialogContent({
   title,
@@ -214,7 +215,7 @@ export function DropdownMenuItem({
 export const DropdownMenuLabel = ({ className, ...props }: ComponentProps<typeof DM.Label>) => (
   <DM.Label
     className={cn(
-      "px-3 pt-2 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase",
+      "px-3 pt-2 pb-1 text-[13px] font-semibold text-muted-foreground",
       className,
     )}
     {...props}
@@ -222,11 +223,30 @@ export const DropdownMenuLabel = ({ className, ...props }: ComponentProps<typeof
 );
 export const DropdownMenuSeparator = () => <DM.Separator className="my-1.5 h-px bg-border" />;
 
-// ─── Tabs (underline style) ───────────────────────────────────────────────────
+// ─── Tabs (underline style, the underline springs between tabs) ─────────────
 
-export const Tabs = T.Root;
+const TabsCtx = createContext<{ value?: string; id: string }>({ id: "" });
+
+export function Tabs({ value, defaultValue, onValueChange, ...props }: ComponentProps<typeof T.Root>) {
+  const id = useId();
+  const [inner, setInner] = useState(defaultValue);
+  const current = value ?? inner;
+  return (
+    <TabsCtx.Provider value={{ value: current, id }}>
+      <T.Root
+        value={current}
+        onValueChange={(v) => {
+          setInner(v);
+          onValueChange?.(v);
+        }}
+        {...props}
+      />
+    </TabsCtx.Provider>
+  );
+}
+
 export const TabsContent = ({ className, ...props }: ComponentProps<typeof T.Content>) => (
-  <T.Content className={cn("mt-6 outline-none", className)} {...props} />
+  <T.Content className={cn("mt-6 outline-none data-[state=active]:animate-[pop-in_220ms_var(--ease-out)]", className)} {...props} />
 );
 
 export function TabsList({ className, ...props }: ComponentProps<typeof T.List>) {
@@ -238,16 +258,29 @@ export function TabsList({ className, ...props }: ComponentProps<typeof T.List>)
   );
 }
 
-export function TabsTrigger({ className, ...props }: ComponentProps<typeof T.Trigger>) {
+export function TabsTrigger({ className, children, value, ...props }: ComponentProps<typeof T.Trigger>) {
+  const ctx = useContext(TabsCtx);
+  const reduce = useReducedMotion();
   return (
     <T.Trigger
+      value={value}
       className={cn(
-        "relative -mb-px flex h-11 shrink-0 cursor-pointer items-center gap-2 border-b-2 border-transparent px-3 text-[15px] font-semibold text-muted-foreground transition-colors",
-        "hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground",
+        "relative flex h-11 shrink-0 cursor-pointer items-center gap-2 px-3 text-[15px] font-semibold text-muted-foreground transition-colors duration-150",
+        "hover:text-foreground data-[state=active]:text-foreground",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+      {ctx.value === value ? (
+        <motion.span
+          layoutId={`tab-${ctx.id}`}
+          aria-hidden
+          className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary"
+          transition={reduce ? { duration: 0 } : { type: "spring", duration: 0.4, bounce: 0.12 }}
+        />
+      ) : null}
+    </T.Trigger>
   );
 }
 

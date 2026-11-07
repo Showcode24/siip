@@ -27,7 +27,7 @@ import { PLACEMENT_STATUS, WORK_MODE } from "@/lib/labels";
 import { handleFormError } from "@/lib/forms";
 import { cn, formatDate } from "@/lib/utils";
 
-/** 1-based internship month today (0 before start), capped at 3 — same rule as the backend. */
+/** 1-based internship month today (0 before start), capped at 3, same rule as the backend. */
 function internshipMonth(start: string) {
   const s = new Date(start),
     n = new Date();
@@ -227,7 +227,7 @@ function CheckIns({ placementActive, month }: { placementActive: boolean; month:
               <Select {...register("rating", { valueAsNumber: true })}>
                 {[5, 4, 3, 2, 1].map((r) => (
                   <option key={r} value={r}>
-                    {r} — {["Very poor", "Poor", "Okay", "Good", "Excellent"][r - 1]}
+                    {r}: {["Very poor", "Poor", "Okay", "Good", "Excellent"][r - 1]}
                   </option>
                 ))}
               </Select>

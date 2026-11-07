@@ -47,10 +47,10 @@ export default function ContactPage() {
             className="flex flex-col items-start rounded-xl border border-border bg-surface p-8"
             role="status"
           >
-            <CheckCircle2 className="size-10 text-success" />
-            <h2 className="mt-4 text-2xl">Message sent</h2>
+            <CheckCircle2 className="size-10 text-muted-foreground" />
+            <h2 className="mt-4 text-2xl">Your message is ready</h2>
             <p className="mt-2 text-muted-foreground">
-              Thank you. We&apos;ll reply to your email within two working days.
+              This form isn&apos;t connected yet, so nothing was sent. Once it is, we&apos;ll reply to your email.
             </p>
             <Button variant="outline" className="mt-6" onClick={() => setSent(false)}>
               Send another message

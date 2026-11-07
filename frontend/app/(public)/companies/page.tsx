@@ -55,7 +55,7 @@ export default function CompaniesPage() {
   return (
     <>
       <section className="relative isolate m-2.5 overflow-hidden rounded-[32px] bg-night px-6 pt-40 pb-24 text-white sm:rounded-[40px]">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_80%_100%,rgb(232_101_12/0.4),transparent_70%),repeating-linear-gradient(90deg,rgb(255_255_255/0.035)_0_1px,transparent_1px_72px)]" />
+        <div className="absolute inset-0 -z-10 bg-[image:var(--night-texture),var(--night-fill)]" />
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div>
             <p className="text-sm font-semibold text-orange">For companies</p>

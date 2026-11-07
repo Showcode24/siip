@@ -52,11 +52,16 @@ const columns: ColumnDef<AdminApplicationRow, unknown>[] = [
     header: "Skills",
     enableSorting: false,
     accessorFn: (r) => r.graduate.skills.map((s) => s.skill.name).join(", "),
-    cell: ({ row }) => (
-      <span className="line-clamp-1 max-w-56 text-sm text-muted-foreground">
-        {row.original.graduate.skills.map((s) => s.skill.name).join(", ")}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const names = row.original.graduate.skills.map((s) => s.skill.name);
+      const extra = names.length - 2;
+      return (
+        <span className="text-sm whitespace-nowrap text-muted-foreground" title={names.join(", ")}>
+          {names.slice(0, 2).join(", ")}
+          {extra > 0 ? <span className="ml-1 font-semibold text-foreground">+{extra}</span> : null}
+        </span>
+      );
+    },
   },
   {
     id: "profile",
@@ -117,7 +122,7 @@ function ApplicationsScreen() {
             .filter((x) => !x.ok)
             .slice(0, 2)
             .map((x) => x.error?.message)
-            .join(" · "),
+            .join(", "),
         });
       else toast.success(`${r.succeeded} applications updated`);
     },
@@ -287,7 +292,7 @@ function ApplicantPanel({ id }: { id: string }) {
   return (
     <SheetContent
       title={name}
-      description={q.data ? `${q.data.cohort.name} · applied ${formatDate(q.data.createdAt)}` : undefined}
+      description={q.data ? `${q.data.cohort.name}, applied ${formatDate(q.data.createdAt)}` : undefined}
     >
       <QueryState query={q}>
         {(a) => (
@@ -314,14 +319,14 @@ function ApplicantPanel({ id }: { id: string }) {
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
               {[
                 ["Email", a.graduate.user.email],
-                ["Phone", a.graduate.phone ?? "—"],
-                ["Institution", a.graduate.institution ?? "—"],
-                ["Course", a.graduate.courseOfStudy ?? "—"],
-                ["Degree", a.graduate.degreeClass ? DEGREE_CLASS[a.graduate.degreeClass] : "—"],
-                ["Graduated", a.graduate.graduationYear ?? "—"],
-                ["State", a.graduate.stateOfResidence ?? "—"],
+                ["Phone", a.graduate.phone ?? "Not given"],
+                ["Institution", a.graduate.institution ?? "Not given"],
+                ["Course", a.graduate.courseOfStudy ?? "Not given"],
+                ["Degree", a.graduate.degreeClass ? DEGREE_CLASS[a.graduate.degreeClass] : "Not given"],
+                ["Graduated", a.graduate.graduationYear ?? "Not given"],
+                ["State", a.graduate.stateOfResidence ?? "Not given"],
                 ["NYSC", NYSC_STATUS[a.graduate.nyscStatus]],
-                ["Availability", a.graduate.availability ? AVAILABILITY[a.graduate.availability] : "—"],
+                ["Availability", a.graduate.availability ? AVAILABILITY[a.graduate.availability] : "Not given"],
                 ["Profile", `${a.graduate.completenessScore}%`],
               ].map(([k, v]) => (
                 <div key={k as string} className="min-w-0">
@@ -400,7 +405,7 @@ function ApplicantPanel({ id }: { id: string }) {
                   <li key={n.id} className="rounded-md border border-border p-3 text-[15px]">
                     <p>{n.body}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {n.authorName ?? "Admin"} · {formatDateTime(n.createdAt)}
+                      {n.authorName ?? "Admin"}, {formatDateTime(n.createdAt)}
                     </p>
                   </li>
                 ))}

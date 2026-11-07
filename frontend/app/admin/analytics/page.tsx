@@ -13,7 +13,7 @@ import { Card, CardBody, CardHeader, PageHeader, StatCard } from "@/components/u
 import { Select } from "@/components/ui/form-controls";
 import { downloadFile } from "@/lib/csv";
 
-const pct = (v: number | null) => (v === null ? "—" : `${v}%`);
+const pct = (v: number | null) => (v === null ? "No data" : `${v}%`);
 
 export default function AnalyticsPage() {
   const cohorts = useQuery({ queryKey: ["admin", "cohorts"], queryFn: adminApi.listCohorts });
@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
       </div>
       <QueryState query={q}>
         {(a) => (
-          <div className="grid gap-6">
+          <div className="grid gap-6 [&>*]:min-w-0">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
                 label="Assessment pass rate"
@@ -74,7 +74,7 @@ export default function AnalyticsPage() {
               <StatCard label="Completion rate" value={pct(a.rates.completionRate)} />
               <StatCard label="Permanent offer rate" value={pct(a.rates.permanentOfferRate)} tone="brand" />
             </div>
-            <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid gap-6 xl:grid-cols-2 [&>*]:min-w-0">
               <Card>
                 <CardHeader title="Funnel" />
                 <CardBody>

@@ -39,7 +39,7 @@ export function MarketingHeader() {
     <header className="fixed inset-x-0 top-3 z-50 px-3">
       <div
         className={cn(
-          "mx-auto flex h-16 max-w-6xl items-center gap-6 rounded-full pr-2 pl-4 transition-[background-color,box-shadow] duration-300",
+          "mx-auto flex h-16 max-w-6xl items-center gap-2 rounded-full pr-1.5 pl-3 sm:gap-6 sm:pr-2 sm:pl-4 transition-[background-color,box-shadow] duration-300",
           light ? "bg-transparent" : "bg-surface/95 shadow-md backdrop-blur",
         )}
       >
@@ -117,59 +117,38 @@ export function MarketingHeader() {
   );
 }
 
+const FOOTER_LINKS = [
+  ["How it works", "/#journey"],
+  ["Become a partner", "/companies"],
+  ["Verify a certificate", "/verify"],
+  ["About", "/about"],
+  ["Contact", "/contact"],
+  ["Privacy", "/privacy"],
+  ["Terms", "/terms"],
+] as const;
+
+/** Mast footer: the wordmark set large over one row of links. */
 export function MarketingFooter() {
   return (
     <footer className="border-t border-border bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-        <div>
-          <Logo />
-          <p className="mt-4 max-w-xs text-[15px] text-muted-foreground">
-            SIIP is a free graduate internship programme by SkillzBridge Trades Africa.
-          </p>
-        </div>
-        {[
-          {
-            title: "Graduates",
-            links: [
-              ["Apply free", "/sign-up"],
-              ["How it works", "/#journey"],
-              ["Sign in", "/sign-in"],
-            ],
-          },
-          {
-            title: "Companies",
-            links: [
-              ["Become a partner", "/companies"],
-              ["Verify a certificate", "/verify"],
-            ],
-          },
-          {
-            title: "SIIP",
-            links: [
-              ["About", "/about"],
-              ["Contact", "/contact"],
-              ["Privacy", "/privacy"],
-              ["Terms", "/terms"],
-            ],
-          },
-        ].map((col) => (
-          <div key={col.title}>
-            <p className="text-sm font-semibold">{col.title}</p>
-            <ul className="mt-3 grid gap-2">
-              {col.links.map(([label, href]) => (
-                <li key={href}>
-                  <Link href={href} className="text-[15px] text-muted-foreground hover:text-foreground">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 border-t border-border px-6 py-6 text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} SkillzBridge Trades Africa</p>
-        <p>SIIP is free. We never ask graduates to pay.</p>
+      <div className="mx-auto max-w-7xl px-6 pt-16 pb-8">
+        <Logo />
+        <p className="mt-3 text-[15px] text-muted-foreground">A free programme by SkillzBridge Trades Africa.</p>
+        <nav aria-label="Footer" className="mt-10 border-t border-border pt-6">
+          <ul className="flex flex-wrap gap-x-7 gap-y-3">
+            {FOOTER_LINKS.map(([label, href]) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="rounded-sm text-[15px] text-muted-foreground transition-colors duration-150 hover:text-foreground"
+                >
+                  {label}
+                </Link>
+              </li>
+            ))}
+            <li className="text-[15px] text-muted-foreground sm:ml-auto">© {new Date().getFullYear()}</li>
+          </ul>
+        </nav>
       </div>
     </footer>
   );

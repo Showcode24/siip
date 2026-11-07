@@ -42,7 +42,7 @@ export default function DashboardPage() {
         </h1>
         <p className="mt-1 text-muted-foreground">
           {current
-            ? `${APPLICATION_STATUS[current.status].label} · ${current.cohort.name}`
+            ? `${APPLICATION_STATUS[current.status].label}, ${current.cohort.name}`
             : "Let's get your application started."}
         </p>
       </div>
@@ -219,7 +219,6 @@ function NextStep({ app, profile }: { app: AppSummary | undefined; profile: Grad
       aria-labelledby="next-step"
       className="relative isolate overflow-hidden rounded-xl bg-night-2 p-6 text-white sm:p-8"
     >
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_80%_at_100%_100%,rgb(232_101_12/0.35),transparent_70%)]" />
       <p className="text-sm font-semibold text-orange">Your next step</p>
       <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex gap-4">

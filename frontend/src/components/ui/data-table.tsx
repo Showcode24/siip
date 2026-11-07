@@ -22,7 +22,7 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toCsv, downloadFile } from "@/lib/csv";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -138,6 +138,20 @@ export function DataTable<T>({
     );
   }
 
+  // "/" jumps to the search box, Escape clears it (skipped while typing elsewhere).
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!searchPlaceholder) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (e.key !== "/" || t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [searchPlaceholder]);
+
   return (
     <div className="grid gap-4">
       {searchPlaceholder || toolbar || exportName || hideable.length > 0 ? (
@@ -149,12 +163,23 @@ export function DataTable<T>({
                 aria-hidden
               />
               <Input
+                ref={searchRef}
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape" && globalFilter) {
+                    e.stopPropagation();
+                    setGlobalFilter("");
+                  }
+                }}
                 placeholder={searchPlaceholder}
                 aria-label={searchPlaceholder}
-                className="h-11 pl-10"
+                aria-keyshortcuts="/"
+                className="h-11 pr-10 pl-10"
               />
+              <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border border-border px-1.5 text-xs text-muted-foreground lg:block">
+                /
+              </kbd>
             </div>
           ) : null}
           {toolbar ? <div className="flex flex-wrap gap-2">{toolbar}</div> : null}
@@ -303,7 +328,7 @@ export function DataTable<T>({
           {table.getPageCount() > 1 ? (
             <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-sm text-muted-foreground">
               <span>
-                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} ·{" "}
+                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()},{" "}
                 {table.getFilteredRowModel().rows.length} rows
               </span>
               <div className="flex gap-2">

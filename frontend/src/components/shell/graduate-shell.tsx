@@ -4,6 +4,7 @@ import { Award, BookOpen, Briefcase, ClipboardCheck, Home, User } from "lucide-r
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { NavHighlight, PageTransition } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import { Logo, NotificationsBell, ProfileMenu, RoleGate, isActive, type NavItem } from "./common";
 
@@ -28,7 +29,7 @@ export function GraduateShell({ children }: { children: ReactNode }) {
         <main id="main">{children}</main>
       ) : (
         <div className="flex min-h-dvh">
-          <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-surface p-4 lg:flex">
+          <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-surface p-4 lg:flex">
             <div className="px-2 py-2">
               <Logo />
             </div>
@@ -42,12 +43,13 @@ export function GraduateShell({ children }: { children: ReactNode }) {
                         href={item.href}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "flex h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-surface-muted hover:text-foreground",
-                          active && "bg-primary-soft text-foreground",
+                          "relative flex h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-surface-muted hover:text-foreground",
+                          active && "text-foreground hover:bg-transparent",
                         )}
                       >
-                        <item.icon className={cn("size-[18px]", active && "text-brand-text")} />
-                        {item.label}
+                        {active ? <NavHighlight id="graduate" className="bg-primary-soft" /> : null}
+                        <item.icon className={cn("relative size-[18px]", active && "text-brand-text")} />
+                        <span className="relative">{item.label}</span>
                       </Link>
                     </li>
                   );
@@ -55,7 +57,7 @@ export function GraduateShell({ children }: { children: ReactNode }) {
               </ul>
             </nav>
           </aside>
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col lg:pl-60">
             <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border bg-background/90 px-4 backdrop-blur sm:px-6">
               <div className="lg:hidden">
                 <Logo compact />
@@ -69,7 +71,7 @@ export function GraduateShell({ children }: { children: ReactNode }) {
               id="main"
               className="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-28 sm:px-6 sm:pt-8 lg:pb-12"
             >
-              {children}
+              <PageTransition>{children}</PageTransition>
             </main>
           </div>
           <nav

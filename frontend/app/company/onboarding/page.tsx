@@ -141,7 +141,7 @@ function VerificationStatus() {
   ];
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title={c.name} description={`${c.rcNumber} · ${c.industry}`} />
+      <PageHeader title={c.name} description={`${c.rcNumber}, ${c.industry}`} />
       <Card>
         <CardBody className="grid gap-6">
           <div

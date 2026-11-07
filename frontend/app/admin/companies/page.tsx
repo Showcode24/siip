@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { adminApi } from "@/client/api/admin";
 import { errorMessage } from "@/client/api/http";
 import type { Company } from "@/client/api/types";
+import { Segmented } from "@/components/motion";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -17,7 +18,7 @@ import { Textarea } from "@/components/ui/form-controls";
 import { Dialog, DialogClose, DialogContent, SheetContent } from "@/components/ui/overlays";
 import { COMPANY_STATUS, OPENING_STATUS } from "@/lib/labels";
 import { COMPANY_NEXT } from "@/lib/flows";
-import { cn, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 const columns: ColumnDef<Company, unknown>[] = [
   {
@@ -60,26 +61,17 @@ export default function CompaniesAdminPage() {
         title="Companies"
         description="Verify partner companies before they can publish openings and receive interns."
       />
-      <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter by status">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            aria-pressed={tab === t}
-            className={cn(
-              "flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold",
-              tab === t ? "bg-secondary text-secondary-foreground" : "bg-surface-muted text-muted-foreground",
-            )}
-          >
-            {t === "ALL" ? "All" : COMPANY_STATUS[t].label}
-            <span className="tabular-nums opacity-70">
-              {t === "ALL"
-                ? q.data?.items.length
-                : q.data?.items.filter((c) => c.verificationStatus === t).length}
-            </span>
-          </button>
-        ))}
-      </div>
+      <Segmented
+        className="mb-5"
+        label="Filter by status"
+        value={tab}
+        onChange={setTab}
+        options={TABS.map((t) => ({
+          value: t,
+          label: t === "ALL" ? "All" : COMPANY_STATUS[t].label,
+          count: t === "ALL" ? q.data?.items.length : q.data?.items.filter((c) => c.verificationStatus === t).length,
+        }))}
+      />
       <DataTable
         columns={columns}
         data={rows}
@@ -120,7 +112,7 @@ function CompanyPanel({ id }: { id: string }) {
   return (
     <SheetContent
       title={q.data?.name ?? "Company"}
-      description={q.data ? `${q.data.rcNumber} · ${q.data.industry}` : undefined}
+      description={q.data ? `${q.data.rcNumber}, ${q.data.industry}` : undefined}
     >
       <QueryState query={q}>
         {(c) => (
@@ -135,7 +127,7 @@ function CompanyPanel({ id }: { id: string }) {
               {[
                 ["Address", c.address],
                 ["State", c.state],
-                ["Website", c.website ?? "—"],
+                ["Website", c.website ?? "Not given"],
                 ["Registered", formatDate(c.createdAt)],
               ].map(([k, v]) => (
                 <div key={k} className="min-w-0">
@@ -158,7 +150,7 @@ function CompanyPanel({ id }: { id: string }) {
                 {c.members.map((m) => (
                   <li key={m.id} className="flex items-center justify-between text-[15px]">
                     <span>
-                      {m.user.name} <span className="text-muted-foreground">· {m.user.email}</span>
+                      {m.user.name} <span className="text-muted-foreground">, {m.user.email}</span>
                     </span>
                     <Badge tone={m.role === "OWNER" ? "dark" : "neutral"}>
                       {m.role === "OWNER" ? "Owner" : "Supervisor"}
@@ -174,7 +166,7 @@ function CompanyPanel({ id }: { id: string }) {
                   {c.openings.map((o) => (
                     <li key={o.id} className="flex items-center justify-between text-[15px]">
                       <span>
-                        {o.title} <span className="text-muted-foreground">· {o.slots} slots</span>
+                        {o.title} <span className="text-muted-foreground">, {o.slots} slots</span>
                       </span>
                       <StatusPill map={OPENING_STATUS} value={o.status} />
                     </li>

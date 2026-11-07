@@ -19,7 +19,7 @@ const change = (e: AuditEntry) => {
         .map(([k, v]) => `${k}: ${String(v)}`)
         .join(", ")
     : "";
-  return before && after ? `${before} → ${after}` : after || before || "—";
+  return before && after ? `${before} → ${after}` : after || before || "No change recorded";
 };
 
 const columns: ColumnDef<AuditEntry, unknown>[] = [
@@ -41,7 +41,7 @@ const columns: ColumnDef<AuditEntry, unknown>[] = [
     accessorFn: (e) => `${e.entityType} ${e.entityId}`,
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {row.original.entityType} · {row.original.entityId}
+        {row.original.entityType}, {row.original.entityId}
       </span>
     ),
   },

@@ -45,7 +45,7 @@ export default function AssessmentsPage() {
                       </div>
                       <ul className="grid gap-2 text-[15px] text-muted-foreground">
                         <li className="flex items-center gap-2">
-                          <ListChecks className="size-4" /> {a.questionCount} questions · pass mark{" "}
+                          <ListChecks className="size-4" /> {a.questionCount} questions, pass mark{" "}
                           {a.passMark}%
                         </li>
                         <li className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export default function AssessmentsPage() {
                       </ul>
                       {last && last.percentage !== null ? (
                         <p className="rounded-md bg-surface-muted px-4 py-3 text-[15px]">
-                          Last result: <b>{last.percentage}%</b> · {last.passed ? "passed" : "not passed"}
+                          Last result: <b>{last.percentage}%</b>, {last.passed ? "passed" : "not passed"}
                         </p>
                       ) : null}
                       <div className="mt-auto">

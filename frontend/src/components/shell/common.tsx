@@ -50,13 +50,13 @@ export function Logo({
           <path
             d="M2 21 Q20 2 38 21"
             fill="none"
-            stroke={inverse ? "#fff" : "var(--grey-700)"}
+            stroke={inverse ? "var(--foreground-inverse-fixed)" : "var(--grey-700)"}
             strokeWidth="4"
           />
           <path
             d="M10 21a4 4 0 0 1 8 0M22 21a4 4 0 0 1 8 0"
             fill="none"
-            stroke={inverse ? "#fff" : "var(--grey-700)"}
+            stroke={inverse ? "var(--foreground-inverse-fixed)" : "var(--grey-700)"}
             strokeWidth="3"
           />
           <path d="M8 24.5h24" stroke="var(--orange-500)" strokeWidth="2.5" strokeLinecap="round" />
@@ -197,7 +197,7 @@ export function ProfileMenu({ settingsHref }: { settingsHref: string }) {
   const subtitle = isAdmin(me)
     ? "SIIP admin"
     : me.companyMember
-      ? `${me.companyMember.company.name} · ${me.companyMember.role === "OWNER" ? "Owner" : "Supervisor"}`
+      ? `${me.companyMember.company.name}, ${me.companyMember.role === "OWNER" ? "Owner" : "Supervisor"}`
       : "Graduate";
   return (
     <DropdownMenu>
@@ -311,7 +311,7 @@ export function CommandMenu({ items }: { items: NavItem[] }) {
       <D.Root open={open} onOpenChange={setOpen}>
         <D.Portal>
           {/* No open/close animation: this is used many times a day. */}
-          <D.Overlay className="fixed inset-0 z-50 bg-[rgb(20_21_24/0.45)]" />
+          <D.Overlay className="fixed inset-0 z-50 bg-scrim-soft" />
           <D.Content
             className="fixed top-[12vh] left-1/2 z-50 w-[calc(100%-24px)] max-w-xl -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-surface shadow-lg"
             onOpenAutoFocus={(e) => {

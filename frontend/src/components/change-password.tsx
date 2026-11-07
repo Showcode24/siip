@@ -31,7 +31,7 @@ export function ChangePasswordCard() {
             setBusy(false);
             setCurrent("");
             setNext("");
-            toast.success("Password changed");
+            toast("Password not changed yet", { description: "This form isn't connected to sign-in yet, so your password is the same." });
           }}
         >
           <Field label="Current password" required>

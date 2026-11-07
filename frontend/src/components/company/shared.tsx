@@ -96,7 +96,7 @@ export function GraduateSummary({ g }: { g: LimitedGraduate }) {
             {g.firstName} {g.lastName}
           </p>
           <p className="text-[15px] text-muted-foreground">
-            {[g.courseOfStudy, g.institution].filter(Boolean).join(" · ")}
+            {[g.courseOfStudy, g.institution].filter(Boolean).join(", ")}
           </p>
         </div>
       </div>
@@ -122,7 +122,7 @@ export function GraduateSummary({ g }: { g: LimitedGraduate }) {
         <div className="flex flex-wrap gap-2">
           {g.skills.map((s) => (
             <Badge key={s.id} tone="neutral">
-              {s.name} · {SKILL_LEVEL[s.level]}
+              {s.name}, {SKILL_LEVEL[s.level]}
             </Badge>
           ))}
         </div>

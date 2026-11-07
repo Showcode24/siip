@@ -11,7 +11,7 @@ export function PhotoSlot({ label, className }: { label: string; className?: str
       role="img"
       aria-label={`Photo placeholder: ${label}`}
       className={cn(
-        "grid place-items-center bg-[linear-gradient(160deg,var(--grey-100),var(--orange-100))] p-4 text-center text-[13px] text-[var(--grey-500)] dark:bg-[linear-gradient(160deg,var(--grey-800),#3a2316)] dark:text-[var(--grey-300)]",
+        "grid place-items-center bg-[linear-gradient(160deg,var(--grey-100),var(--orange-100))] p-4 text-center text-[13px] text-[var(--grey-500)] dark:bg-[linear-gradient(160deg,var(--grey-800),var(--primary-soft))] dark:text-[var(--grey-300)]",
         className,
       )}
     >

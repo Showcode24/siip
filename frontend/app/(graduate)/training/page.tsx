@@ -47,7 +47,7 @@ export default function TrainingPage() {
                     </p>
                     <p className="mt-1 text-[15px] text-muted-foreground">
                       {next
-                        ? `${next.course.title} · ${next.module.title}`
+                        ? `${next.course.title}, ${next.module.title}`
                         : t.applicationStatus === "FINAL_ASSESSMENT"
                           ? "Your final assessment is now open."
                           : "Well done."}

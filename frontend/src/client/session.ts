@@ -9,8 +9,13 @@ import { ApiError, USE_MOCKS, get } from "./api/http";
 const KEY = "siip-mock-persona";
 export const DEFAULT_PERSONA = "graduate-training";
 
+/** Dev/capture only: `?as=<persona>` opens a page as that demo account (mock mode). */
+export const isCaptureMode = () => typeof window !== "undefined" && new URLSearchParams(location.search).has("capture");
+
 export function currentPersona(): string | null {
   if (typeof window === "undefined") return DEFAULT_PERSONA;
+  const asParam = new URLSearchParams(location.search).get("as");
+  if (asParam) localStorage.setItem(KEY, asParam);
   const v = localStorage.getItem(KEY);
   return v === "signed-out" ? null : (v ?? DEFAULT_PERSONA);
 }

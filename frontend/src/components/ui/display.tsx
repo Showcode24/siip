@@ -10,7 +10,21 @@ import {
 import type { ComponentProps, ReactNode } from "react";
 import type { Tone } from "@/lib/labels";
 import { cn, initials } from "@/lib/utils";
+import { CountUp } from "@/components/motion";
 import { Button } from "./button";
+
+/** Plain numbers and "62%"-style values count up on first view; anything else renders as given. */
+function animatedValue(value: ReactNode): ReactNode {
+  if (typeof value === "number") return <CountUp value={value} format={(n) => Math.round(n).toLocaleString("en-NG")} />;
+  if (typeof value === "string") {
+    const m = /^(\d{1,3}(?:,\d{3})*)(%?)$/.exec(value);
+    if (m) {
+      const n = Number(m[1].replace(/,/g, ""));
+      return <CountUp value={n} format={(v) => Math.round(v).toLocaleString("en-NG") + m[2]} />;
+    }
+  }
+  return value;
+}
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
@@ -93,7 +107,7 @@ export function StatusPill<K extends string>({
 }) {
   const meta = map[value];
   return (
-    <Badge tone={meta.tone} dot className={className}>
+    <Badge tone={meta.tone} className={className}>
       {meta.label}
     </Badge>
   );
@@ -367,7 +381,7 @@ export function StatCard({
         {icon ? <span className="[&_svg]:size-5 opacity-70">{icon}</span> : null}
       </div>
       <p className="mt-3 font-display text-[34px] leading-none font-semibold tracking-tight tabular-nums">
-        {value}
+        {animatedValue(value)}
       </p>
       {hint ? (
         <p className={cn("mt-2 text-sm", tone === "default" ? "text-muted-foreground" : "opacity-80")}>

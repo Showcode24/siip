@@ -72,7 +72,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  */
 export async function mock<T>(fn: () => T | Promise<T>, opts: { read?: boolean } = {}): Promise<T> {
   await sleep(300 + Math.random() * 500);
-  if (opts.read && Math.random() < ERROR_RATE) {
+  const capturing = typeof window !== "undefined" && new URLSearchParams(location.search).has("capture");
+  if (opts.read && !capturing && Math.random() < ERROR_RATE) {
     throw new ApiError("INTERNAL_ERROR", "Something went wrong. Please try again.", 500);
   }
   return structuredClone(await fn());

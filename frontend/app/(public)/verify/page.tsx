@@ -49,7 +49,7 @@ function Verify() {
             placeholder="e.g. K7QX-29MD"
             autoComplete="off"
             autoCapitalize="characters"
-            className="h-[52px] tracking-wider uppercase placeholder:normal-case placeholder:tracking-normal"
+            className="h-[52px] uppercase placeholder:normal-case"
           />
           <Button type="submit" size="lg" disabled={value.trim().length < 6}>
             Verify

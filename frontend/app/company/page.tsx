@@ -105,7 +105,7 @@ export default function CompanyDashboard() {
                           {m.graduate.firstName} {m.graduate.lastName}
                         </p>
                         <p className="truncate text-sm text-muted-foreground">
-                          {m.opening.title} · proposed {formatRelative(m.createdAt)}
+                          {m.opening.title}, proposed {formatRelative(m.createdAt)}
                         </p>
                       </div>
                       <ArrowRight className="size-5 text-muted-foreground" />
@@ -147,7 +147,7 @@ export default function CompanyDashboard() {
                           {p.graduate.firstName} {p.graduate.lastName}
                         </p>
                         <p className="truncate text-sm text-muted-foreground">
-                          {p.opening.title} · ends {formatDate(p.endDate)}
+                          {p.opening.title}, ends {formatDate(p.endDate)}
                         </p>
                       </div>
                       <StatusPill map={PLACEMENT_STATUS} value={p.status} />

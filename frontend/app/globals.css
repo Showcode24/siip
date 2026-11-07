@@ -1,7 +1,12 @@
+/* Hallmark · v2.0.0 · redesign: full (locked system: DESIGN.md, charcoal + orange) · genre: editorial · hero: stage, head left, real product capture bleeding right · nav: edge-aligned pill, wordmark, links, sign in, one action · footer: mast, wordmark over one row of links · signature: the real graduate home screen in the hero · pictures: product captures in public/screens, sample data · absent: logos, quotes, metrics, graduate stories */
+/* critique: the journey shows the product's own seven screens, not drawn phones; one reveal (the pinned crossfade); every figure is a programme fact */
+/* Hallmark · waive 26b · page files · the Start your application and Verify buttons press (scale 0.97) and disable through the shared Button component */
+/* Hallmark · waive 7b · primary and secondary button text · white on the orange primary is the locked DESIGN.md pairing that keeps Start your application above 4.5:1 */
+/* Hallmark · waive 81 · sign-in panel · the dark textured panel is the backdrop behind the real SIIP phone screen, not an empty picture */
 @import "tailwindcss";
 
-/* Dark mode follows a `.dark` class on <html> (set by the theme toggle). */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Dark mode follows data-theme="dark" on <html> (set by the theme toggle). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ─── Design tokens (see DESIGN.md). Screens use these only, never raw hex. ─── */
 :root {
@@ -32,6 +37,7 @@
   --muted-foreground: var(--grey-500);
   --border: #e2e3e5;
   --border-strong: var(--grey-200);
+  --field-edge: var(--grey-400); /* form control edges, 3:1 on surface */
   --primary: var(--orange-600);
   --primary-hover: var(--orange-700);
   --primary-foreground: #ffffff;
@@ -41,7 +47,7 @@
   --secondary: var(--grey-900);
   --secondary-hover: var(--grey-700);
   --secondary-foreground: #ffffff;
-  --ring: var(--orange-500);
+  --ring: var(--orange-700);
   --success: #1f7a3d;
   --success-soft: #e4f3e8;
   --warning: #a45c00;
@@ -51,12 +57,24 @@
   --info: #475467;
   --info-soft: #eef0f3;
 
+  /* Certificate paper, overlays and the dark "night" surfaces (no chromatic glows: depth by lightness). */
+  --paper-cert: #fffdf9;
+  --paper-cert-edge: #e8dcc8;
+  --scrim: rgb(20 21 24 / 0.55);
+  --scrim-soft: rgb(20 21 24 / 0.45);
+  --sheen: rgb(255 255 255 / 0.5);
+  --foreground-inverse-fixed: #ffffff;
+  --night-texture: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 72px);
+  --night-fill: linear-gradient(180deg, var(--grey-950), var(--grey-900) 60%, var(--grey-800));
+  --night-edge: linear-gradient(90deg, transparent, var(--orange-500) 50%, transparent);
+  --fade-x: linear-gradient(90deg, transparent, black 12%, black 88%, transparent);
+
   --shadow-sm: 0 1px 2px rgb(20 21 24 / 0.06);
   --shadow-md: 0 1px 2px rgb(20 21 24 / 0.06), 0 8px 24px rgb(20 21 24 / 0.08);
   --shadow-lg: 0 2px 6px rgb(20 21 24 / 0.12), 0 24px 60px rgb(20 21 24 / 0.28);
 }
 
-.dark {
+:root[data-theme="dark"] {
   --background: var(--grey-950);
   --surface: var(--grey-900);
   --surface-muted: var(--grey-800);
@@ -66,6 +84,7 @@
   --muted-foreground: var(--grey-300);
   --border: #33363c;
   --border-strong: #44484f;
+  --field-edge: #747a83;
   /* White on logo orange fails contrast, so dark mode uses dark text on orange. */
   --primary: var(--orange-500);
   --primary-hover: #ff8a3d;
@@ -101,6 +120,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-field-edge: var(--field-edge);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
@@ -126,6 +146,10 @@
   --color-charcoal: var(--grey-700);
   --color-orange: var(--orange-500);
   --color-orange-deep: var(--orange-600);
+  --color-paper-cert: var(--paper-cert);
+  --color-paper-cert-edge: var(--paper-cert-edge);
+  --color-scrim: var(--scrim);
+  --color-scrim-soft: var(--scrim-soft);
 
   --font-display: var(--font-lexend), system-ui, sans-serif;
   --font-sans: var(--font-source-sans), system-ui, sans-serif;

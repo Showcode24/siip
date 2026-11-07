@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { ApplicationStatus } from "@siip/shared/enums";
 import type { Analytics } from "@/client/api/types";
 import { formatNumber } from "@/lib/utils";
@@ -68,7 +68,7 @@ export function FunnelChart({ byStage }: { byStage: Analytics["totals"]["byStage
     <figure>
       <div className="h-72" role="img" aria-label={`Programme funnel: ${summary}`}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ left: 8, right: 24 }}>
+          <BarChart data={data} layout="vertical" margin={{ left: 8, right: 40 }}>
             <CartesianGrid horizontal={false} stroke="var(--border)" />
             <XAxis type="number" allowDecimals={false} {...axis} />
             <YAxis type="category" dataKey="stage" width={92} {...axis} />
@@ -82,28 +82,13 @@ export function FunnelChart({ byStage }: { byStage: Analytics["totals"]["byStage
                 typeof window !== "undefined" &&
                 !window.matchMedia("(prefers-reduced-motion: reduce)").matches
               }
-            />
+            >
+              <LabelList dataKey="count" position="right" className="fill-foreground text-[13px] font-semibold tabular-nums" />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <figcaption className="sr-only">
-        <table>
-          <thead>
-            <tr>
-              <th>Stage</th>
-              <th>Graduates</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((d) => (
-              <tr key={d.stage}>
-                <td>{d.stage}</td>
-                <td>{d.count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </figcaption>
+
     </figure>
   );
 }

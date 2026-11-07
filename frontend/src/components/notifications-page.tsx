@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCheck } from "lucide-react";
 import { useState } from "react";
 import { notificationsApi } from "@/client/api/graduate";
+import { Segmented } from "@/components/motion";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/components/ui/display";
@@ -32,23 +33,16 @@ export function NotificationsPage() {
           </Button>
         }
       />
-      <div className="mb-4 flex gap-2" role="group" aria-label="Filter">
-        {[false, true].map((u) => (
-          <button
-            key={String(u)}
-            onClick={() => setUnreadOnly(u)}
-            aria-pressed={unreadOnly === u}
-            className={cn(
-              "h-9 rounded-full px-4 text-sm font-semibold",
-              unreadOnly === u
-                ? "bg-secondary text-secondary-foreground"
-                : "bg-surface-muted text-muted-foreground",
-            )}
-          >
-            {u ? "Unread" : "All"}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        className="mb-4"
+        label="Filter"
+        value={unreadOnly ? "unread" : "all"}
+        onChange={(v) => setUnreadOnly(v === "unread")}
+        options={[
+          { value: "all", label: "All" },
+          { value: "unread", label: "Unread" },
+        ]}
+      />
       <QueryState query={q}>
         {({ items }) => {
           const list = unreadOnly ? items.filter((n) => !n.readAt) : items;

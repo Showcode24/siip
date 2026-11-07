@@ -16,6 +16,7 @@ import type { AdminApplicationDetail, AdminCohort, AdminPlacement, Analytics } f
 import { toCsv } from "@/lib/csv";
 import {
   audit,
+  bestFinal,
   cohortById,
   companyById,
   db,
@@ -366,7 +367,7 @@ export function getSuggestions(openingId: string, limit: number) {
         availability: g.availability,
         bio: g.bio,
         photoUrl: g.photoUrl,
-        finalAssessmentPercent: null,
+        finalAssessmentPercent: bestFinal(g.id),
         skills: g.skills.map((sk) => ({ id: sk.skillId, name: skillName(sk.skillId), level: sk.level })),
       },
     }));

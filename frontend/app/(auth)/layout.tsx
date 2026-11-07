@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/shell/common";
 
@@ -9,23 +10,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <Logo />
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">{children}</div>
       </main>
-      <aside className="relative isolate m-2.5 hidden overflow-hidden rounded-[32px] bg-night p-12 text-white lg:flex lg:flex-col lg:justify-end">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(70%_50%_at_50%_100%,rgb(232_101_12/0.45),transparent_70%),repeating-linear-gradient(90deg,rgb(255_255_255/0.035)_0_1px,transparent_1px_72px)]" />
-        <svg
-          viewBox="0 0 400 120"
-          className="absolute top-[18%] left-1/2 w-[80%] -translate-x-1/2 opacity-80"
-          aria-hidden
-        >
-          <path d="M0 110 Q200 10 400 110" fill="none" stroke="white" strokeOpacity=".35" strokeWidth="10" />
-          <path
-            d="M90 110a28 28 0 0 1 56 0M172 110a28 28 0 0 1 56 0M254 110a28 28 0 0 1 56 0"
-            fill="none"
-            stroke="white"
-            strokeOpacity=".35"
-            strokeWidth="8"
+      <aside className="relative isolate m-2.5 hidden overflow-hidden rounded-[32px] bg-night p-12 text-white lg:flex lg:flex-col">
+        <div className="absolute inset-0 -z-10 bg-[image:var(--night-texture),var(--night-fill)]" />
+        <div className="relative mb-10 min-h-0 flex-1">
+          <Image
+            src="/screens/dashboard-home-phone.png"
+            alt="The SIIP home screen on a phone: the step tracker and the next step"
+            width={780}
+            height={1688}
+            sizes="280px"
+            className="absolute top-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 rounded-[32px] object-contain object-top shadow-lg ring-4 ring-[var(--grey-950)]"
           />
-          <path d="M80 118h240" stroke="var(--orange-500)" strokeWidth="5" strokeLinecap="round" />
-        </svg>
+        </div>
         <p className="font-display text-4xl leading-tight font-semibold">
           From graduate to hired, one clear step at a time.
         </p>

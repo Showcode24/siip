@@ -41,7 +41,7 @@ export default function CohortDetailPage() {
           <PageHeader
             breadcrumbs={[{ label: "Cohorts", href: "/admin/cohorts" }, { label: c.name }]}
             title={c.name}
-            description={`${c._count.applications} applications · capacity ${c.capacity}`}
+            description={`${c._count.applications} applications, capacity ${c.capacity}`}
             actions={
               <>
                 <StatusPill map={COHORT_STATUS} value={c.status} />

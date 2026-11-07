@@ -98,7 +98,7 @@ export function PlacementPanel({ id }: { id: string }) {
                   ["Supervisor", p.supervisor?.user.name ?? "Not assigned"],
                   ["Start", formatDate(p.startDate)],
                   ["End", formatDate(p.endDate)],
-                  ["Graduate email", p.graduate.user?.email ?? "—"],
+                  ["Graduate email", p.graduate.user?.email ?? "Not given"],
                   ["Match score", `${p.match.score} / 100`],
                 ].map(([k, v]) => (
                   <div key={k} className="min-w-0">
@@ -152,7 +152,7 @@ export function PlacementPanel({ id }: { id: string }) {
                   <p className="font-semibold">Certificate</p>
                   {p.certificate ? (
                     <p className="text-[15px]">
-                      Issued: <b>{p.certificate.serialNumber}</b> · code {p.certificate.verificationCode}
+                      Issued: <b>{p.certificate.serialNumber}</b>, code {p.certificate.verificationCode}
                     </p>
                   ) : !p.evaluation ? (
                     <p className="text-[15px] text-muted-foreground">
@@ -186,7 +186,7 @@ export function PlacementPanel({ id }: { id: string }) {
               {p.evaluation ? (
                 <div>
                   <p className="font-semibold">
-                    Company evaluation · {p.evaluation.overallScore.toFixed(1)} / 5
+                    Company evaluation, {p.evaluation.overallScore.toFixed(1)} / 5
                   </p>
                   <ul className="mt-2 grid grid-cols-2 gap-1 text-[15px]">
                     {(["punctuality", "skill", "communication", "teamwork", "initiative"] as const).map(

@@ -12,7 +12,7 @@ const ThemeContext = createContext<{ theme: Theme; setTheme: (t: Theme) => void 
 export const useTheme = () => useContext(ThemeContext);
 
 /** Inline script for <head>: applies the saved theme before first paint (no flash). */
-export const themeScript = `(function(){try{var t=localStorage.getItem('siip-theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})()`;
+export const themeScript = `(function(){try{var t=localStorage.getItem('siip-theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){}})()`;
 
 function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
@@ -22,10 +22,8 @@ function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const apply = () =>
-      document.documentElement.classList.toggle(
-        "dark",
-        theme === "dark" || (theme === "system" && media.matches),
-      );
+      (document.documentElement.dataset.theme =
+        theme === "dark" || (theme === "system" && media.matches) ? "dark" : "light");
     apply();
     media.addEventListener("change", apply);
     return () => media.removeEventListener("change", apply);

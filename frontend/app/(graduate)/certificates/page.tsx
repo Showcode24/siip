@@ -55,7 +55,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
   return (
     <div className="grid gap-6">
       {/* Preview of the PDF layout (landscape A4). */}
-      <div className="overflow-hidden rounded-xl bg-[#FFFDF9] p-3 text-[var(--grey-900)] shadow-lg sm:p-5">
+      <div className="overflow-hidden rounded-xl bg-paper-cert p-3 text-[var(--grey-900)] shadow-lg sm:p-5">
         <div className="relative flex aspect-[1.414] flex-col items-center justify-center rounded-lg border-2 border-orange p-6 text-center sm:p-12">
           <p className="font-display text-xl font-bold tracking-[0.2em] text-orange-deep sm:text-3xl">SIIP</p>
           <p className="text-[10px] text-[var(--grey-500)] sm:text-xs">by SkillzBridge Trades Africa</p>
@@ -70,7 +70,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
           </p>
           <div className="absolute inset-x-4 bottom-3 flex justify-between text-[8px] text-[var(--grey-500)] sm:inset-x-10 sm:bottom-6 sm:text-xs">
             <span>
-              Issued {formatDate(cert.issuedAt)} · {cert.serialNumber}
+              Issued {formatDate(cert.issuedAt)}, {cert.serialNumber}
             </span>
             <span>Code {cert.verificationCode}</span>
           </div>

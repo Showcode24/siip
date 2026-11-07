@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { companyApi } from "@/client/api/company";
 import { ScoreBreakdownList, ScoreRing } from "@/components/company/shared";
+import { Segmented } from "@/components/motion";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardBody, EmptyState, PageHeader, StatusPill } from "@/components/ui/display";
@@ -29,30 +30,17 @@ export default function MatchesPage() {
         title="Candidates"
         description="Graduates SIIP has matched to your openings. Contact details are shared once you accept."
       />
-      <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filter candidates">
-        {FILTERS.map((f) => {
-          const count =
-            f.value === "ALL"
-              ? q.data?.items.length
-              : q.data?.items.filter((m) => m.status === f.value).length;
-          return (
-            <button
-              key={f.value}
-              onClick={() => setFilter(f.value)}
-              aria-pressed={filter === f.value}
-              className={cn(
-                "flex h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold",
-                filter === f.value
-                  ? "bg-secondary text-secondary-foreground"
-                  : "bg-surface-muted text-muted-foreground",
-              )}
-            >
-              {f.label}{" "}
-              {count !== undefined ? <span className="tabular-nums opacity-70">{count}</span> : null}
-            </button>
-          );
-        })}
-      </div>
+      <Segmented
+        className="mb-5"
+        label="Filter candidates"
+        value={filter}
+        onChange={setFilter}
+        options={FILTERS.map((f) => ({
+          value: f.value,
+          label: f.label,
+          count: f.value === "ALL" ? q.data?.items.length : q.data?.items.filter((m) => m.status === f.value).length,
+        }))}
+      />
       <QueryState query={q}>
         {({ items }) => {
           const list = filter === "ALL" ? items : items.filter((m) => m.status === filter);
@@ -75,10 +63,10 @@ export default function MatchesPage() {
                           {m.graduate.firstName} {m.graduate.lastName}
                         </p>
                         <p className="text-[15px] text-muted-foreground">
-                          {[m.graduate.courseOfStudy, m.graduate.institution].filter(Boolean).join(" · ")}
+                          {[m.graduate.courseOfStudy, m.graduate.institution].filter(Boolean).join(", ")}
                         </p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          For {m.opening.title} · {formatRelative(m.createdAt)}
+                          For {m.opening.title}, {formatRelative(m.createdAt)}
                         </p>
                       </div>
                       <StatusPill map={MATCH_STATUS} value={m.status} />
@@ -90,7 +78,7 @@ export default function MatchesPage() {
                     </div>
                     <details className="group rounded-lg bg-surface-muted p-4">
                       <summary className="cursor-pointer list-none text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
-                        Why this match <span className="text-muted-foreground group-open:hidden">· show</span>
+                        Why this match
                       </summary>
                       <div className="mt-4">
                         <ScoreBreakdownList breakdown={m.scoreBreakdown} compact />

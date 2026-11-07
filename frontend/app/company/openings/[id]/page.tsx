@@ -44,7 +44,7 @@ export default function OpeningDetailPage() {
           <PageHeader
             breadcrumbs={[{ label: "Openings", href: "/company/openings" }, { label: o.title }]}
             title={o.title}
-            description={`${o._count.placements} of ${o.slots} filled · ${o._count.matches} candidates proposed so far`}
+            description={`${o._count.placements} of ${o.slots} filled, ${o._count.matches} candidates proposed so far`}
             actions={
               <>
                 <StatusPill map={OPENING_STATUS} value={o.status} />

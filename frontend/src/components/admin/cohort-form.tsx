@@ -72,7 +72,7 @@ export function CohortForm({
         <Input
           value={v.name}
           onChange={(e) => setV({ ...v, name: e.target.value })}
-          placeholder="e.g. Cohort 4 · 2027"
+          placeholder="e.g. Cohort 4, 2027"
         />
       </Field>
       <Field label="Description" optional>

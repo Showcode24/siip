@@ -127,7 +127,7 @@ export default function TrainingAdminPage() {
                                   <p className="text-[15px] text-muted-foreground">{course.description}</p>
                                 ) : null}
                                 <p className="text-sm text-muted-foreground">
-                                  {course.modules.length} modules ·{" "}
+                                  {course.modules.length} modules,{" "}
                                   {course.modules.reduce((n, m) => n + m.lessons.length, 0)} lessons
                                 </p>
                               </CardBody>

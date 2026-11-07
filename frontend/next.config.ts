@@ -5,6 +5,7 @@ const apiUrl = process.env.API_URL ?? "http://localhost:4000";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@siip/shared"],
+  devIndicators: false,
   outputFileTracingRoot: path.join(import.meta.dirname, ".."),
   // The browser only talks to this app; /api/* is proxied to the backend, so
   // auth cookies stay first-party and no CORS is needed.

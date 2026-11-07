@@ -378,7 +378,7 @@ function seedCohorts() {
   db.cohorts.push(
     {
       id: "coh_2",
-      name: "Cohort 2 · 2026",
+      name: "Cohort 2 (2026)",
       slug: "cohort-2-2026",
       description: "Lagos, Abuja and Port Harcourt placements.",
       applicationOpensAt: iso(-120),
@@ -393,7 +393,7 @@ function seedCohorts() {
     },
     {
       id: "coh_3",
-      name: "Cohort 3 · 2027",
+      name: "Cohort 3 (2027)",
       slug: "cohort-3-2027",
       description: "Our largest cohort yet, with new trades and digital tracks.",
       applicationOpensAt: iso(-10),
@@ -650,7 +650,7 @@ function seedAssessments() {
       id: "asm_final",
       cohortId: "coh_2",
       type: "FINAL",
-      title: "Final assessment · Cohort 2",
+      title: "Final assessment, Cohort 2",
       description: "Covers Workplace Essentials and Digital Skills for Work.",
       timeLimitMinutes: 30,
       passMark: 60,
@@ -896,6 +896,15 @@ function seedJourney(adminId: string) {
   for (const [status, count, cohortId] of STAGES) {
     for (let k = 0; k < count; k++, i++) {
       const g = makeGraduate(i);
+      // Graduates who reached the final stages were trained for real openings:
+      // give them the skills and course a matching opening asks for.
+      if (["FINAL_ASSESSMENT", "QUALIFIED", "MATCHED", "PLACED", "COMPLETED"].includes(status)) {
+        const t = OPENING_TITLES[i % OPENING_TITLES.length];
+        g.skills = t.skills.map((name, k) => ({ skillId: db.skills.find((s) => s.name === name)!.id, level: k === 0 ? "ADVANCED" : "INTERMEDIATE" }));
+        if (t.disciplines[0]) g.courseOfStudy = t.disciplines[0];
+        g.availability = "FULL_TIME";
+        g.nyscStatus = i % 2 ? "COMPLETED" : "EXEMPTED";
+      }
       firstOf[status] ??= g;
       const steps =
         status === "REJECTED" || status === "WITHDRAWN"
@@ -1031,6 +1040,8 @@ function seedMatching(adminId: string) {
       createdAt: start,
     };
     db.placements.push(placement);
+    // A filled opening stops taking proposals.
+    if (db.placements.filter((p) => p.openingId === opening.id && p.status !== "TERMINATED").length >= opening.slots) opening.status = "CLOSED";
     const months = completed ? 3 : 1;
     for (let m = 1; m <= months; m++) {
       db.checkIns.push({
@@ -1134,37 +1145,37 @@ function seed() {
   Object.assign(personas, {
     "graduate-new": {
       userId: fresh.userId,
-      label: "Graduate · just signed up",
+      label: "Graduate, just signed up",
       description: "Profile incomplete, no application yet",
     },
     "graduate-submitted": {
       userId: grad("SUBMITTED"),
-      label: "Graduate · applied",
+      label: "Graduate, applied",
       description: "Application submitted to Cohort 3",
     },
     "graduate-training": {
       userId: grad("IN_TRAINING"),
-      label: "Graduate · in training",
+      label: "Graduate, in training",
       description: "Working through lessons",
     },
     "graduate-assessment": {
       userId: grad("FINAL_ASSESSMENT"),
-      label: "Graduate · final assessment",
+      label: "Graduate, final assessment",
       description: "Ready to take the final test",
     },
     "graduate-matched": {
       userId: grad("MATCHED"),
-      label: "Graduate · matched",
+      label: "Graduate, matched",
       description: "Waiting for a company decision",
     },
     "graduate-placed": {
       userId: grad("PLACED"),
-      label: "Graduate · on internship",
+      label: "Graduate, on internship",
       description: "Month 2 of a 3-month internship",
     },
     "graduate-certified": {
       userId: grad("COMPLETED"),
-      label: "Graduate · certified",
+      label: "Graduate, certified",
       description: "Completed with a certificate",
     },
     "company-owner": {
@@ -1174,7 +1185,7 @@ function seed() {
     },
     "company-pending": {
       userId: pendingOwner.userId,
-      label: "Company owner · pending",
+      label: "Company owner, pending",
       description: `${db.companies[7].name} (awaiting verification)`,
     },
     supervisor: { userId: supervisor.userId, label: "Supervisor", description: `${db.companies[0].name}` },

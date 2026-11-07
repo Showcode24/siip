@@ -15,7 +15,7 @@ import { PLACEMENT_STATUS } from "@/lib/labels";
 import { formatDate } from "@/lib/utils";
 
 function month(p: Placement) {
-  if (p.status !== "ACTIVE") return "—";
+  if (p.status !== "ACTIVE") return "Ended";
   const s = new Date(p.startDate),
     n = new Date();
   if (n < s) return "Not started";

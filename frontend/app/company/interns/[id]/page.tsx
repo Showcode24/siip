@@ -70,7 +70,7 @@ export default function InternDetailPage() {
                       <div>
                         <p className="font-semibold">{name}</p>
                         <p className="text-muted-foreground">
-                          {p.graduate.courseOfStudy} · {p.graduate.institution}
+                          {p.graduate.courseOfStudy}, {p.graduate.institution}
                         </p>
                       </div>
                     </div>
@@ -160,7 +160,7 @@ function SupervisorCard({ p }: { p: Placement }) {
               {members.data?.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.user.name}
-                  {m.jobTitle ? ` · ${m.jobTitle}` : ""}
+                  {m.jobTitle ? `, ${m.jobTitle}` : ""}
                 </option>
               ))}
             </Select>

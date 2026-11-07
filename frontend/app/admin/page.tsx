@@ -13,7 +13,7 @@ import { Select } from "@/components/ui/form-controls";
 import { APPLICATION_STATUS } from "@/lib/labels";
 import { formatRelative } from "@/lib/utils";
 
-const pct = (v: number | null) => (v === null ? "—" : `${v}%`);
+const pct = (v: number | null) => (v === null ? "No data" : `${v}%`);
 
 export default function AdminOverview() {
   const cohorts = useQuery({ queryKey: ["admin", "cohorts"], queryFn: adminApi.listCohorts });
@@ -167,7 +167,7 @@ export default function AdminOverview() {
                       <span className="text-muted-foreground">{e.action.replace(/[._]/g, " ")}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {e.entityType} · {formatRelative(e.createdAt)}
+                      {e.entityType}, {formatRelative(e.createdAt)}
                     </p>
                   </li>
                 ))}

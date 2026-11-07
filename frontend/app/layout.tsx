@@ -53,7 +53,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </a>
         <Providers>
           {children}
-          {process.env.NODE_ENV !== "production" ? <DevRoleSwitcher /> : null}
+          {/* Shows only while the site runs on demo data (NEXT_PUBLIC_USE_MOCKS). */}
+          <DevRoleSwitcher />
         </Providers>
       </body>
     </html>

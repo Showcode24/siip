@@ -1,10 +1,18 @@
 import type { z } from "zod";
 import type { applySchema } from "@siip/shared/validators/application";
 import type { checkInSchema } from "@siip/shared/validators/internship";
-import type { setSkillsSchema, updateProfileSchema } from "@siip/shared/validators/graduate";
+import type { addSkillSchema, updateProfileSchema, updateSkillSchema } from "@siip/shared/validators/graduate";
+import {
+  MAX_SKILLS,
+  SKILL_DOCS,
+  addSkillSchema as skillAdd,
+  skillLinkSchema,
+  updateSkillSchema as skillUpdate,
+} from "@siip/shared/validators/graduate";
 import { updateProfileSchema as profileSchema } from "@siip/shared/validators/graduate";
 import { missingForApplication } from "@siip/shared/profile-completeness";
 import { normaliseProfileUpdate } from "@siip/shared/profile-rules";
+import { ApiError } from "@/client/api/http";
 import type { Certificate, MyApplication, MyPlacement } from "@/client/api/types";
 import { cohortById, companyById, db, iso, newId, notify, openingById } from "./db";
 import {
@@ -15,6 +23,7 @@ import {
   notFound,
   presentPlacement,
   presentProfile,
+  presentSkill,
   requireGraduate,
   requireUser,
   scoringInput,
@@ -33,10 +42,156 @@ export function updateProfile(input: z.input<typeof updateProfileSchema>) {
   return presentProfile(graduate);
 }
 
-export function setSkills(input: z.input<typeof setSkillsSchema>) {
+// ─── Skills with proof (same rules as backend/src/server/services/skill.service.ts) ──
+
+/** Files picked in the demo stay in this browser tab; nothing is uploaded anywhere. */
+const demoFiles = new Map<string, string>();
+
+const BACK_TO_PENDING = {
+  status: "PENDING",
+  verifiedLevel: null,
+  rejectionReason: null,
+  reviewedAt: null,
+} as const;
+
+function ownSkill(id: string) {
   const { graduate } = requireGraduate();
-  graduate.skills = input.skills.map((s) => ({ skillId: s.skillId, level: s.level }));
-  return presentProfile(graduate);
+  const skill = graduate.skills.find((s) => s.id === id);
+  if (!skill) throw notFound("Skill");
+  return { graduate, skill };
+}
+
+export function listMySkills() {
+  return requireGraduate().graduate.skills.map(presentSkill);
+}
+
+export function addSkill(input: z.input<typeof addSkillSchema>) {
+  const { graduate } = requireGraduate();
+  const v = skillAdd.parse(input);
+  if (graduate.skills.length >= MAX_SKILLS) throw badRequest(`You can list up to ${MAX_SKILLS} skills`);
+  if (v.skillId && !db.skills.some((x) => x.id === v.skillId)) throw badRequest("That skill is not available");
+  const clash = graduate.skills.some((s) =>
+    v.skillId ? s.skillId === v.skillId : s.otherName?.toLowerCase() === v.otherName?.toLowerCase(),
+  );
+  if (clash) throw conflict("You've already listed this skill");
+  const now = new Date().toISOString();
+  const skill = {
+    id: newId("gsk"),
+    skillId: v.skillId ?? null,
+    otherName: v.skillId ? null : (v.otherName ?? null),
+    level: v.level,
+    verifiedLevel: null,
+    status: "PENDING" as const,
+    rejectionReason: null,
+    issuingBody: v.issuingBody,
+    issuedAt: v.issuedAt,
+    reviewedAt: null,
+    createdAt: now,
+    documents: [],
+  };
+  graduate.skills.push(skill);
+  return presentSkill(skill);
+}
+
+export function updateSkill(id: string, input: z.input<typeof updateSkillSchema>) {
+  const { skill } = ownSkill(id);
+  const v = skillUpdate.parse(input);
+  const changed = (["level", "issuingBody", "issuedAt"] as const).some((k) => k in v && v[k] !== skill[k]);
+  Object.assign(skill, v, changed && skill.status !== "PENDING" ? BACK_TO_PENDING : {});
+  return presentSkill(skill);
+}
+
+export function removeSkill(id: string) {
+  const { graduate } = ownSkill(id);
+  graduate.skills = graduate.skills.filter((s) => s.id !== id);
+  return { deleted: true };
+}
+
+function roomForDocument(skill: { documents: unknown[] }) {
+  if (skill.documents.length >= SKILL_DOCS.maxPerSkill) {
+    throw badRequest(`A skill can have up to ${SKILL_DOCS.maxPerSkill} documents`);
+  }
+}
+
+/** Demo stand-in for sign → upload → confirm: checks type and size like the server. */
+export function addSkillFile(id: string, file: File) {
+  const { skill } = ownSkill(id);
+  roomForDocument(skill);
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  if (!(SKILL_DOCS.formats as readonly string[]).includes(ext)) {
+    throw badRequest(`Unsupported file type. Allowed: ${SKILL_DOCS.formats.join(", ")}.`);
+  }
+  if (file.size > SKILL_DOCS.maxBytes) throw badRequest("File is too large. The limit is 5 MB.");
+  const doc = {
+    id: newId("doc"),
+    kind: "FILE" as const,
+    fileName: file.name,
+    format: ext === "jpeg" ? "jpg" : ext,
+    bytes: file.size,
+    url: null,
+    createdAt: new Date().toISOString(),
+  };
+  demoFiles.set(doc.id, URL.createObjectURL(file));
+  skill.documents.push(doc);
+  if (skill.status === "REJECTED") Object.assign(skill, BACK_TO_PENDING);
+  return presentSkill(skill);
+}
+
+export function addSkillLink(id: string, url: string) {
+  const { skill } = ownSkill(id);
+  roomForDocument(skill);
+  const v = skillLinkSchema.parse({ url });
+  skill.documents.push({
+    id: newId("doc"),
+    kind: "LINK",
+    fileName: null,
+    format: null,
+    bytes: null,
+    url: v.url,
+    createdAt: new Date().toISOString(),
+  });
+  if (skill.status === "REJECTED") Object.assign(skill, BACK_TO_PENDING);
+  return presentSkill(skill);
+}
+
+export function removeSkillDocument(id: string, documentId: string) {
+  const { graduate, skill } = ownSkill(id);
+  if (!skill.documents.some((d) => d.id === documentId)) throw notFound("Document");
+  if (skill.documents.length <= 1 && ["SUBMITTED", "APPROVED"].includes(graduate.reviewStatus)) {
+    throw conflict("Each skill needs at least one document. Add another before removing this one.");
+  }
+  skill.documents = skill.documents.filter((d) => d.id !== documentId);
+  return presentSkill(skill);
+}
+
+export function getSkillDocumentUrl(documentId: string) {
+  const { graduate } = requireGraduate();
+  const doc = graduate.skills.flatMap((s) => s.documents).find((d) => d.id === documentId);
+  if (!doc) throw notFound("Document");
+  return { url: doc.kind === "LINK" ? doc.url! : (demoFiles.get(doc.id) ?? "#"), kind: doc.kind };
+}
+
+export function submitForReview() {
+  const { graduate } = requireGraduate();
+  if (!["DRAFT", "CHANGES_REQUESTED"].includes(graduate.reviewStatus)) {
+    throw conflict(
+      graduate.reviewStatus === "SUBMITTED" ? "Your profile is already with SIIP for review" : "Your profile is already approved",
+    );
+  }
+  const profile = presentProfile(graduate);
+  if (profile.missingForApplication.length || profile.skillsWithoutProof.length) {
+    throw new ApiError(
+      "BAD_REQUEST",
+      profile.skillsWithoutProof.length
+        ? "Add at least one document to every skill before you submit"
+        : "Complete your profile before you submit",
+      400,
+      { missing: profile.missingForApplication, skillsWithoutProof: profile.skillsWithoutProof },
+    );
+  }
+  const now = new Date().toISOString();
+  Object.assign(graduate, { reviewStatus: "SUBMITTED", submittedAt: now, reviewNote: null });
+  return { reviewStatus: "SUBMITTED" as const, submittedAt: now };
 }
 
 export function confirmUpload(kind: "cv" | "photo", file: File) {

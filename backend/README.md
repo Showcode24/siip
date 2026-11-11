@@ -179,131 +179,138 @@ Rules where the brief left room for a choice. Each one is easy to change in the 
 Generated from the route handlers by `pnpm openapi`. "Company owner" routes require the `OWNER` role within the company. All company routes only ever return data belonging to the caller's own company.
 
 <!-- endpoints:start -->
-
-| Method | Path                                              | Access             | Purpose                        |
-| ------ | ------------------------------------------------- | ------------------ | ------------------------------ |
-| GET    | `/api/v1/admin/analytics`                         | Admin              | Get analytics                  |
-| GET    | `/api/v1/admin/applications`                      | Admin              | List applications for admin    |
-| GET    | `/api/v1/admin/applications/{id}`                 | Admin              | Get application for admin      |
-| POST   | `/api/v1/admin/applications/{id}/notes`           | Admin              | Add application note           |
-| POST   | `/api/v1/admin/applications/{id}/status`          | Admin              | Change application status      |
-| POST   | `/api/v1/admin/applications/bulk-status`          | Admin              | Bulk change application status |
-| GET    | `/api/v1/admin/assessments`                       | Admin              | List assessments               |
-| POST   | `/api/v1/admin/assessments`                       | Admin              | Create assessment              |
-| GET    | `/api/v1/admin/assessments/{id}`                  | Admin              | Get assessment for admin       |
-| PATCH  | `/api/v1/admin/assessments/{id}`                  | Admin              | Update assessment              |
-| DELETE | `/api/v1/admin/assessments/{id}`                  | Admin              | Delete assessment              |
-| GET    | `/api/v1/admin/assessments/{id}/attempts`         | Admin              | List attempts                  |
-| POST   | `/api/v1/admin/assessments/{id}/questions`        | Admin              | Add question                   |
-| POST   | `/api/v1/admin/assessments/{id}/retakes`          | Admin              | Grant retake                   |
-| GET    | `/api/v1/admin/cohorts`                           | Admin              | List cohorts for admin         |
-| POST   | `/api/v1/admin/cohorts`                           | Admin              | Create cohort                  |
-| GET    | `/api/v1/admin/cohorts/{id}`                      | Admin              | Get cohort for admin           |
-| PATCH  | `/api/v1/admin/cohorts/{id}`                      | Admin              | Update cohort                  |
-| POST   | `/api/v1/admin/cohorts/{id}/status`               | Admin              | Change cohort status           |
-| GET    | `/api/v1/admin/companies`                         | Admin              | List companies for admin       |
-| GET    | `/api/v1/admin/companies/{id}`                    | Admin              | Get company for admin          |
-| POST   | `/api/v1/admin/companies/{id}/status`             | Admin              | Change company status          |
-| GET    | `/api/v1/admin/courses`                           | Admin              | List courses                   |
-| POST   | `/api/v1/admin/courses`                           | Admin              | Create course                  |
-| GET    | `/api/v1/admin/courses/{id}`                      | Admin              | Get course for admin           |
-| PATCH  | `/api/v1/admin/courses/{id}`                      | Admin              | Update course                  |
-| DELETE | `/api/v1/admin/courses/{id}`                      | Admin              | Delete course                  |
-| POST   | `/api/v1/admin/courses/{id}/modules`              | Admin              | Create module                  |
-| GET    | `/api/v1/admin/exports/applications`              | Admin              | Export applications            |
-| GET    | `/api/v1/admin/exports/placements`                | Admin              | Export placements              |
-| GET    | `/api/v1/admin/graduates/{id}/cv`                 | Admin              | Get cv download url for admin  |
-| PATCH  | `/api/v1/admin/lessons/{id}`                      | Admin              | Update lesson                  |
-| DELETE | `/api/v1/admin/lessons/{id}`                      | Admin              | Delete lesson                  |
-| POST   | `/api/v1/admin/lessons/{id}/attachment`           | Admin              | Attach lesson file             |
-| POST   | `/api/v1/admin/lessons/{id}/attachment/sign`      | Admin              | Sign lesson attachment         |
-| POST   | `/api/v1/admin/matches`                           | Admin              | Propose match                  |
-| POST   | `/api/v1/admin/matches/{id}/withdraw`             | Admin              | Withdraw match                 |
-| GET    | `/api/v1/admin/matching/suggestions`              | Admin              | Get suggestions                |
-| PATCH  | `/api/v1/admin/modules/{id}`                      | Admin              | Update module                  |
-| DELETE | `/api/v1/admin/modules/{id}`                      | Admin              | Delete module                  |
-| POST   | `/api/v1/admin/modules/{id}/lessons`              | Admin              | Create lesson                  |
-| GET    | `/api/v1/admin/openings`                          | Admin              | List openings for admin        |
-| POST   | `/api/v1/admin/openings/{id}/status`              | Admin              | Change opening status as admin |
-| GET    | `/api/v1/admin/placements`                        | Admin              | List placements for admin      |
-| GET    | `/api/v1/admin/placements/{id}`                   | Admin              | Get placement for admin        |
-| POST   | `/api/v1/admin/placements/{id}/certificate`       | Admin              | Issue certificate              |
-| POST   | `/api/v1/admin/placements/{id}/complete`          | Admin              | Complete placement             |
-| POST   | `/api/v1/admin/placements/{id}/review`            | Admin              | Review placement               |
-| POST   | `/api/v1/admin/placements/{id}/terminate`         | Admin              | Terminate placement            |
-| PUT    | `/api/v1/admin/questions/{id}`                    | Admin              | Replace question               |
-| DELETE | `/api/v1/admin/questions/{id}`                    | Admin              | Delete question                |
-| POST   | `/api/v1/auth/forgot-password`                    | Public             | Request password reset         |
-| GET    | `/api/v1/auth/me`                                 | Any signed-in user | Get me                         |
-| POST   | `/api/v1/auth/resend-verification`                | Public             | Resend verification            |
-| POST   | `/api/v1/auth/reset-password`                     | Public             | Reset password                 |
-| POST   | `/api/v1/auth/sign-in`                            | Public             | Sign in                        |
-| POST   | `/api/v1/auth/sign-out`                           | Public             | Sign out                       |
-| POST   | `/api/v1/auth/sign-up`                            | Public             | Sign up                        |
-| GET    | `/api/v1/auth/verify-email`                       | Public             | Verify email                   |
-| GET    | `/api/v1/cohorts`                                 | Public             | List open cohorts              |
-| GET    | `/api/v1/company/interns`                         | Company member     | List my interns                |
-| GET    | `/api/v1/company/interns/{id}`                    | Company member     | Get my intern                  |
-| GET    | `/api/v1/company/interns/{id}/check-ins`          | Company member     | List intern check ins          |
-| POST   | `/api/v1/company/interns/{id}/check-ins`          | Company member     | Submit supervisor check in     |
-| POST   | `/api/v1/company/interns/{id}/evaluation`         | Company member     | Submit evaluation              |
-| POST   | `/api/v1/company/interns/{id}/permanent-offer`    | Company owner      | Record permanent offer         |
-| POST   | `/api/v1/company/interns/{id}/supervisor`         | Company owner      | Assign supervisor              |
-| GET    | `/api/v1/company/invitations`                     | Company owner      | List invitations               |
-| POST   | `/api/v1/company/invitations`                     | Company owner      | Invite supervisor              |
-| DELETE | `/api/v1/company/invitations/{id}`                | Company owner      | Revoke invitation              |
-| POST   | `/api/v1/company/invitations/accept`              | Company member     | Accept invitation              |
-| POST   | `/api/v1/company/logo`                            | Company owner      | Confirm logo                   |
-| POST   | `/api/v1/company/logo/sign`                       | Company owner      | Sign logo upload               |
-| GET    | `/api/v1/company/matches`                         | Company member     | List company matches           |
-| GET    | `/api/v1/company/matches/{id}`                    | Company member     | Get company match              |
-| POST   | `/api/v1/company/matches/{id}/accept`             | Company owner      | Accept match                   |
-| GET    | `/api/v1/company/matches/{id}/cv`                 | Company member     | Get match cv for company       |
-| POST   | `/api/v1/company/matches/{id}/reject`             | Company owner      | Reject match                   |
-| GET    | `/api/v1/company/members`                         | Company member     | List members                   |
-| DELETE | `/api/v1/company/members/{id}`                    | Company owner      | Remove member                  |
-| GET    | `/api/v1/company/openings`                        | Company member     | List my openings               |
-| POST   | `/api/v1/company/openings`                        | Company owner      | Create opening                 |
-| GET    | `/api/v1/company/openings/{id}`                   | Company member     | Get my opening                 |
-| PATCH  | `/api/v1/company/openings/{id}`                   | Company owner      | Update opening                 |
-| POST   | `/api/v1/company/openings/{id}/status`            | Company owner      | Change my opening status       |
-| GET    | `/api/v1/company/profile`                         | Company member     | Get my company                 |
-| PATCH  | `/api/v1/company/profile`                         | Company owner      | Update my company              |
-| POST   | `/api/v1/company/register`                        | Company member     | Register company               |
-| POST   | `/api/v1/company/resubmit`                        | Company owner      | Resubmit company               |
-| GET    | `/api/v1/cron/daily`                              | Cron (secret)      | Run daily jobs                 |
-| GET    | `/api/v1/graduate/applications`                   | Graduate           | List my applications           |
-| POST   | `/api/v1/graduate/applications`                   | Graduate           | Apply to cohort                |
-| GET    | `/api/v1/graduate/applications/{id}`              | Graduate           | Get my application             |
-| POST   | `/api/v1/graduate/applications/{id}/withdraw`     | Graduate           | Withdraw application           |
-| GET    | `/api/v1/graduate/assessments`                    | Graduate           | List my assessments            |
-| POST   | `/api/v1/graduate/assessments/{id}/attempts`      | Graduate           | Start attempt                  |
-| GET    | `/api/v1/graduate/attempts/{id}`                  | Graduate           | Get my attempt                 |
-| PUT    | `/api/v1/graduate/attempts/{id}/answers`          | Graduate           | Save answers                   |
-| POST   | `/api/v1/graduate/attempts/{id}/submit`           | Graduate           | Submit attempt                 |
-| GET    | `/api/v1/graduate/certificates`                   | Graduate           | List my certificates           |
-| GET    | `/api/v1/graduate/certificates/{id}/download`     | Graduate           | Get my certificate download    |
-| GET    | `/api/v1/graduate/placement`                      | Graduate           | Get my placement               |
-| GET    | `/api/v1/graduate/placement/check-ins`            | Graduate           | List my check ins              |
-| POST   | `/api/v1/graduate/placement/check-ins`            | Graduate           | Submit intern check in         |
-| GET    | `/api/v1/graduate/profile`                        | Graduate           | Get profile                    |
-| PATCH  | `/api/v1/graduate/profile`                        | Graduate           | Update profile                 |
-| GET    | `/api/v1/graduate/profile/cv`                     | Graduate           | Get cv download url            |
-| PUT    | `/api/v1/graduate/profile/skills`                 | Graduate           | Set skills                     |
-| GET    | `/api/v1/graduate/training`                       | Graduate           | Get my training                |
-| GET    | `/api/v1/graduate/training/lessons/{id}`          | Graduate           | Get my lesson                  |
-| POST   | `/api/v1/graduate/training/lessons/{id}/complete` | Graduate           | Complete lesson                |
-| GET    | `/api/v1/graduate/training/progress`              | Graduate           | Get my progress                |
-| POST   | `/api/v1/graduate/uploads`                        | Graduate           | Sign graduate upload           |
-| POST   | `/api/v1/graduate/uploads/confirm`                | Graduate           | Confirm graduate upload        |
-| GET    | `/api/v1/health`                                  | Public             | GET /api/v1/health             |
-| GET    | `/api/v1/me/data-export`                          | Any signed-in user | Export my data                 |
-| POST   | `/api/v1/me/delete-account`                       | Any signed-in user | Request account deletion       |
-| GET    | `/api/v1/notifications`                           | Any signed-in user | List notifications             |
-| POST   | `/api/v1/notifications/{id}/read`                 | Any signed-in user | Mark notification read         |
-| POST   | `/api/v1/notifications/read-all`                  | Any signed-in user | Mark all notifications read    |
-| GET    | `/api/v1/openapi.json`                            | Public             | GET /api/v1/openapi.json       |
-| GET    | `/api/v1/public/certificates/verify/{code}`       | Public             | Verify certificate             |
-| GET    | `/api/v1/skills`                                  | Public             | List skills                    |
-
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/v1/admin/analytics` | Admin | Get analytics |
+| GET | `/api/v1/admin/applications` | Admin | List applications for admin |
+| GET | `/api/v1/admin/applications/{id}` | Admin | Get application for admin |
+| POST | `/api/v1/admin/applications/{id}/notes` | Admin | Add application note |
+| POST | `/api/v1/admin/applications/{id}/status` | Admin | Change application status |
+| POST | `/api/v1/admin/applications/bulk-status` | Admin | Bulk change application status |
+| GET | `/api/v1/admin/assessments` | Admin | List assessments |
+| POST | `/api/v1/admin/assessments` | Admin | Create assessment |
+| GET | `/api/v1/admin/assessments/{id}` | Admin | Get assessment for admin |
+| PATCH | `/api/v1/admin/assessments/{id}` | Admin | Update assessment |
+| DELETE | `/api/v1/admin/assessments/{id}` | Admin | Delete assessment |
+| GET | `/api/v1/admin/assessments/{id}/attempts` | Admin | List attempts |
+| POST | `/api/v1/admin/assessments/{id}/questions` | Admin | Add question |
+| POST | `/api/v1/admin/assessments/{id}/retakes` | Admin | Grant retake |
+| GET | `/api/v1/admin/cohorts` | Admin | List cohorts for admin |
+| POST | `/api/v1/admin/cohorts` | Admin | Create cohort |
+| GET | `/api/v1/admin/cohorts/{id}` | Admin | Get cohort for admin |
+| PATCH | `/api/v1/admin/cohorts/{id}` | Admin | Update cohort |
+| POST | `/api/v1/admin/cohorts/{id}/status` | Admin | Change cohort status |
+| GET | `/api/v1/admin/companies` | Admin | List companies for admin |
+| GET | `/api/v1/admin/companies/{id}` | Admin | Get company for admin |
+| POST | `/api/v1/admin/companies/{id}/status` | Admin | Change company status |
+| GET | `/api/v1/admin/courses` | Admin | List courses |
+| POST | `/api/v1/admin/courses` | Admin | Create course |
+| GET | `/api/v1/admin/courses/{id}` | Admin | Get course for admin |
+| PATCH | `/api/v1/admin/courses/{id}` | Admin | Update course |
+| DELETE | `/api/v1/admin/courses/{id}` | Admin | Delete course |
+| POST | `/api/v1/admin/courses/{id}/modules` | Admin | Create module |
+| GET | `/api/v1/admin/exports/applications` | Admin | Export applications |
+| GET | `/api/v1/admin/exports/placements` | Admin | Export placements |
+| GET | `/api/v1/admin/graduates/{id}/cv` | Admin | Get cv download url for admin |
+| PATCH | `/api/v1/admin/lessons/{id}` | Admin | Update lesson |
+| DELETE | `/api/v1/admin/lessons/{id}` | Admin | Delete lesson |
+| POST | `/api/v1/admin/lessons/{id}/attachment` | Admin | Attach lesson file |
+| POST | `/api/v1/admin/lessons/{id}/attachment/sign` | Admin | Sign lesson attachment |
+| POST | `/api/v1/admin/matches` | Admin | Propose match |
+| POST | `/api/v1/admin/matches/{id}/withdraw` | Admin | Withdraw match |
+| GET | `/api/v1/admin/matching/suggestions` | Admin | Get suggestions |
+| PATCH | `/api/v1/admin/modules/{id}` | Admin | Update module |
+| DELETE | `/api/v1/admin/modules/{id}` | Admin | Delete module |
+| POST | `/api/v1/admin/modules/{id}/lessons` | Admin | Create lesson |
+| GET | `/api/v1/admin/openings` | Admin | List openings for admin |
+| POST | `/api/v1/admin/openings/{id}/status` | Admin | Change opening status as admin |
+| GET | `/api/v1/admin/placements` | Admin | List placements for admin |
+| GET | `/api/v1/admin/placements/{id}` | Admin | Get placement for admin |
+| POST | `/api/v1/admin/placements/{id}/certificate` | Admin | Issue certificate |
+| POST | `/api/v1/admin/placements/{id}/complete` | Admin | Complete placement |
+| POST | `/api/v1/admin/placements/{id}/review` | Admin | Review placement |
+| POST | `/api/v1/admin/placements/{id}/terminate` | Admin | Terminate placement |
+| PUT | `/api/v1/admin/questions/{id}` | Admin | Replace question |
+| DELETE | `/api/v1/admin/questions/{id}` | Admin | Delete question |
+| GET | `/api/v1/admin/skill-documents/{id}/url` | Admin | Get skill document url for admin |
+| POST | `/api/v1/auth/forgot-password` | Public | Request password reset |
+| GET | `/api/v1/auth/me` | Any signed-in user | Get me |
+| POST | `/api/v1/auth/resend-verification` | Public | Resend verification |
+| POST | `/api/v1/auth/reset-password` | Public | Reset password |
+| POST | `/api/v1/auth/sign-in` | Public | Sign in |
+| POST | `/api/v1/auth/sign-out` | Public | Sign out |
+| POST | `/api/v1/auth/sign-up` | Public | Sign up |
+| GET | `/api/v1/auth/verify-email` | Public | Verify email |
+| GET | `/api/v1/cohorts` | Public | List open cohorts |
+| GET | `/api/v1/company/interns` | Company member | List my interns |
+| GET | `/api/v1/company/interns/{id}` | Company member | Get my intern |
+| GET | `/api/v1/company/interns/{id}/check-ins` | Company member | List intern check ins |
+| POST | `/api/v1/company/interns/{id}/check-ins` | Company member | Submit supervisor check in |
+| POST | `/api/v1/company/interns/{id}/evaluation` | Company member | Submit evaluation |
+| POST | `/api/v1/company/interns/{id}/permanent-offer` | Company owner | Record permanent offer |
+| POST | `/api/v1/company/interns/{id}/supervisor` | Company owner | Assign supervisor |
+| GET | `/api/v1/company/invitations` | Company owner | List invitations |
+| POST | `/api/v1/company/invitations` | Company owner | Invite supervisor |
+| DELETE | `/api/v1/company/invitations/{id}` | Company owner | Revoke invitation |
+| POST | `/api/v1/company/invitations/accept` | Company member | Accept invitation |
+| POST | `/api/v1/company/logo` | Company owner | Confirm logo |
+| POST | `/api/v1/company/logo/sign` | Company owner | Sign logo upload |
+| GET | `/api/v1/company/matches` | Company member | List company matches |
+| GET | `/api/v1/company/matches/{id}` | Company member | Get company match |
+| POST | `/api/v1/company/matches/{id}/accept` | Company owner | Accept match |
+| GET | `/api/v1/company/matches/{id}/cv` | Company member | Get match cv for company |
+| POST | `/api/v1/company/matches/{id}/reject` | Company owner | Reject match |
+| GET | `/api/v1/company/members` | Company member | List members |
+| DELETE | `/api/v1/company/members/{id}` | Company owner | Remove member |
+| GET | `/api/v1/company/openings` | Company member | List my openings |
+| POST | `/api/v1/company/openings` | Company owner | Create opening |
+| GET | `/api/v1/company/openings/{id}` | Company member | Get my opening |
+| PATCH | `/api/v1/company/openings/{id}` | Company owner | Update opening |
+| POST | `/api/v1/company/openings/{id}/status` | Company owner | Change my opening status |
+| GET | `/api/v1/company/profile` | Company member | Get my company |
+| PATCH | `/api/v1/company/profile` | Company owner | Update my company |
+| POST | `/api/v1/company/register` | Company member | Register company |
+| POST | `/api/v1/company/resubmit` | Company owner | Resubmit company |
+| GET | `/api/v1/cron/daily` | Cron (secret) | Run daily jobs |
+| GET | `/api/v1/graduate/applications` | Graduate | List my applications |
+| POST | `/api/v1/graduate/applications` | Graduate | Apply to cohort |
+| GET | `/api/v1/graduate/applications/{id}` | Graduate | Get my application |
+| POST | `/api/v1/graduate/applications/{id}/withdraw` | Graduate | Withdraw application |
+| GET | `/api/v1/graduate/assessments` | Graduate | List my assessments |
+| POST | `/api/v1/graduate/assessments/{id}/attempts` | Graduate | Start attempt |
+| GET | `/api/v1/graduate/attempts/{id}` | Graduate | Get my attempt |
+| PUT | `/api/v1/graduate/attempts/{id}/answers` | Graduate | Save answers |
+| POST | `/api/v1/graduate/attempts/{id}/submit` | Graduate | Submit attempt |
+| GET | `/api/v1/graduate/certificates` | Graduate | List my certificates |
+| GET | `/api/v1/graduate/certificates/{id}/download` | Graduate | Get my certificate download |
+| GET | `/api/v1/graduate/placement` | Graduate | Get my placement |
+| GET | `/api/v1/graduate/placement/check-ins` | Graduate | List my check ins |
+| POST | `/api/v1/graduate/placement/check-ins` | Graduate | Submit intern check in |
+| GET | `/api/v1/graduate/profile` | Graduate | Get profile |
+| PATCH | `/api/v1/graduate/profile` | Graduate | Update profile |
+| GET | `/api/v1/graduate/profile/cv` | Graduate | Get cv download url |
+| POST | `/api/v1/graduate/profile/submit` | Graduate | Submit for review |
+| GET | `/api/v1/graduate/skill-documents/{id}/url` | Graduate | Get skill document url |
+| GET | `/api/v1/graduate/skills` | Graduate | List my skills |
+| POST | `/api/v1/graduate/skills` | Graduate | Add skill |
+| PATCH | `/api/v1/graduate/skills/{id}` | Graduate | Update skill |
+| DELETE | `/api/v1/graduate/skills/{id}` | Graduate | Remove skill |
+| POST | `/api/v1/graduate/skills/{id}/documents` | Graduate | Add skill file |
+| DELETE | `/api/v1/graduate/skills/{id}/documents/{documentId}` | Graduate | Remove skill document |
+| POST | `/api/v1/graduate/skills/{id}/documents/sign` | Graduate | Sign skill document |
+| GET | `/api/v1/graduate/training` | Graduate | Get my training |
+| GET | `/api/v1/graduate/training/lessons/{id}` | Graduate | Get my lesson |
+| POST | `/api/v1/graduate/training/lessons/{id}/complete` | Graduate | Complete lesson |
+| GET | `/api/v1/graduate/training/progress` | Graduate | Get my progress |
+| POST | `/api/v1/graduate/uploads` | Graduate | Sign graduate upload |
+| POST | `/api/v1/graduate/uploads/confirm` | Graduate | Confirm graduate upload |
+| GET | `/api/v1/health` | Public | GET /api/v1/health |
+| GET | `/api/v1/me/data-export` | Any signed-in user | Export my data |
+| POST | `/api/v1/me/delete-account` | Any signed-in user | Request account deletion |
+| GET | `/api/v1/notifications` | Any signed-in user | List notifications |
+| POST | `/api/v1/notifications/{id}/read` | Any signed-in user | Mark notification read |
+| POST | `/api/v1/notifications/read-all` | Any signed-in user | Mark all notifications read |
+| GET | `/api/v1/openapi.json` | Public | GET /api/v1/openapi.json |
+| GET | `/api/v1/public/certificates/verify/{code}` | Public | Verify certificate |
+| GET | `/api/v1/skills` | Public | List skills |
 <!-- endpoints:end -->

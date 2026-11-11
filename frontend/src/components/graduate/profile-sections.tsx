@@ -4,11 +4,11 @@
 // Each section validates with the backend's own schema and saves itself.
 import { zodResolver } from "@hookform/resolvers/zod";
 import { countryOptions } from "@siip/shared/countries";
-import { Availability, DegreeClass, InternType, SkillLevel } from "@siip/shared/enums";
+import { Availability, DegreeClass, InternType } from "@siip/shared/enums";
 import { NIGERIAN_STATES } from "@siip/shared/nigeria";
 import { updateProfileSchema } from "@siip/shared/validators/graduate";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, UploadCloud, X } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { FileText, UploadCloud } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Controller, useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
@@ -18,9 +18,10 @@ import { errorMessage } from "@/client/api/http";
 import type { GraduateProfile } from "@/client/api/types";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { SkillsWithProof } from "@/components/graduate/skills-proof";
 import { Combobox } from "@/components/ui/combobox";
 import { Input, RadioCard, RadioGroup, Select, Textarea } from "@/components/ui/form-controls";
-import { AVAILABILITY, DEGREE_CLASS, INTERN_TYPE, SKILL_LEVEL, WORK_MODE } from "@/lib/labels";
+import { AVAILABILITY, DEGREE_CLASS, INTERN_TYPE, WORK_MODE } from "@/lib/labels";
 import { handleFormError } from "@/lib/forms";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -412,100 +413,10 @@ export function EducationSection({ profile, onSaved, submitLabel, extra }: Secti
   );
 }
 
-// ─── Skills ───────────────────────────────────────────────────────────────────
+// ─── Skills (with proof; see skills-proof.tsx) ────────────────────────────────
 
-export function SkillsSection({ profile, onSaved, submitLabel = "Save skills", extra }: SectionProps) {
-  const qc = useQueryClient();
-  const skills = useQuery({ queryKey: ["skills"], queryFn: graduateApi.listSkills, staleTime: Infinity });
-  const [picked, setPicked] = useState(profile.skills.map((s) => ({ skillId: s.id, level: s.level })));
-  const save = useMutation({
-    mutationFn: graduateApi.setSkills,
-    onSuccess: (p) => qc.setQueryData(profileKey, p),
-  });
-  const available = skills.data?.filter((s) => !picked.some((p) => p.skillId === s.id)) ?? [];
-  const name = (id: string) =>
-    skills.data?.find((s) => s.id === id)?.name ?? profile.skills.find((s) => s.id === id)?.name ?? "Skill";
-
-  return (
-    <form
-      className="grid gap-5"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (!picked.length) return toast.error("Add at least one skill");
-        try {
-          await save.mutateAsync({ skills: picked });
-          toast.success("Skills saved");
-          onSaved?.();
-        } catch (err) {
-          toast.error(errorMessage(err));
-        }
-      }}
-    >
-      <p className="text-[15px] text-muted-foreground">
-        Pick the skills you have and be honest about your level. Companies are matched on these.
-      </p>
-      {picked.length ? (
-        <ul className="grid gap-2">
-          {picked.map((p, i) => (
-            <li
-              key={p.skillId}
-              className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface p-3"
-            >
-              <span className="min-w-0 flex-1 font-semibold">{name(p.skillId)}</span>
-              <label className="sr-only" htmlFor={`lvl-${p.skillId}`}>
-                Level for {name(p.skillId)}
-              </label>
-              <Select
-                id={`lvl-${p.skillId}`}
-                value={p.level}
-                className="h-11 w-40"
-                onChange={(e) =>
-                  setPicked(
-                    picked.map((x, j) => (j === i ? { ...x, level: e.target.value as SkillLevel } : x)),
-                  )
-                }
-              >
-                {Object.values(SkillLevel).map((l) => (
-                  <option key={l} value={l}>
-                    {SKILL_LEVEL[l]}
-                  </option>
-                ))}
-              </Select>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Remove ${name(p.skillId)}`}
-                onClick={() => setPicked(picked.filter((_, j) => j !== i))}
-              >
-                <X />
-              </Button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="rounded-lg border border-dashed border-border-strong p-5 text-center text-sm text-muted-foreground">
-          No skills yet. Add your first one below.
-        </p>
-      )}
-      <div>
-        <p className="mb-2 text-[15px] font-semibold">Add a skill</p>
-        <div className="flex flex-wrap gap-2">
-          {available.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setPicked([...picked, { skillId: s.id, level: "BEGINNER" }])}
-              className="flex h-10 items-center gap-1.5 rounded-full border border-border-strong bg-surface px-4 text-sm font-medium transition-colors hover:border-foreground active:scale-[0.97]"
-            >
-              <Plus className="size-4" /> {s.name}
-            </button>
-          ))}
-        </div>
-      </div>
-      <Actions loading={save.isPending} submitLabel={submitLabel} extra={extra} />
-    </form>
-  );
+export function SkillsSection({ profile, onSaved, submitLabel = "Continue", extra }: SectionProps) {
+  return <SkillsWithProof profile={profile} onDone={onSaved} doneLabel={submitLabel} extra={extra} />;
 }
 
 // ─── CV & photo ───────────────────────────────────────────────────────────────

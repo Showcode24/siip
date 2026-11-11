@@ -38,7 +38,11 @@ const limitedGraduateSelect = {
   availability: true,
   bio: true,
   photoUrl: true,
-  skills: { select: { skillId: true, level: true, skill: { select: { name: true } } } },
+  // Companies and matching only ever see skills SIIP has verified, at the verified level.
+  skills: {
+    where: { status: "VERIFIED", skillId: { not: null }, verifiedLevel: { not: null } },
+    select: { skillId: true, verifiedLevel: true, skill: { select: { name: true } } },
+  },
   attempts: {
     where: { assessment: { type: "FINAL" }, percentage: { not: null } },
     select: { percentage: true },
@@ -47,9 +51,9 @@ const limitedGraduateSelect = {
 
 type LimitedGraduate = {
   skills: Array<{
-    skillId: string;
-    level: MatchCandidate["skills"][number]["level"];
-    skill: { name: string };
+    skillId: string | null;
+    verifiedLevel: MatchCandidate["skills"][number]["level"] | null;
+    skill: { name: string } | null;
   }>;
   attempts: Array<{ percentage: number | null }>;
 } & Omit<MatchCandidate, "skills" | "finalAssessmentPercent">;
@@ -59,8 +63,19 @@ function bestFinal(attempts: Array<{ percentage: number | null }>) {
   return scores.length ? Math.max(...scores) : null;
 }
 
+/** Verified skills only (the query already filters; this narrows the types). */
+function verifiedSkills(g: LimitedGraduate) {
+  return g.skills.flatMap((s) =>
+    s.skillId && s.verifiedLevel ? [{ skillId: s.skillId, level: s.verifiedLevel, name: s.skill?.name ?? "Skill" }] : [],
+  );
+}
+
 function toCandidate(g: LimitedGraduate): MatchCandidate {
-  return { ...g, finalAssessmentPercent: bestFinal(g.attempts) };
+  return {
+    ...g,
+    skills: verifiedSkills(g).map(({ skillId, level }) => ({ skillId, level })),
+    finalAssessmentPercent: bestFinal(g.attempts),
+  };
 }
 
 /** Graduate profile as a company sees it before accepting. */
@@ -69,7 +84,7 @@ function presentLimited<G extends LimitedGraduate>(g: G) {
   return {
     ...rest,
     finalAssessmentPercent: bestFinal(attempts),
-    skills: skills.map((s) => ({ id: s.skillId, name: s.skill.name, level: s.level })),
+    skills: verifiedSkills({ ...g, skills }).map((s) => ({ id: s.skillId, name: s.name, level: s.level })),
   };
 }
 

@@ -21,7 +21,7 @@ import { Badge, PageHeader, StatusPill } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/form-controls";
 import { Dialog, DialogClose, DialogContent, SheetContent } from "@/components/ui/overlays";
-import { APPLICATION_STATUS, AVAILABILITY, DEGREE_CLASS, INTERN_TYPE, WORK_MODE, formatLocation } from "@/lib/labels";
+import { APPLICATION_STATUS, AVAILABILITY, DEGREE_CLASS, INTERN_TYPE, WORK_MODE, formatLocation, PROFILE_REVIEW, SKILL_LEVEL, SKILL_STATUS } from "@/lib/labels";
 import { ADMIN_SETTABLE } from "@/lib/flows";
 import { formatDate, formatDateTime } from "@/lib/utils";
 
@@ -48,14 +48,20 @@ const columns: ColumnDef<AdminApplicationRow, unknown>[] = [
   { id: "cohort", header: "Cohort", accessorFn: (r) => r.cohort.name },
   { id: "institution", header: "Institution", accessorFn: (r) => r.graduate.institution ?? "" },
   { id: "type", header: "Type", accessorFn: (r) => INTERN_TYPE[r.graduate.internType].label },
+  {
+    id: "review",
+    header: "Review",
+    accessorFn: (r) => PROFILE_REVIEW[r.graduate.reviewStatus].label,
+    cell: ({ row }) => <StatusPill map={PROFILE_REVIEW} value={row.original.graduate.reviewStatus} />,
+  },
   { id: "location", header: "Location", accessorFn: (r) => formatLocation(r.graduate) },
   {
     id: "skills",
     header: "Skills",
     enableSorting: false,
-    accessorFn: (r) => r.graduate.skills.map((s) => s.skill.name).join(", "),
+    accessorFn: (r) => r.graduate.skills.map((s) => s.skill?.name ?? s.otherName ?? "Skill").join(", "),
     cell: ({ row }) => {
-      const names = row.original.graduate.skills.map((s) => s.skill.name);
+      const names = row.original.graduate.skills.map((s) => s.skill?.name ?? s.otherName ?? "Skill");
       const extra = names.length - 2;
       return (
         <span className="text-sm whitespace-nowrap text-muted-foreground" title={names.join(", ")}>
@@ -361,10 +367,25 @@ function ApplicantPanel({ id }: { id: string }) {
                 </div>
               ))}
             </dl>
-            <div className="flex flex-wrap gap-2">
-              {a.graduate.skills.map((s) => (
-                <Badge key={s.skill.id}>{s.skill.name}</Badge>
-              ))}
+            <div>
+              <p className="text-sm font-semibold">Skills</p>
+              {a.graduate.skills.length ? (
+                <ul className="mt-2 grid gap-2">
+                  {a.graduate.skills.map((s) => (
+                    <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-3 py-2">
+                      <span className="min-w-0 flex-1 font-semibold">{s.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        Claims {SKILL_LEVEL[s.level]}
+                        {s.verifiedLevel ? `, verified ${SKILL_LEVEL[s.verifiedLevel]}` : ""}
+                        {`, ${s.documents.length} ${s.documents.length === 1 ? "document" : "documents"}`}
+                      </span>
+                      <StatusPill map={SKILL_STATUS} value={s.status} />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-[15px] text-muted-foreground">No skills listed yet.</p>
+              )}
             </div>
             {a.motivation ? (
               <div>

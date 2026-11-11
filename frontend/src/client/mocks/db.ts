@@ -8,6 +8,9 @@ import type {
   CompanyVerificationStatus,
   DegreeClass,
   InternType,
+  ProfileReviewStatus,
+  SkillDocumentKind,
+  SkillStatus,
   MatchStatus,
   NyscStatus,
   OpeningStatus,
@@ -101,8 +104,36 @@ export interface DbGraduate {
   photoUrl: string | null;
   searchable: boolean;
   visibility: ProfileVisibility;
-  skills: Array<{ skillId: string; level: SkillLevel }>;
+  skills: DbGraduateSkill[];
+  reviewStatus: ProfileReviewStatus;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  reviewNote: string | null;
   updatedAt: string;
+}
+export interface DbSkillDocument {
+  id: string;
+  kind: SkillDocumentKind;
+  fileName: string | null;
+  format: string | null;
+  bytes: number | null;
+  url: string | null;
+  createdAt: string;
+}
+export interface DbGraduateSkill {
+  id: string;
+  /** Catalogue skill; null for "Other". */
+  skillId: string | null;
+  otherName: string | null;
+  level: SkillLevel;
+  verifiedLevel: SkillLevel | null;
+  status: SkillStatus;
+  rejectionReason: string | null;
+  issuingBody: string | null;
+  issuedAt: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  documents: DbSkillDocument[];
 }
 export interface DbApplication {
   id: string;
@@ -363,8 +394,15 @@ export function bestFinal(graduateId: string): number | null {
   return scores.length ? Math.max(...scores) : null;
 }
 
+/** Skills SIIP has verified, at the verified level: the only ones companies and matching see. */
+export function verifiedSkills(g: DbGraduate) {
+  return g.skills.flatMap((s) =>
+    s.status === "VERIFIED" && s.skillId && s.verifiedLevel ? [{ skillId: s.skillId, level: s.verifiedLevel }] : [],
+  );
+}
+
 export function candidateOf(g: DbGraduate): MatchCandidate {
-  return { ...g, skills: g.skills, finalAssessmentPercent: bestFinal(g.id) };
+  return { ...g, skills: verifiedSkills(g), finalAssessmentPercent: bestFinal(g.id) };
 }
 
 export function scoreFor(g: DbGraduate, o: DbOpening) {
@@ -736,6 +774,35 @@ const PATH: ApplicationStatus[] = [
   "COMPLETED",
 ];
 
+/** A claimed skill with one piece of proof (a certificate link), waiting for SIIP. */
+function makeSkill(skillId: string, level: SkillLevel, key: string): DbGraduateSkill {
+  const slug = key.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return {
+    id: newId("gsk"),
+    skillId,
+    otherName: null,
+    level,
+    verifiedLevel: null,
+    status: "PENDING",
+    rejectionReason: null,
+    issuingBody: "Coursera",
+    issuedAt: iso(-200),
+    reviewedAt: null,
+    createdAt: iso(-60),
+    documents: [
+      {
+        id: newId("doc"),
+        kind: "LINK",
+        fileName: null,
+        format: null,
+        bytes: null,
+        url: `https://www.coursera.org/verify/${slug}`,
+        createdAt: iso(-60),
+      },
+    ],
+  };
+}
+
 const ABROAD = [
   { code: "GH", city: "Accra", dial: "+23324" },
   { code: "KE", city: "Nairobi", dial: "+25471" },
@@ -802,11 +869,15 @@ function makeGraduate(i: number, complete = true): DbGraduate {
     searchable: i % 3 === 0,
     visibility: i % 3 === 0 ? "VERIFIED_COMPANIES" : "PRIVATE",
     skills: complete
-      ? pickN(db.skills, 2 + (i % 3)).map((s) => ({
-          skillId: s.id,
-          level: pick(["BEGINNER", "INTERMEDIATE", "ADVANCED", "INTERMEDIATE"] as const),
-        }))
+      ? pickN(db.skills, 2 + (i % 3)).map((s) =>
+          makeSkill(s.id, pick(["BEGINNER", "INTERMEDIATE", "ADVANCED", "INTERMEDIATE"] as const), `${firstName}-${s.slug}`),
+        )
       : [],
+    // Proof uploaded and waiting for SIIP; the journey seed approves those further along.
+    reviewStatus: complete ? "SUBMITTED" : "DRAFT",
+    submittedAt: complete ? iso(-30 + (i % 10)) : null,
+    reviewedAt: null,
+    reviewNote: null,
     updatedAt: iso(-5),
   };
   db.graduates.push(g);
@@ -945,7 +1016,13 @@ function seedJourney(adminId: string) {
       // give them the skills and course a matching opening asks for.
       if (["FINAL_ASSESSMENT", "QUALIFIED", "MATCHED", "PLACED", "COMPLETED"].includes(status)) {
         const t = OPENING_TITLES[i % OPENING_TITLES.length];
-        g.skills = t.skills.map((name, k) => ({ skillId: db.skills.find((s) => s.name === name)!.id, level: k === 0 ? "ADVANCED" : "INTERMEDIATE" }));
+        g.skills = t.skills.map((name, k) => {
+          const level = k === 0 ? "ADVANCED" : "INTERMEDIATE";
+          const sk = makeSkill(db.skills.find((s) => s.name === name)!.id, level, `${g.firstName}-${name}`);
+          return { ...sk, status: "VERIFIED", verifiedLevel: level, reviewedAt: iso(-40) };
+        });
+        g.reviewStatus = "APPROVED";
+        g.reviewedAt = iso(-40);
         if (t.disciplines[0]) g.courseOfStudy = t.disciplines[0];
         g.availability = "FULL_TIME";
         g.internType = "GRADUATE";

@@ -10,7 +10,6 @@ import { GET as myApp } from "../../app/api/v1/graduate/applications/[id]/route"
 import { POST as withdraw } from "../../app/api/v1/graduate/applications/[id]/withdraw/route";
 import { POST as apply } from "../../app/api/v1/graduate/applications/route";
 import { GET as getProfile, PATCH as patchProfile } from "../../app/api/v1/graduate/profile/route";
-import { PUT as putSkills } from "../../app/api/v1/graduate/profile/skills/route";
 import { POST as confirmUpload } from "../../app/api/v1/graduate/uploads/confirm/route";
 import { POST as markRead } from "../../app/api/v1/notifications/[id]/read/route";
 import { GET as notifications } from "../../app/api/v1/notifications/route";
@@ -20,7 +19,6 @@ import {
   completeProfile,
   createOpenCohort,
   createUser,
-  ensureSkill,
   graduateIdOf,
   type TestUser,
 } from "./factories";
@@ -132,27 +130,6 @@ describe("graduate profile", () => {
 
     // Back to the Nigerian graduate the later tests expect.
     await call(patchProfile, { method: "PATCH", cookie: gradA.cookie, body: { internType: "GRADUATE", country: "NG" } });
-  });
-
-  it("replaces skills and rejects unknown ones", async () => {
-    const [excel, sales] = await Promise.all([ensureSkill("Microsoft Excel"), ensureSkill("Sales")]);
-    const { json } = await call(putSkills, {
-      method: "PUT",
-      cookie: gradA.cookie,
-      body: {
-        skills: [
-          { skillId: excel.id, level: "ADVANCED" },
-          { skillId: sales.id, level: "BEGINNER" },
-        ],
-      },
-    });
-    expect(json.data.skills).toHaveLength(2);
-    const unknown = await call(putSkills, {
-      method: "PUT",
-      cookie: gradA.cookie,
-      body: { skills: [{ skillId: "nope", level: "ADVANCED" }] },
-    });
-    expect(unknown.res.status).toBe(400);
   });
 
   it("confirms only uploads issued to this graduate", async () => {

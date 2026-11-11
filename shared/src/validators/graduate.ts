@@ -68,13 +68,59 @@ export const updateProfileSchema = z
   .strict();
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
-export const setSkillsSchema = z.object({
-  skills: z
-    .array(z.object({ skillId: z.string().min(1).max(64), level: z.enum(SkillLevel) }))
-    .max(20, "You can list up to 20 skills")
-    .refine((s) => new Set(s.map((x) => x.skillId)).size === s.length, "Each skill can only be listed once"),
+// ─── Skills with proof ────────────────────────────────────────────────────────
+
+/** Limits for the documents that back up a skill. */
+export const SKILL_DOCS = {
+  maxPerSkill: 5,
+  maxBytes: 5 * 1024 * 1024,
+  formats: ["pdf", "jpg", "jpeg", "png"] as const,
+} as const;
+export const MAX_SKILLS = 20;
+
+const skillId = z.string().min(1).max(64);
+const issuedAt = z.iso
+  .date({ message: "Enter a valid date" })
+  .refine((d) => new Date(d) <= new Date(), "The date can't be in the future")
+  .nullish()
+  .transform((v) => v ?? null);
+
+/** A skill from the list, or "Other" with its own name (exactly one of the two). */
+export const addSkillSchema = z
+  .object({
+    skillId: skillId.nullish(),
+    otherName: z.string().trim().min(2, "Name the skill").max(80).nullish(),
+    level: z.enum(SkillLevel),
+    issuingBody: optionalText(120),
+    issuedAt,
+  })
+  .strict()
+  .refine((s) => Boolean(s.skillId) !== Boolean(s.otherName), {
+    message: "Choose a skill from the list, or choose Other and name it",
+    path: ["skillId"],
+  });
+export type AddSkillInput = z.infer<typeof addSkillSchema>;
+
+export const updateSkillSchema = z
+  .object({ level: z.enum(SkillLevel), issuingBody: optionalText(120), issuedAt })
+  .partial()
+  .strict();
+export type UpdateSkillInput = z.infer<typeof updateSkillSchema>;
+
+export const skillLinkSchema = z.object({
+  url: z.url({ protocol: /^https?$/, message: "Enter a full link, starting with https://" }).max(500),
 });
-export type SetSkillsInput = z.infer<typeof setSkillsSchema>;
+
+export const skillFileSchema = z.object({
+  publicId: z.string().min(1).max(255),
+  fileName: z.string().trim().min(1).max(200),
+});
+
+/** Proof for a skill: an uploaded file (confirmed after upload) or a link. */
+export const skillDocumentSchema = z.discriminatedUnion("kind", [
+  skillFileSchema.extend({ kind: z.literal("FILE") }),
+  skillLinkSchema.extend({ kind: z.literal("LINK") }),
+]);
 
 export const graduateUploadKind = z.enum(["cv", "photo"]);
 

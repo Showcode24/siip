@@ -27,10 +27,12 @@ export async function getAnalytics(cohortId?: string) {
       where: { opening: { status: { not: "DRAFT" }, ...(cohortId ? { cohortId } : {}) } },
       select: { skillId: true, skill: { select: { name: true } }, opening: { select: { slots: true } } },
     }),
-    // Supply: graduates in the programme who have each skill.
+    // Supply: interns in the programme with each skill verified by SIIP.
     db.graduateSkill.groupBy({
       by: ["skillId"],
       where: {
+        status: "VERIFIED",
+        skillId: { not: null },
         graduate: { applications: { some: { ...appScope, status: { notIn: ["REJECTED", "WITHDRAWN"] } } } },
       },
       _count: { _all: true },
@@ -61,7 +63,9 @@ export async function getAnalytics(cohortId?: string) {
     entry.demand += d.opening.slots;
     demandBySkill.set(d.skillId, entry);
   }
-  const supplyBySkill = new Map(supply.map((s) => [s.skillId, s._count._all]));
+  const supplyBySkill = new Map(
+    supply.flatMap((s) => (s.skillId ? [[s.skillId, s._count._all] as const] : [])),
+  );
   const skillIds = new Set([...demandBySkill.keys(), ...supplyBySkill.keys()]);
   const names = new Map(
     (await db.skill.findMany({ where: { id: { in: [...skillIds] } }, select: { id: true, name: true } })).map(

@@ -17,22 +17,27 @@ const DAY = 24 * 60 * 60 * 1000;
 const now = Date.now();
 const daysFromNow = (d: number) => new Date(now + d * DAY);
 
+// The skill catalogue, grouped so companies can find skills by area
+// (kept in step with the skill_proof migration).
 const SKILLS: Array<[string, string]> = [
-  ["Social Media Management", "Digital"],
-  ["Content Creation", "Creative"],
-  ["Smartphone Videography", "Creative"],
-  ["Video Editing", "Creative"],
-  ["Photo Editing", "Creative"],
-  ["Graphic Design", "Creative"],
-  ["Digital Marketing", "Digital"],
-  ["Customer Service", "Business"],
-  ["Data Entry", "Office"],
-  ["Microsoft Excel", "Office"],
-  ["Copywriting", "Creative"],
-  ["Basic Web Design", "Digital"],
-  ["Sales", "Business"],
-  ["Administration", "Office"],
-  ["Research", "Business"],
+  ["Graphic Design", "Design and media"],
+  ["Video Editing", "Design and media"],
+  ["Photo Editing", "Design and media"],
+  ["Smartphone Videography", "Design and media"],
+  ["Content Creation", "Design and media"],
+  ["Social Media Management", "Marketing and sales"],
+  ["Digital Marketing", "Marketing and sales"],
+  ["Copywriting", "Marketing and sales"],
+  ["Sales", "Marketing and sales"],
+  ["Web Development", "Technology"],
+  ["Basic Web Design", "Technology"],
+  ["Accounting", "Business and finance"],
+  ["Microsoft Excel", "Business and finance"],
+  ["Data Entry", "Business and finance"],
+  ["Administration", "Business and finance"],
+  ["Research", "Business and finance"],
+  ["Customer Service", "Business and finance"],
+  ["Translation", "Languages"],
 ];
 
 const slugify = (s: string) =>
@@ -72,7 +77,7 @@ async function seedSkills() {
   for (const [name, category] of SKILLS) {
     await db.skill.upsert({
       where: { slug: slugify(name) },
-      update: {},
+      update: { category },
       create: { name, slug: slugify(name), category },
     });
   }
@@ -571,6 +576,7 @@ async function seedGraduates(
       availability: g.availability,
       bio: `${g.course} graduate from ${g.institution}.`,
     };
+    const verified = ["FINAL_ASSESSMENT", "QUALIFIED", "MATCHED", "PLACED", "COMPLETED"].includes(g.status);
     const profile = await db.graduateProfile.create({
       data: {
         userId: user.id,
@@ -586,7 +592,20 @@ async function seedGraduates(
           photoUrl: null,
           skillCount: g.skills.length,
         }),
-        skills: { create: g.skills.map(([name, level]) => ({ skillId: skillIds.get(name)!, level })) },
+        // Interns further along have proof that SIIP has checked; earlier ones are pending.
+        reviewStatus: verified ? "APPROVED" : g.status === "SUBMITTED" ? "DRAFT" : "SUBMITTED",
+        submittedAt: g.status === "SUBMITTED" ? null : new Date(now - 20 * DAY),
+        reviewedAt: verified ? new Date(now - 15 * DAY) : null,
+        skills: {
+          create: g.skills.map(([name, level]) => ({
+            skillId: skillIds.get(name)!,
+            level,
+            ...(verified ? { status: "VERIFIED" as const, verifiedLevel: level, reviewedAt: new Date(now - 15 * DAY) } : {}),
+            documents: {
+              create: { kind: "LINK" as const, url: `https://www.coursera.org/verify/${slugify(`${g.first}-${name}`)}` },
+            },
+          })),
+        },
       },
     });
 

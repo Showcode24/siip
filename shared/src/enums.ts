@@ -62,6 +62,33 @@ export const ProfileVisibility = {
 export type ProfileVisibility = (typeof ProfileVisibility)[keyof typeof ProfileVisibility]
 
 
+export const SkillStatus = {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type SkillStatus = (typeof SkillStatus)[keyof typeof SkillStatus]
+
+
+export const ProfileReviewStatus = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  CHANGES_REQUESTED: 'CHANGES_REQUESTED',
+  APPROVED: 'APPROVED'
+} as const
+
+export type ProfileReviewStatus = (typeof ProfileReviewStatus)[keyof typeof ProfileReviewStatus]
+
+
+export const SkillDocumentKind = {
+  FILE: 'FILE',
+  LINK: 'LINK'
+} as const
+
+export type SkillDocumentKind = (typeof SkillDocumentKind)[keyof typeof SkillDocumentKind]
+
+
 export const SkillLevel = {
   BEGINNER: 'BEGINNER',
   INTERMEDIATE: 'INTERMEDIATE',

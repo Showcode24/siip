@@ -6,6 +6,8 @@ import type {
   CompanyVerificationStatus,
   DegreeClass,
   InternType,
+  ProfileReviewStatus,
+  SkillStatus,
   MatchStatus,
   NyscStatus,
   OpeningStatus,
@@ -110,6 +112,27 @@ export const SKILL_LEVEL: Record<SkillLevel, string> = {
   INTERMEDIATE: "Intermediate",
   ADVANCED: "Advanced",
   EXPERT: "Expert",
+};
+
+/** What each level means, so interns claim honestly and SIIP checks consistently. */
+export const SKILL_LEVEL_HINT: Record<SkillLevel, string> = {
+  BEGINNER: "You've learned the basics and still need guidance",
+  INTERMEDIATE: "You handle everyday tasks on your own",
+  ADVANCED: "You handle complex work with little guidance",
+  EXPERT: "You could teach others, with work to show for it",
+};
+
+export const SKILL_STATUS: Record<SkillStatus, StatusMeta> = {
+  PENDING: { label: "Waiting for SIIP", tone: "warning" },
+  VERIFIED: { label: "Verified", tone: "success" },
+  REJECTED: { label: "Not verified", tone: "danger" },
+};
+
+export const PROFILE_REVIEW: Record<ProfileReviewStatus, StatusMeta> = {
+  DRAFT: { label: "Not sent yet", tone: "neutral" },
+  SUBMITTED: { label: "With SIIP for review", tone: "info" },
+  CHANGES_REQUESTED: { label: "More documents needed", tone: "warning" },
+  APPROVED: { label: "Approved", tone: "success" },
 };
 
 export const WORK_MODE: Record<WorkMode, string> = { ONSITE: "On-site", REMOTE: "Remote", HYBRID: "Hybrid" };

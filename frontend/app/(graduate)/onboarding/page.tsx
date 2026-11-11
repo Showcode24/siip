@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, CircleAlert } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { graduateApi } from "@/client/api/graduate";
@@ -13,6 +13,7 @@ import {
   WorkSection,
   profileKey,
 } from "@/components/graduate/profile-sections";
+import { ReviewSubmitCard } from "@/components/graduate/skills-proof";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, Progress } from "@/components/ui/display";
@@ -118,30 +119,11 @@ export default function OnboardingPage() {
                         </p>
                       </div>
                     </div>
-                    {profile.missingForApplication.length ? (
-                      <div className="rounded-lg border border-warning/30 bg-warning-soft p-5 text-warning">
-                        <p className="flex items-center gap-2 font-semibold">
-                          <CircleAlert className="size-5" /> Still needed before you can apply
-                        </p>
-                        <ul className="mt-2 list-disc pl-7 text-[15px]">
-                          {profile.missingForApplication.map((m) => (
-                            <li key={m}>{m}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : (
-                      <p className="flex items-center gap-2 rounded-lg bg-success-soft p-5 font-semibold text-success">
-                        <CheckCircle2 className="size-5" /> Your profile is ready. You can apply now.
-                      </p>
-                    )}
+                    <ReviewSubmitCard profile={profile} />
                     <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
                       {back}
-                      {profile.missingForApplication.length ? (
-                        <Button size="lg" disabled>
-                          Apply to a cohort
-                        </Button>
-                      ) : (
-                        <Button asChild size="lg">
+                      {profile.missingForApplication.length ? null : (
+                        <Button asChild size="lg" variant="outline">
                           <Link href="/applications">Apply to a cohort</Link>
                         </Button>
                       )}

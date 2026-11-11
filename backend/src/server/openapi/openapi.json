@@ -258,6 +258,273 @@
             }
           },
           {
+            "name": "internType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NYSC_CORPS_MEMBER",
+                "UNDERGRADUATE",
+                "GRADUATE"
+              ]
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AD",
+                "AE",
+                "AF",
+                "AG",
+                "AI",
+                "AL",
+                "AM",
+                "AO",
+                "AR",
+                "AS",
+                "AT",
+                "AU",
+                "AW",
+                "AX",
+                "AZ",
+                "BA",
+                "BB",
+                "BD",
+                "BE",
+                "BF",
+                "BG",
+                "BH",
+                "BI",
+                "BJ",
+                "BL",
+                "BM",
+                "BN",
+                "BO",
+                "BQ",
+                "BR",
+                "BS",
+                "BT",
+                "BW",
+                "BY",
+                "BZ",
+                "CA",
+                "CC",
+                "CD",
+                "CF",
+                "CG",
+                "CH",
+                "CI",
+                "CK",
+                "CL",
+                "CM",
+                "CN",
+                "CO",
+                "CR",
+                "CU",
+                "CV",
+                "CW",
+                "CX",
+                "CY",
+                "CZ",
+                "DE",
+                "DJ",
+                "DK",
+                "DM",
+                "DO",
+                "DZ",
+                "EC",
+                "EE",
+                "EG",
+                "EH",
+                "ER",
+                "ES",
+                "ET",
+                "FI",
+                "FJ",
+                "FK",
+                "FM",
+                "FO",
+                "FR",
+                "GA",
+                "GB",
+                "GD",
+                "GE",
+                "GF",
+                "GG",
+                "GH",
+                "GI",
+                "GL",
+                "GM",
+                "GN",
+                "GP",
+                "GQ",
+                "GR",
+                "GT",
+                "GU",
+                "GW",
+                "GY",
+                "HK",
+                "HN",
+                "HR",
+                "HT",
+                "HU",
+                "ID",
+                "IE",
+                "IL",
+                "IM",
+                "IN",
+                "IO",
+                "IQ",
+                "IR",
+                "IS",
+                "IT",
+                "JE",
+                "JM",
+                "JO",
+                "JP",
+                "KE",
+                "KG",
+                "KH",
+                "KI",
+                "KM",
+                "KN",
+                "KP",
+                "KR",
+                "KW",
+                "KY",
+                "KZ",
+                "LA",
+                "LB",
+                "LC",
+                "LI",
+                "LK",
+                "LR",
+                "LS",
+                "LT",
+                "LU",
+                "LV",
+                "LY",
+                "MA",
+                "MC",
+                "MD",
+                "ME",
+                "MF",
+                "MG",
+                "MH",
+                "MK",
+                "ML",
+                "MM",
+                "MN",
+                "MO",
+                "MP",
+                "MQ",
+                "MR",
+                "MS",
+                "MT",
+                "MU",
+                "MV",
+                "MW",
+                "MX",
+                "MY",
+                "MZ",
+                "NA",
+                "NC",
+                "NE",
+                "NF",
+                "NG",
+                "NI",
+                "NL",
+                "NO",
+                "NP",
+                "NR",
+                "NU",
+                "NZ",
+                "OM",
+                "PA",
+                "PE",
+                "PF",
+                "PG",
+                "PH",
+                "PK",
+                "PL",
+                "PM",
+                "PN",
+                "PR",
+                "PS",
+                "PT",
+                "PW",
+                "PY",
+                "QA",
+                "RE",
+                "RO",
+                "RS",
+                "RU",
+                "RW",
+                "SA",
+                "SB",
+                "SC",
+                "SD",
+                "SE",
+                "SG",
+                "SH",
+                "SI",
+                "SJ",
+                "SK",
+                "SL",
+                "SM",
+                "SN",
+                "SO",
+                "SR",
+                "SS",
+                "ST",
+                "SV",
+                "SX",
+                "SY",
+                "SZ",
+                "TC",
+                "TD",
+                "TG",
+                "TH",
+                "TJ",
+                "TK",
+                "TL",
+                "TM",
+                "TN",
+                "TO",
+                "TR",
+                "TT",
+                "TV",
+                "TW",
+                "TZ",
+                "UA",
+                "UG",
+                "US",
+                "UY",
+                "UZ",
+                "VA",
+                "VC",
+                "VE",
+                "VG",
+                "VI",
+                "VN",
+                "VU",
+                "WF",
+                "WS",
+                "XK",
+                "YE",
+                "YT",
+                "ZA",
+                "ZM",
+                "ZW"
+              ]
+            }
+          },
+          {
             "name": "sort",
             "in": "query",
             "required": false,
@@ -1639,6 +1906,260 @@
                 "VERIFIED",
                 "REJECTED",
                 "SUSPENDED"
+              ]
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AD",
+                "AE",
+                "AF",
+                "AG",
+                "AI",
+                "AL",
+                "AM",
+                "AO",
+                "AR",
+                "AS",
+                "AT",
+                "AU",
+                "AW",
+                "AX",
+                "AZ",
+                "BA",
+                "BB",
+                "BD",
+                "BE",
+                "BF",
+                "BG",
+                "BH",
+                "BI",
+                "BJ",
+                "BL",
+                "BM",
+                "BN",
+                "BO",
+                "BQ",
+                "BR",
+                "BS",
+                "BT",
+                "BW",
+                "BY",
+                "BZ",
+                "CA",
+                "CC",
+                "CD",
+                "CF",
+                "CG",
+                "CH",
+                "CI",
+                "CK",
+                "CL",
+                "CM",
+                "CN",
+                "CO",
+                "CR",
+                "CU",
+                "CV",
+                "CW",
+                "CX",
+                "CY",
+                "CZ",
+                "DE",
+                "DJ",
+                "DK",
+                "DM",
+                "DO",
+                "DZ",
+                "EC",
+                "EE",
+                "EG",
+                "EH",
+                "ER",
+                "ES",
+                "ET",
+                "FI",
+                "FJ",
+                "FK",
+                "FM",
+                "FO",
+                "FR",
+                "GA",
+                "GB",
+                "GD",
+                "GE",
+                "GF",
+                "GG",
+                "GH",
+                "GI",
+                "GL",
+                "GM",
+                "GN",
+                "GP",
+                "GQ",
+                "GR",
+                "GT",
+                "GU",
+                "GW",
+                "GY",
+                "HK",
+                "HN",
+                "HR",
+                "HT",
+                "HU",
+                "ID",
+                "IE",
+                "IL",
+                "IM",
+                "IN",
+                "IO",
+                "IQ",
+                "IR",
+                "IS",
+                "IT",
+                "JE",
+                "JM",
+                "JO",
+                "JP",
+                "KE",
+                "KG",
+                "KH",
+                "KI",
+                "KM",
+                "KN",
+                "KP",
+                "KR",
+                "KW",
+                "KY",
+                "KZ",
+                "LA",
+                "LB",
+                "LC",
+                "LI",
+                "LK",
+                "LR",
+                "LS",
+                "LT",
+                "LU",
+                "LV",
+                "LY",
+                "MA",
+                "MC",
+                "MD",
+                "ME",
+                "MF",
+                "MG",
+                "MH",
+                "MK",
+                "ML",
+                "MM",
+                "MN",
+                "MO",
+                "MP",
+                "MQ",
+                "MR",
+                "MS",
+                "MT",
+                "MU",
+                "MV",
+                "MW",
+                "MX",
+                "MY",
+                "MZ",
+                "NA",
+                "NC",
+                "NE",
+                "NF",
+                "NG",
+                "NI",
+                "NL",
+                "NO",
+                "NP",
+                "NR",
+                "NU",
+                "NZ",
+                "OM",
+                "PA",
+                "PE",
+                "PF",
+                "PG",
+                "PH",
+                "PK",
+                "PL",
+                "PM",
+                "PN",
+                "PR",
+                "PS",
+                "PT",
+                "PW",
+                "PY",
+                "QA",
+                "RE",
+                "RO",
+                "RS",
+                "RU",
+                "RW",
+                "SA",
+                "SB",
+                "SC",
+                "SD",
+                "SE",
+                "SG",
+                "SH",
+                "SI",
+                "SJ",
+                "SK",
+                "SL",
+                "SM",
+                "SN",
+                "SO",
+                "SR",
+                "SS",
+                "ST",
+                "SV",
+                "SX",
+                "SY",
+                "SZ",
+                "TC",
+                "TD",
+                "TG",
+                "TH",
+                "TJ",
+                "TK",
+                "TL",
+                "TM",
+                "TN",
+                "TO",
+                "TR",
+                "TT",
+                "TV",
+                "TW",
+                "TZ",
+                "UA",
+                "UG",
+                "US",
+                "UY",
+                "UZ",
+                "VA",
+                "VC",
+                "VE",
+                "VG",
+                "VI",
+                "VN",
+                "VU",
+                "WF",
+                "WS",
+                "XK",
+                "YE",
+                "YT",
+                "ZA",
+                "ZM",
+                "ZW"
               ]
             }
           },
@@ -3192,6 +3713,260 @@
             }
           },
           {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AD",
+                "AE",
+                "AF",
+                "AG",
+                "AI",
+                "AL",
+                "AM",
+                "AO",
+                "AR",
+                "AS",
+                "AT",
+                "AU",
+                "AW",
+                "AX",
+                "AZ",
+                "BA",
+                "BB",
+                "BD",
+                "BE",
+                "BF",
+                "BG",
+                "BH",
+                "BI",
+                "BJ",
+                "BL",
+                "BM",
+                "BN",
+                "BO",
+                "BQ",
+                "BR",
+                "BS",
+                "BT",
+                "BW",
+                "BY",
+                "BZ",
+                "CA",
+                "CC",
+                "CD",
+                "CF",
+                "CG",
+                "CH",
+                "CI",
+                "CK",
+                "CL",
+                "CM",
+                "CN",
+                "CO",
+                "CR",
+                "CU",
+                "CV",
+                "CW",
+                "CX",
+                "CY",
+                "CZ",
+                "DE",
+                "DJ",
+                "DK",
+                "DM",
+                "DO",
+                "DZ",
+                "EC",
+                "EE",
+                "EG",
+                "EH",
+                "ER",
+                "ES",
+                "ET",
+                "FI",
+                "FJ",
+                "FK",
+                "FM",
+                "FO",
+                "FR",
+                "GA",
+                "GB",
+                "GD",
+                "GE",
+                "GF",
+                "GG",
+                "GH",
+                "GI",
+                "GL",
+                "GM",
+                "GN",
+                "GP",
+                "GQ",
+                "GR",
+                "GT",
+                "GU",
+                "GW",
+                "GY",
+                "HK",
+                "HN",
+                "HR",
+                "HT",
+                "HU",
+                "ID",
+                "IE",
+                "IL",
+                "IM",
+                "IN",
+                "IO",
+                "IQ",
+                "IR",
+                "IS",
+                "IT",
+                "JE",
+                "JM",
+                "JO",
+                "JP",
+                "KE",
+                "KG",
+                "KH",
+                "KI",
+                "KM",
+                "KN",
+                "KP",
+                "KR",
+                "KW",
+                "KY",
+                "KZ",
+                "LA",
+                "LB",
+                "LC",
+                "LI",
+                "LK",
+                "LR",
+                "LS",
+                "LT",
+                "LU",
+                "LV",
+                "LY",
+                "MA",
+                "MC",
+                "MD",
+                "ME",
+                "MF",
+                "MG",
+                "MH",
+                "MK",
+                "ML",
+                "MM",
+                "MN",
+                "MO",
+                "MP",
+                "MQ",
+                "MR",
+                "MS",
+                "MT",
+                "MU",
+                "MV",
+                "MW",
+                "MX",
+                "MY",
+                "MZ",
+                "NA",
+                "NC",
+                "NE",
+                "NF",
+                "NG",
+                "NI",
+                "NL",
+                "NO",
+                "NP",
+                "NR",
+                "NU",
+                "NZ",
+                "OM",
+                "PA",
+                "PE",
+                "PF",
+                "PG",
+                "PH",
+                "PK",
+                "PL",
+                "PM",
+                "PN",
+                "PR",
+                "PS",
+                "PT",
+                "PW",
+                "PY",
+                "QA",
+                "RE",
+                "RO",
+                "RS",
+                "RU",
+                "RW",
+                "SA",
+                "SB",
+                "SC",
+                "SD",
+                "SE",
+                "SG",
+                "SH",
+                "SI",
+                "SJ",
+                "SK",
+                "SL",
+                "SM",
+                "SN",
+                "SO",
+                "SR",
+                "SS",
+                "ST",
+                "SV",
+                "SX",
+                "SY",
+                "SZ",
+                "TC",
+                "TD",
+                "TG",
+                "TH",
+                "TJ",
+                "TK",
+                "TL",
+                "TM",
+                "TN",
+                "TO",
+                "TR",
+                "TT",
+                "TV",
+                "TW",
+                "TZ",
+                "UA",
+                "UG",
+                "US",
+                "UY",
+                "UZ",
+                "VA",
+                "VC",
+                "VE",
+                "VG",
+                "VI",
+                "VN",
+                "VU",
+                "WF",
+                "WS",
+                "XK",
+                "YE",
+                "YT",
+                "ZA",
+                "ZM",
+                "ZW"
+              ]
+            }
+          },
+          {
             "name": "state",
             "in": "query",
             "required": false,
@@ -3830,6 +4605,53 @@
           "admin"
         ],
         "summary": "Delete question",
+        "description": "Access: Admin.",
+        "x-roles": "ADMIN",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/skill-documents/{id}/url": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get skill document url for admin",
         "description": "Access: Admin.",
         "x-roles": "ADMIN",
         "security": [
@@ -5683,46 +6505,321 @@
                       "maxLength": 120
                     }
                   },
+                  "country": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "AD",
+                          "AE",
+                          "AF",
+                          "AG",
+                          "AI",
+                          "AL",
+                          "AM",
+                          "AO",
+                          "AR",
+                          "AS",
+                          "AT",
+                          "AU",
+                          "AW",
+                          "AX",
+                          "AZ",
+                          "BA",
+                          "BB",
+                          "BD",
+                          "BE",
+                          "BF",
+                          "BG",
+                          "BH",
+                          "BI",
+                          "BJ",
+                          "BL",
+                          "BM",
+                          "BN",
+                          "BO",
+                          "BQ",
+                          "BR",
+                          "BS",
+                          "BT",
+                          "BW",
+                          "BY",
+                          "BZ",
+                          "CA",
+                          "CC",
+                          "CD",
+                          "CF",
+                          "CG",
+                          "CH",
+                          "CI",
+                          "CK",
+                          "CL",
+                          "CM",
+                          "CN",
+                          "CO",
+                          "CR",
+                          "CU",
+                          "CV",
+                          "CW",
+                          "CX",
+                          "CY",
+                          "CZ",
+                          "DE",
+                          "DJ",
+                          "DK",
+                          "DM",
+                          "DO",
+                          "DZ",
+                          "EC",
+                          "EE",
+                          "EG",
+                          "EH",
+                          "ER",
+                          "ES",
+                          "ET",
+                          "FI",
+                          "FJ",
+                          "FK",
+                          "FM",
+                          "FO",
+                          "FR",
+                          "GA",
+                          "GB",
+                          "GD",
+                          "GE",
+                          "GF",
+                          "GG",
+                          "GH",
+                          "GI",
+                          "GL",
+                          "GM",
+                          "GN",
+                          "GP",
+                          "GQ",
+                          "GR",
+                          "GT",
+                          "GU",
+                          "GW",
+                          "GY",
+                          "HK",
+                          "HN",
+                          "HR",
+                          "HT",
+                          "HU",
+                          "ID",
+                          "IE",
+                          "IL",
+                          "IM",
+                          "IN",
+                          "IO",
+                          "IQ",
+                          "IR",
+                          "IS",
+                          "IT",
+                          "JE",
+                          "JM",
+                          "JO",
+                          "JP",
+                          "KE",
+                          "KG",
+                          "KH",
+                          "KI",
+                          "KM",
+                          "KN",
+                          "KP",
+                          "KR",
+                          "KW",
+                          "KY",
+                          "KZ",
+                          "LA",
+                          "LB",
+                          "LC",
+                          "LI",
+                          "LK",
+                          "LR",
+                          "LS",
+                          "LT",
+                          "LU",
+                          "LV",
+                          "LY",
+                          "MA",
+                          "MC",
+                          "MD",
+                          "ME",
+                          "MF",
+                          "MG",
+                          "MH",
+                          "MK",
+                          "ML",
+                          "MM",
+                          "MN",
+                          "MO",
+                          "MP",
+                          "MQ",
+                          "MR",
+                          "MS",
+                          "MT",
+                          "MU",
+                          "MV",
+                          "MW",
+                          "MX",
+                          "MY",
+                          "MZ",
+                          "NA",
+                          "NC",
+                          "NE",
+                          "NF",
+                          "NG",
+                          "NI",
+                          "NL",
+                          "NO",
+                          "NP",
+                          "NR",
+                          "NU",
+                          "NZ",
+                          "OM",
+                          "PA",
+                          "PE",
+                          "PF",
+                          "PG",
+                          "PH",
+                          "PK",
+                          "PL",
+                          "PM",
+                          "PN",
+                          "PR",
+                          "PS",
+                          "PT",
+                          "PW",
+                          "PY",
+                          "QA",
+                          "RE",
+                          "RO",
+                          "RS",
+                          "RU",
+                          "RW",
+                          "SA",
+                          "SB",
+                          "SC",
+                          "SD",
+                          "SE",
+                          "SG",
+                          "SH",
+                          "SI",
+                          "SJ",
+                          "SK",
+                          "SL",
+                          "SM",
+                          "SN",
+                          "SO",
+                          "SR",
+                          "SS",
+                          "ST",
+                          "SV",
+                          "SX",
+                          "SY",
+                          "SZ",
+                          "TC",
+                          "TD",
+                          "TG",
+                          "TH",
+                          "TJ",
+                          "TK",
+                          "TL",
+                          "TM",
+                          "TN",
+                          "TO",
+                          "TR",
+                          "TT",
+                          "TV",
+                          "TW",
+                          "TZ",
+                          "UA",
+                          "UG",
+                          "US",
+                          "UY",
+                          "UZ",
+                          "VA",
+                          "VC",
+                          "VE",
+                          "VG",
+                          "VI",
+                          "VN",
+                          "VU",
+                          "WF",
+                          "WS",
+                          "XK",
+                          "YE",
+                          "YT",
+                          "ZA",
+                          "ZM",
+                          "ZW"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "city": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "state": {
-                    "type": "string",
-                    "enum": [
-                      "Abia",
-                      "Adamawa",
-                      "Akwa Ibom",
-                      "Anambra",
-                      "Bauchi",
-                      "Bayelsa",
-                      "Benue",
-                      "Borno",
-                      "Cross River",
-                      "Delta",
-                      "Ebonyi",
-                      "Edo",
-                      "Ekiti",
-                      "Enugu",
-                      "FCT",
-                      "Gombe",
-                      "Imo",
-                      "Jigawa",
-                      "Kaduna",
-                      "Kano",
-                      "Katsina",
-                      "Kebbi",
-                      "Kogi",
-                      "Kwara",
-                      "Lagos",
-                      "Nasarawa",
-                      "Niger",
-                      "Ogun",
-                      "Ondo",
-                      "Osun",
-                      "Oyo",
-                      "Plateau",
-                      "Rivers",
-                      "Sokoto",
-                      "Taraba",
-                      "Yobe",
-                      "Zamfara"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Abia",
+                          "Adamawa",
+                          "Akwa Ibom",
+                          "Anambra",
+                          "Bauchi",
+                          "Bayelsa",
+                          "Benue",
+                          "Borno",
+                          "Cross River",
+                          "Delta",
+                          "Ebonyi",
+                          "Edo",
+                          "Ekiti",
+                          "Enugu",
+                          "FCT",
+                          "Gombe",
+                          "Imo",
+                          "Jigawa",
+                          "Kaduna",
+                          "Kano",
+                          "Katsina",
+                          "Kebbi",
+                          "Kogi",
+                          "Kwara",
+                          "Lagos",
+                          "Nasarawa",
+                          "Niger",
+                          "Ogun",
+                          "Ondo",
+                          "Osun",
+                          "Oyo",
+                          "Plateau",
+                          "Rivers",
+                          "Sokoto",
+                          "Taraba",
+                          "Yobe",
+                          "Zamfara"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "location": {
@@ -5799,7 +6896,6 @@
                   "title",
                   "description",
                   "slots",
-                  "state",
                   "workMode",
                   "schedule",
                   "skills"
@@ -5957,46 +7053,321 @@
                       "maxLength": 120
                     }
                   },
+                  "country": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "AD",
+                          "AE",
+                          "AF",
+                          "AG",
+                          "AI",
+                          "AL",
+                          "AM",
+                          "AO",
+                          "AR",
+                          "AS",
+                          "AT",
+                          "AU",
+                          "AW",
+                          "AX",
+                          "AZ",
+                          "BA",
+                          "BB",
+                          "BD",
+                          "BE",
+                          "BF",
+                          "BG",
+                          "BH",
+                          "BI",
+                          "BJ",
+                          "BL",
+                          "BM",
+                          "BN",
+                          "BO",
+                          "BQ",
+                          "BR",
+                          "BS",
+                          "BT",
+                          "BW",
+                          "BY",
+                          "BZ",
+                          "CA",
+                          "CC",
+                          "CD",
+                          "CF",
+                          "CG",
+                          "CH",
+                          "CI",
+                          "CK",
+                          "CL",
+                          "CM",
+                          "CN",
+                          "CO",
+                          "CR",
+                          "CU",
+                          "CV",
+                          "CW",
+                          "CX",
+                          "CY",
+                          "CZ",
+                          "DE",
+                          "DJ",
+                          "DK",
+                          "DM",
+                          "DO",
+                          "DZ",
+                          "EC",
+                          "EE",
+                          "EG",
+                          "EH",
+                          "ER",
+                          "ES",
+                          "ET",
+                          "FI",
+                          "FJ",
+                          "FK",
+                          "FM",
+                          "FO",
+                          "FR",
+                          "GA",
+                          "GB",
+                          "GD",
+                          "GE",
+                          "GF",
+                          "GG",
+                          "GH",
+                          "GI",
+                          "GL",
+                          "GM",
+                          "GN",
+                          "GP",
+                          "GQ",
+                          "GR",
+                          "GT",
+                          "GU",
+                          "GW",
+                          "GY",
+                          "HK",
+                          "HN",
+                          "HR",
+                          "HT",
+                          "HU",
+                          "ID",
+                          "IE",
+                          "IL",
+                          "IM",
+                          "IN",
+                          "IO",
+                          "IQ",
+                          "IR",
+                          "IS",
+                          "IT",
+                          "JE",
+                          "JM",
+                          "JO",
+                          "JP",
+                          "KE",
+                          "KG",
+                          "KH",
+                          "KI",
+                          "KM",
+                          "KN",
+                          "KP",
+                          "KR",
+                          "KW",
+                          "KY",
+                          "KZ",
+                          "LA",
+                          "LB",
+                          "LC",
+                          "LI",
+                          "LK",
+                          "LR",
+                          "LS",
+                          "LT",
+                          "LU",
+                          "LV",
+                          "LY",
+                          "MA",
+                          "MC",
+                          "MD",
+                          "ME",
+                          "MF",
+                          "MG",
+                          "MH",
+                          "MK",
+                          "ML",
+                          "MM",
+                          "MN",
+                          "MO",
+                          "MP",
+                          "MQ",
+                          "MR",
+                          "MS",
+                          "MT",
+                          "MU",
+                          "MV",
+                          "MW",
+                          "MX",
+                          "MY",
+                          "MZ",
+                          "NA",
+                          "NC",
+                          "NE",
+                          "NF",
+                          "NG",
+                          "NI",
+                          "NL",
+                          "NO",
+                          "NP",
+                          "NR",
+                          "NU",
+                          "NZ",
+                          "OM",
+                          "PA",
+                          "PE",
+                          "PF",
+                          "PG",
+                          "PH",
+                          "PK",
+                          "PL",
+                          "PM",
+                          "PN",
+                          "PR",
+                          "PS",
+                          "PT",
+                          "PW",
+                          "PY",
+                          "QA",
+                          "RE",
+                          "RO",
+                          "RS",
+                          "RU",
+                          "RW",
+                          "SA",
+                          "SB",
+                          "SC",
+                          "SD",
+                          "SE",
+                          "SG",
+                          "SH",
+                          "SI",
+                          "SJ",
+                          "SK",
+                          "SL",
+                          "SM",
+                          "SN",
+                          "SO",
+                          "SR",
+                          "SS",
+                          "ST",
+                          "SV",
+                          "SX",
+                          "SY",
+                          "SZ",
+                          "TC",
+                          "TD",
+                          "TG",
+                          "TH",
+                          "TJ",
+                          "TK",
+                          "TL",
+                          "TM",
+                          "TN",
+                          "TO",
+                          "TR",
+                          "TT",
+                          "TV",
+                          "TW",
+                          "TZ",
+                          "UA",
+                          "UG",
+                          "US",
+                          "UY",
+                          "UZ",
+                          "VA",
+                          "VC",
+                          "VE",
+                          "VG",
+                          "VI",
+                          "VN",
+                          "VU",
+                          "WF",
+                          "WS",
+                          "XK",
+                          "YE",
+                          "YT",
+                          "ZA",
+                          "ZM",
+                          "ZW"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "city": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "state": {
-                    "type": "string",
-                    "enum": [
-                      "Abia",
-                      "Adamawa",
-                      "Akwa Ibom",
-                      "Anambra",
-                      "Bauchi",
-                      "Bayelsa",
-                      "Benue",
-                      "Borno",
-                      "Cross River",
-                      "Delta",
-                      "Ebonyi",
-                      "Edo",
-                      "Ekiti",
-                      "Enugu",
-                      "FCT",
-                      "Gombe",
-                      "Imo",
-                      "Jigawa",
-                      "Kaduna",
-                      "Kano",
-                      "Katsina",
-                      "Kebbi",
-                      "Kogi",
-                      "Kwara",
-                      "Lagos",
-                      "Nasarawa",
-                      "Niger",
-                      "Ogun",
-                      "Ondo",
-                      "Osun",
-                      "Oyo",
-                      "Plateau",
-                      "Rivers",
-                      "Sokoto",
-                      "Taraba",
-                      "Yobe",
-                      "Zamfara"
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Abia",
+                          "Adamawa",
+                          "Akwa Ibom",
+                          "Anambra",
+                          "Bauchi",
+                          "Bayelsa",
+                          "Benue",
+                          "Borno",
+                          "Cross River",
+                          "Delta",
+                          "Ebonyi",
+                          "Edo",
+                          "Ekiti",
+                          "Enugu",
+                          "FCT",
+                          "Gombe",
+                          "Imo",
+                          "Jigawa",
+                          "Kaduna",
+                          "Kano",
+                          "Katsina",
+                          "Kebbi",
+                          "Kogi",
+                          "Kwara",
+                          "Lagos",
+                          "Nasarawa",
+                          "Niger",
+                          "Ogun",
+                          "Ondo",
+                          "Osun",
+                          "Oyo",
+                          "Plateau",
+                          "Rivers",
+                          "Sokoto",
+                          "Taraba",
+                          "Yobe",
+                          "Zamfara"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   },
                   "location": {
@@ -6230,8 +7601,330 @@
                     "minLength": 2,
                     "maxLength": 160
                   },
-                  "rcNumber": {
+                  "country": {
+                    "type": "string",
+                    "enum": [
+                      "AD",
+                      "AE",
+                      "AF",
+                      "AG",
+                      "AI",
+                      "AL",
+                      "AM",
+                      "AO",
+                      "AR",
+                      "AS",
+                      "AT",
+                      "AU",
+                      "AW",
+                      "AX",
+                      "AZ",
+                      "BA",
+                      "BB",
+                      "BD",
+                      "BE",
+                      "BF",
+                      "BG",
+                      "BH",
+                      "BI",
+                      "BJ",
+                      "BL",
+                      "BM",
+                      "BN",
+                      "BO",
+                      "BQ",
+                      "BR",
+                      "BS",
+                      "BT",
+                      "BW",
+                      "BY",
+                      "BZ",
+                      "CA",
+                      "CC",
+                      "CD",
+                      "CF",
+                      "CG",
+                      "CH",
+                      "CI",
+                      "CK",
+                      "CL",
+                      "CM",
+                      "CN",
+                      "CO",
+                      "CR",
+                      "CU",
+                      "CV",
+                      "CW",
+                      "CX",
+                      "CY",
+                      "CZ",
+                      "DE",
+                      "DJ",
+                      "DK",
+                      "DM",
+                      "DO",
+                      "DZ",
+                      "EC",
+                      "EE",
+                      "EG",
+                      "EH",
+                      "ER",
+                      "ES",
+                      "ET",
+                      "FI",
+                      "FJ",
+                      "FK",
+                      "FM",
+                      "FO",
+                      "FR",
+                      "GA",
+                      "GB",
+                      "GD",
+                      "GE",
+                      "GF",
+                      "GG",
+                      "GH",
+                      "GI",
+                      "GL",
+                      "GM",
+                      "GN",
+                      "GP",
+                      "GQ",
+                      "GR",
+                      "GT",
+                      "GU",
+                      "GW",
+                      "GY",
+                      "HK",
+                      "HN",
+                      "HR",
+                      "HT",
+                      "HU",
+                      "ID",
+                      "IE",
+                      "IL",
+                      "IM",
+                      "IN",
+                      "IO",
+                      "IQ",
+                      "IR",
+                      "IS",
+                      "IT",
+                      "JE",
+                      "JM",
+                      "JO",
+                      "JP",
+                      "KE",
+                      "KG",
+                      "KH",
+                      "KI",
+                      "KM",
+                      "KN",
+                      "KP",
+                      "KR",
+                      "KW",
+                      "KY",
+                      "KZ",
+                      "LA",
+                      "LB",
+                      "LC",
+                      "LI",
+                      "LK",
+                      "LR",
+                      "LS",
+                      "LT",
+                      "LU",
+                      "LV",
+                      "LY",
+                      "MA",
+                      "MC",
+                      "MD",
+                      "ME",
+                      "MF",
+                      "MG",
+                      "MH",
+                      "MK",
+                      "ML",
+                      "MM",
+                      "MN",
+                      "MO",
+                      "MP",
+                      "MQ",
+                      "MR",
+                      "MS",
+                      "MT",
+                      "MU",
+                      "MV",
+                      "MW",
+                      "MX",
+                      "MY",
+                      "MZ",
+                      "NA",
+                      "NC",
+                      "NE",
+                      "NF",
+                      "NG",
+                      "NI",
+                      "NL",
+                      "NO",
+                      "NP",
+                      "NR",
+                      "NU",
+                      "NZ",
+                      "OM",
+                      "PA",
+                      "PE",
+                      "PF",
+                      "PG",
+                      "PH",
+                      "PK",
+                      "PL",
+                      "PM",
+                      "PN",
+                      "PR",
+                      "PS",
+                      "PT",
+                      "PW",
+                      "PY",
+                      "QA",
+                      "RE",
+                      "RO",
+                      "RS",
+                      "RU",
+                      "RW",
+                      "SA",
+                      "SB",
+                      "SC",
+                      "SD",
+                      "SE",
+                      "SG",
+                      "SH",
+                      "SI",
+                      "SJ",
+                      "SK",
+                      "SL",
+                      "SM",
+                      "SN",
+                      "SO",
+                      "SR",
+                      "SS",
+                      "ST",
+                      "SV",
+                      "SX",
+                      "SY",
+                      "SZ",
+                      "TC",
+                      "TD",
+                      "TG",
+                      "TH",
+                      "TJ",
+                      "TK",
+                      "TL",
+                      "TM",
+                      "TN",
+                      "TO",
+                      "TR",
+                      "TT",
+                      "TV",
+                      "TW",
+                      "TZ",
+                      "UA",
+                      "UG",
+                      "US",
+                      "UY",
+                      "UZ",
+                      "VA",
+                      "VC",
+                      "VE",
+                      "VG",
+                      "VI",
+                      "VN",
+                      "VU",
+                      "WF",
+                      "WS",
+                      "XK",
+                      "YE",
+                      "YT",
+                      "ZA",
+                      "ZM",
+                      "ZW"
+                    ]
+                  },
+                  "city": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "timeZone": {
                     "type": "string"
+                  },
+                  "rcNumber": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "businessRegNumber": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 40,
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9 ./-]*$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Abia",
+                          "Adamawa",
+                          "Akwa Ibom",
+                          "Anambra",
+                          "Bauchi",
+                          "Bayelsa",
+                          "Benue",
+                          "Borno",
+                          "Cross River",
+                          "Delta",
+                          "Ebonyi",
+                          "Edo",
+                          "Ekiti",
+                          "Enugu",
+                          "FCT",
+                          "Gombe",
+                          "Imo",
+                          "Jigawa",
+                          "Kaduna",
+                          "Kano",
+                          "Katsina",
+                          "Kebbi",
+                          "Kogi",
+                          "Kwara",
+                          "Lagos",
+                          "Nasarawa",
+                          "Niger",
+                          "Ogun",
+                          "Ondo",
+                          "Osun",
+                          "Oyo",
+                          "Plateau",
+                          "Rivers",
+                          "Sokoto",
+                          "Taraba",
+                          "Yobe",
+                          "Zamfara"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "industry": {
                     "type": "string",
@@ -6253,48 +7946,6 @@
                     "type": "string",
                     "minLength": 5,
                     "maxLength": 300
-                  },
-                  "state": {
-                    "type": "string",
-                    "enum": [
-                      "Abia",
-                      "Adamawa",
-                      "Akwa Ibom",
-                      "Anambra",
-                      "Bauchi",
-                      "Bayelsa",
-                      "Benue",
-                      "Borno",
-                      "Cross River",
-                      "Delta",
-                      "Ebonyi",
-                      "Edo",
-                      "Ekiti",
-                      "Enugu",
-                      "FCT",
-                      "Gombe",
-                      "Imo",
-                      "Jigawa",
-                      "Kaduna",
-                      "Kano",
-                      "Katsina",
-                      "Kebbi",
-                      "Kogi",
-                      "Kwara",
-                      "Lagos",
-                      "Nasarawa",
-                      "Niger",
-                      "Ogun",
-                      "Ondo",
-                      "Osun",
-                      "Oyo",
-                      "Plateau",
-                      "Rivers",
-                      "Sokoto",
-                      "Taraba",
-                      "Yobe",
-                      "Zamfara"
-                    ]
                   },
                   "website": {
                     "anyOf": [
@@ -6364,8 +8015,330 @@
                     "minLength": 2,
                     "maxLength": 160
                   },
-                  "rcNumber": {
+                  "country": {
+                    "type": "string",
+                    "enum": [
+                      "AD",
+                      "AE",
+                      "AF",
+                      "AG",
+                      "AI",
+                      "AL",
+                      "AM",
+                      "AO",
+                      "AR",
+                      "AS",
+                      "AT",
+                      "AU",
+                      "AW",
+                      "AX",
+                      "AZ",
+                      "BA",
+                      "BB",
+                      "BD",
+                      "BE",
+                      "BF",
+                      "BG",
+                      "BH",
+                      "BI",
+                      "BJ",
+                      "BL",
+                      "BM",
+                      "BN",
+                      "BO",
+                      "BQ",
+                      "BR",
+                      "BS",
+                      "BT",
+                      "BW",
+                      "BY",
+                      "BZ",
+                      "CA",
+                      "CC",
+                      "CD",
+                      "CF",
+                      "CG",
+                      "CH",
+                      "CI",
+                      "CK",
+                      "CL",
+                      "CM",
+                      "CN",
+                      "CO",
+                      "CR",
+                      "CU",
+                      "CV",
+                      "CW",
+                      "CX",
+                      "CY",
+                      "CZ",
+                      "DE",
+                      "DJ",
+                      "DK",
+                      "DM",
+                      "DO",
+                      "DZ",
+                      "EC",
+                      "EE",
+                      "EG",
+                      "EH",
+                      "ER",
+                      "ES",
+                      "ET",
+                      "FI",
+                      "FJ",
+                      "FK",
+                      "FM",
+                      "FO",
+                      "FR",
+                      "GA",
+                      "GB",
+                      "GD",
+                      "GE",
+                      "GF",
+                      "GG",
+                      "GH",
+                      "GI",
+                      "GL",
+                      "GM",
+                      "GN",
+                      "GP",
+                      "GQ",
+                      "GR",
+                      "GT",
+                      "GU",
+                      "GW",
+                      "GY",
+                      "HK",
+                      "HN",
+                      "HR",
+                      "HT",
+                      "HU",
+                      "ID",
+                      "IE",
+                      "IL",
+                      "IM",
+                      "IN",
+                      "IO",
+                      "IQ",
+                      "IR",
+                      "IS",
+                      "IT",
+                      "JE",
+                      "JM",
+                      "JO",
+                      "JP",
+                      "KE",
+                      "KG",
+                      "KH",
+                      "KI",
+                      "KM",
+                      "KN",
+                      "KP",
+                      "KR",
+                      "KW",
+                      "KY",
+                      "KZ",
+                      "LA",
+                      "LB",
+                      "LC",
+                      "LI",
+                      "LK",
+                      "LR",
+                      "LS",
+                      "LT",
+                      "LU",
+                      "LV",
+                      "LY",
+                      "MA",
+                      "MC",
+                      "MD",
+                      "ME",
+                      "MF",
+                      "MG",
+                      "MH",
+                      "MK",
+                      "ML",
+                      "MM",
+                      "MN",
+                      "MO",
+                      "MP",
+                      "MQ",
+                      "MR",
+                      "MS",
+                      "MT",
+                      "MU",
+                      "MV",
+                      "MW",
+                      "MX",
+                      "MY",
+                      "MZ",
+                      "NA",
+                      "NC",
+                      "NE",
+                      "NF",
+                      "NG",
+                      "NI",
+                      "NL",
+                      "NO",
+                      "NP",
+                      "NR",
+                      "NU",
+                      "NZ",
+                      "OM",
+                      "PA",
+                      "PE",
+                      "PF",
+                      "PG",
+                      "PH",
+                      "PK",
+                      "PL",
+                      "PM",
+                      "PN",
+                      "PR",
+                      "PS",
+                      "PT",
+                      "PW",
+                      "PY",
+                      "QA",
+                      "RE",
+                      "RO",
+                      "RS",
+                      "RU",
+                      "RW",
+                      "SA",
+                      "SB",
+                      "SC",
+                      "SD",
+                      "SE",
+                      "SG",
+                      "SH",
+                      "SI",
+                      "SJ",
+                      "SK",
+                      "SL",
+                      "SM",
+                      "SN",
+                      "SO",
+                      "SR",
+                      "SS",
+                      "ST",
+                      "SV",
+                      "SX",
+                      "SY",
+                      "SZ",
+                      "TC",
+                      "TD",
+                      "TG",
+                      "TH",
+                      "TJ",
+                      "TK",
+                      "TL",
+                      "TM",
+                      "TN",
+                      "TO",
+                      "TR",
+                      "TT",
+                      "TV",
+                      "TW",
+                      "TZ",
+                      "UA",
+                      "UG",
+                      "US",
+                      "UY",
+                      "UZ",
+                      "VA",
+                      "VC",
+                      "VE",
+                      "VG",
+                      "VI",
+                      "VN",
+                      "VU",
+                      "WF",
+                      "WS",
+                      "XK",
+                      "YE",
+                      "YT",
+                      "ZA",
+                      "ZM",
+                      "ZW"
+                    ]
+                  },
+                  "city": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  },
+                  "timeZone": {
                     "type": "string"
+                  },
+                  "rcNumber": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "businessRegNumber": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 40,
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9 ./-]*$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "Abia",
+                          "Adamawa",
+                          "Akwa Ibom",
+                          "Anambra",
+                          "Bauchi",
+                          "Bayelsa",
+                          "Benue",
+                          "Borno",
+                          "Cross River",
+                          "Delta",
+                          "Ebonyi",
+                          "Edo",
+                          "Ekiti",
+                          "Enugu",
+                          "FCT",
+                          "Gombe",
+                          "Imo",
+                          "Jigawa",
+                          "Kaduna",
+                          "Kano",
+                          "Katsina",
+                          "Kebbi",
+                          "Kogi",
+                          "Kwara",
+                          "Lagos",
+                          "Nasarawa",
+                          "Niger",
+                          "Ogun",
+                          "Ondo",
+                          "Osun",
+                          "Oyo",
+                          "Plateau",
+                          "Rivers",
+                          "Sokoto",
+                          "Taraba",
+                          "Yobe",
+                          "Zamfara"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "industry": {
                     "type": "string",
@@ -6388,48 +8361,6 @@
                     "minLength": 5,
                     "maxLength": 300
                   },
-                  "state": {
-                    "type": "string",
-                    "enum": [
-                      "Abia",
-                      "Adamawa",
-                      "Akwa Ibom",
-                      "Anambra",
-                      "Bauchi",
-                      "Bayelsa",
-                      "Benue",
-                      "Borno",
-                      "Cross River",
-                      "Delta",
-                      "Ebonyi",
-                      "Edo",
-                      "Ekiti",
-                      "Enugu",
-                      "FCT",
-                      "Gombe",
-                      "Imo",
-                      "Jigawa",
-                      "Kaduna",
-                      "Kano",
-                      "Katsina",
-                      "Kebbi",
-                      "Kogi",
-                      "Kwara",
-                      "Lagos",
-                      "Nasarawa",
-                      "Niger",
-                      "Ogun",
-                      "Ondo",
-                      "Osun",
-                      "Oyo",
-                      "Plateau",
-                      "Rivers",
-                      "Sokoto",
-                      "Taraba",
-                      "Yobe",
-                      "Zamfara"
-                    ]
-                  },
                   "website": {
                     "anyOf": [
                       {
@@ -6449,10 +8380,11 @@
                 },
                 "required": [
                   "name",
-                  "rcNumber",
+                  "country",
+                  "city",
+                  "timeZone",
                   "industry",
-                  "address",
-                  "state"
+                  "address"
                 ],
                 "additionalProperties": false
               }
@@ -7407,6 +9339,289 @@
                       "null"
                     ]
                   },
+                  "internType": {
+                    "type": "string",
+                    "enum": [
+                      "NYSC_CORPS_MEMBER",
+                      "UNDERGRADUATE",
+                      "GRADUATE"
+                    ]
+                  },
+                  "country": {
+                    "type": "string",
+                    "enum": [
+                      "AD",
+                      "AE",
+                      "AF",
+                      "AG",
+                      "AI",
+                      "AL",
+                      "AM",
+                      "AO",
+                      "AR",
+                      "AS",
+                      "AT",
+                      "AU",
+                      "AW",
+                      "AX",
+                      "AZ",
+                      "BA",
+                      "BB",
+                      "BD",
+                      "BE",
+                      "BF",
+                      "BG",
+                      "BH",
+                      "BI",
+                      "BJ",
+                      "BL",
+                      "BM",
+                      "BN",
+                      "BO",
+                      "BQ",
+                      "BR",
+                      "BS",
+                      "BT",
+                      "BW",
+                      "BY",
+                      "BZ",
+                      "CA",
+                      "CC",
+                      "CD",
+                      "CF",
+                      "CG",
+                      "CH",
+                      "CI",
+                      "CK",
+                      "CL",
+                      "CM",
+                      "CN",
+                      "CO",
+                      "CR",
+                      "CU",
+                      "CV",
+                      "CW",
+                      "CX",
+                      "CY",
+                      "CZ",
+                      "DE",
+                      "DJ",
+                      "DK",
+                      "DM",
+                      "DO",
+                      "DZ",
+                      "EC",
+                      "EE",
+                      "EG",
+                      "EH",
+                      "ER",
+                      "ES",
+                      "ET",
+                      "FI",
+                      "FJ",
+                      "FK",
+                      "FM",
+                      "FO",
+                      "FR",
+                      "GA",
+                      "GB",
+                      "GD",
+                      "GE",
+                      "GF",
+                      "GG",
+                      "GH",
+                      "GI",
+                      "GL",
+                      "GM",
+                      "GN",
+                      "GP",
+                      "GQ",
+                      "GR",
+                      "GT",
+                      "GU",
+                      "GW",
+                      "GY",
+                      "HK",
+                      "HN",
+                      "HR",
+                      "HT",
+                      "HU",
+                      "ID",
+                      "IE",
+                      "IL",
+                      "IM",
+                      "IN",
+                      "IO",
+                      "IQ",
+                      "IR",
+                      "IS",
+                      "IT",
+                      "JE",
+                      "JM",
+                      "JO",
+                      "JP",
+                      "KE",
+                      "KG",
+                      "KH",
+                      "KI",
+                      "KM",
+                      "KN",
+                      "KP",
+                      "KR",
+                      "KW",
+                      "KY",
+                      "KZ",
+                      "LA",
+                      "LB",
+                      "LC",
+                      "LI",
+                      "LK",
+                      "LR",
+                      "LS",
+                      "LT",
+                      "LU",
+                      "LV",
+                      "LY",
+                      "MA",
+                      "MC",
+                      "MD",
+                      "ME",
+                      "MF",
+                      "MG",
+                      "MH",
+                      "MK",
+                      "ML",
+                      "MM",
+                      "MN",
+                      "MO",
+                      "MP",
+                      "MQ",
+                      "MR",
+                      "MS",
+                      "MT",
+                      "MU",
+                      "MV",
+                      "MW",
+                      "MX",
+                      "MY",
+                      "MZ",
+                      "NA",
+                      "NC",
+                      "NE",
+                      "NF",
+                      "NG",
+                      "NI",
+                      "NL",
+                      "NO",
+                      "NP",
+                      "NR",
+                      "NU",
+                      "NZ",
+                      "OM",
+                      "PA",
+                      "PE",
+                      "PF",
+                      "PG",
+                      "PH",
+                      "PK",
+                      "PL",
+                      "PM",
+                      "PN",
+                      "PR",
+                      "PS",
+                      "PT",
+                      "PW",
+                      "PY",
+                      "QA",
+                      "RE",
+                      "RO",
+                      "RS",
+                      "RU",
+                      "RW",
+                      "SA",
+                      "SB",
+                      "SC",
+                      "SD",
+                      "SE",
+                      "SG",
+                      "SH",
+                      "SI",
+                      "SJ",
+                      "SK",
+                      "SL",
+                      "SM",
+                      "SN",
+                      "SO",
+                      "SR",
+                      "SS",
+                      "ST",
+                      "SV",
+                      "SX",
+                      "SY",
+                      "SZ",
+                      "TC",
+                      "TD",
+                      "TG",
+                      "TH",
+                      "TJ",
+                      "TK",
+                      "TL",
+                      "TM",
+                      "TN",
+                      "TO",
+                      "TR",
+                      "TT",
+                      "TV",
+                      "TW",
+                      "TZ",
+                      "UA",
+                      "UG",
+                      "US",
+                      "UY",
+                      "UZ",
+                      "VA",
+                      "VC",
+                      "VE",
+                      "VG",
+                      "VI",
+                      "VN",
+                      "VU",
+                      "WF",
+                      "WS",
+                      "XK",
+                      "YE",
+                      "YT",
+                      "ZA",
+                      "ZM",
+                      "ZW"
+                    ]
+                  },
+                  "city": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 80
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "workPreference": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "ONSITE",
+                          "REMOTE",
+                          "HYBRID"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "stateOfResidence": {
                     "anyOf": [
                       {
@@ -7515,7 +9730,7 @@
                       {
                         "type": "integer",
                         "minimum": 1980,
-                        "maximum": 2027
+                        "maximum": 2034
                       },
                       {
                         "type": "null"
@@ -7536,6 +9751,23 @@
                       {
                         "type": "string",
                         "maxLength": 160
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nyscStateCode": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "nyscBatch": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 30
                       },
                       {
                         "type": "null"
@@ -7646,12 +9878,131 @@
         }
       }
     },
-    "/api/v1/graduate/profile/skills": {
-      "put": {
+    "/api/v1/graduate/profile/submit": {
+      "post": {
         "tags": [
           "graduate"
         ],
-        "summary": "Set skills",
+        "summary": "Submit for review",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/skill-documents/{id}/url": {
+      "get": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Get skill document url",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/skills": {
+      "get": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "List my skills",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Add skill",
         "description": "Access: Graduate.",
         "x-roles": "GRADUATE",
         "security": [
@@ -7667,41 +10018,412 @@
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "type": "object",
                 "properties": {
-                  "skills": {
-                    "maxItems": 20,
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "skillId": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 64
-                        },
-                        "level": {
-                          "type": "string",
-                          "enum": [
-                            "BEGINNER",
-                            "INTERMEDIATE",
-                            "ADVANCED",
-                            "EXPERT"
-                          ]
-                        }
+                  "skillId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
                       },
-                      "required": [
-                        "skillId",
-                        "level"
-                      ]
-                    }
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "otherName": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 80
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "BEGINNER",
+                      "INTERMEDIATE",
+                      "ADVANCED",
+                      "EXPERT"
+                    ]
+                  },
+                  "issuingBody": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "issuedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 },
                 "required": [
-                  "skills"
+                  "level"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/skills/{id}": {
+      "patch": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Update skill",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "BEGINNER",
+                      "INTERMEDIATE",
+                      "ADVANCED",
+                      "EXPERT"
+                    ]
+                  },
+                  "issuingBody": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 120
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "issuedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Remove skill",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/skills/{id}/documents": {
+      "post": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Add skill file",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "publicId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255
+                      },
+                      "fileName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "kind": {
+                        "type": "string",
+                        "const": "FILE"
+                      }
+                    },
+                    "required": [
+                      "publicId",
+                      "fileName",
+                      "kind"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "format": "uri"
+                      },
+                      "kind": {
+                        "type": "string",
+                        "const": "LINK"
+                      }
+                    },
+                    "required": [
+                      "url",
+                      "kind"
+                    ]
+                  }
                 ]
               }
             }
           }
         },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/skills/{id}/documents/{documentId}": {
+      "delete": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Remove skill document",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/skills/{id}/documents/sign": {
+      "post": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Sign skill document",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",

@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import type { ApplicationStatus } from "@/generated/prisma/enums";
+import { presentSkill, skillSelect } from "./skill.service";
 import { db, type Tx } from "@/server/db";
 import { sendEmail } from "@/server/email/send";
 import { env } from "@/server/env";
@@ -373,7 +374,16 @@ export async function listApplicationsForAdmin(query: AdminApplicationListQuery)
           graduationYear: true,
           nyscStatus: true,
           completenessScore: true,
-          skills: { select: { level: true, skill: { select: { id: true, name: true } } } },
+          reviewStatus: true,
+          skills: {
+            select: {
+              level: true,
+              verifiedLevel: true,
+              status: true,
+              otherName: true,
+              skill: { select: { id: true, name: true } },
+            },
+          },
         },
       },
     },
@@ -391,7 +401,7 @@ export async function getApplicationForAdmin(applicationId: string) {
       graduate: {
         include: {
           user: { select: { email: true, emailVerified: true, createdAt: true } },
-          skills: { select: { level: true, skill: { select: { id: true, name: true } } } },
+          skills: { select: skillSelect, orderBy: { createdAt: "asc" } },
         },
       },
       events: { orderBy: { createdAt: "asc" } },
@@ -411,7 +421,7 @@ export async function getApplicationForAdmin(applicationId: string) {
   const { cvPublicId, ...graduate } = app.graduate;
   return {
     ...app,
-    graduate: { ...graduate, hasCv: Boolean(cvPublicId) },
+    graduate: { ...graduate, skills: graduate.skills.map(presentSkill), hasCv: Boolean(cvPublicId) },
     notes: app.notes.map((n) => ({ ...n, authorName: authorName.get(n.authorId) ?? null })),
     allowedNextStatuses: applicationMachine.nextStates(app.status, "ADMIN"),
   };

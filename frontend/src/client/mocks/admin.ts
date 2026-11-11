@@ -26,6 +26,7 @@ import {
   openingById,
   scoreFor,
   skillName,
+  verifiedSkills,
   userById,
   type DbCohort,
 } from "./db";
@@ -40,6 +41,7 @@ import {
   presentPlacement,
   requireAdmin,
   transition,
+  presentSkill,
 } from "./logic";
 
 // ─── Cohorts ──────────────────────────────────────────────────────────────────
@@ -187,6 +189,7 @@ export function getApplication(id: string): AdminApplicationDetail {
     rejectionReason: a.rejectionReason,
     graduate: {
       ...row.graduate,
+      skills: g.skills.map(presentSkill),
       phone: g.phone,
       lga: g.lga,
       workPreference: g.workPreference,
@@ -377,7 +380,7 @@ export function getSuggestions(openingId: string, limit: number) {
         bio: g.bio,
         photoUrl: g.photoUrl,
         finalAssessmentPercent: bestFinal(g.id),
-        skills: g.skills.map((sk) => ({ id: sk.skillId, name: skillName(sk.skillId), level: sk.level })),
+        skills: verifiedSkills(g).map((sk) => ({ id: sk.skillId, name: skillName(sk.skillId), level: sk.level })),
       },
     }));
   return {
@@ -596,7 +599,8 @@ export function getAnalytics(cohortId?: string): Analytics {
   const supply = new Map<string, number>();
   db.graduates
     .filter((g) => gradIds.has(g.id))
-    .forEach((g) => g.skills.forEach((s) => supply.set(s.skillId, (supply.get(s.skillId) ?? 0) + 1)));
+    // Supply counts skills SIIP has verified.
+    .forEach((g) => verifiedSkills(g).forEach((s) => supply.set(s.skillId, (supply.get(s.skillId) ?? 0) + 1)));
   return {
     stagesByCohort: [...perCohort.entries()].map(([id, stages]) => ({
       cohortId: id,

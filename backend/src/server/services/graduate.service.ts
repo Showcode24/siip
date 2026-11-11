@@ -14,7 +14,8 @@ import {
   deleteAsset,
   privateDownloadUrl,
 } from "@/server/storage/cloudinary";
-import type { SetSkillsInput, UpdateProfileInput } from "@/server/validators/graduate";
+import type { UpdateProfileInput } from "@/server/validators/graduate";
+import { presentSkill, skillSelect } from "./skill.service";
 
 const profileSelect = {
   id: true,
@@ -45,10 +46,11 @@ const profileSelect = {
   searchable: true,
   visibility: true,
   updatedAt: true,
-  skills: {
-    select: { level: true, skill: { select: { id: true, name: true, category: true } } },
-    orderBy: { skill: { name: "asc" } },
-  },
+  reviewStatus: true,
+  submittedAt: true,
+  reviewedAt: true,
+  reviewNote: true,
+  skills: { select: skillSelect, orderBy: { createdAt: "asc" } },
 } as const;
 
 type ProfileRow = NonNullable<Awaited<ReturnType<typeof findProfile>>>;
@@ -67,8 +69,9 @@ function present(p: ProfileRow) {
   return {
     ...rest,
     cv: { uploaded: Boolean(cvPublicId), uploadedAt: p.cvUploadedAt },
-    skills: skills.map((s) => ({ ...s.skill, level: s.level })),
+    skills: skills.map(presentSkill),
     missingForApplication: missingForApplication(scoringInput(p)),
+    skillsWithoutProof: skills.filter((s) => s.documents.length === 0).map((s) => presentSkill(s).name),
   };
 }
 
@@ -101,31 +104,11 @@ export async function updateProfile(graduateId: string, input: UpdateProfileInpu
   return present(profile);
 }
 
-/** Replaces the graduate's skill list. */
-export async function setSkills(graduateId: string, input: SetSkillsInput) {
-  const skillIds = input.skills.map((s) => s.skillId);
-  const activeCount = await db.skill.count({ where: { id: { in: skillIds }, isActive: true } });
-  if (activeCount !== skillIds.length) throw errors.badRequest("One or more skills are not available");
-
-  const profile = await db.$transaction(async (tx) => {
-    await tx.graduateSkill.deleteMany({ where: { graduateId, skillId: { notIn: skillIds } } });
-    for (const { skillId, level } of input.skills) {
-      await tx.graduateSkill.upsert({
-        where: { graduateId_skillId: { graduateId, skillId } },
-        update: { level },
-        create: { graduateId, skillId, level },
-      });
-    }
-    return refreshCompleteness(tx, graduateId);
-  });
-  return present(profile);
-}
-
 export async function listSkills() {
   return db.skill.findMany({
     where: { isActive: true },
     select: { id: true, name: true, slug: true, category: true },
-    orderBy: { name: "asc" },
+    orderBy: [{ category: "asc" }, { name: "asc" }],
   });
 }
 

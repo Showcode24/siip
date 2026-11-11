@@ -61,7 +61,15 @@ export async function exportApplications(actor: AuditActor, query: z.infer<typeo
             availability: true,
             completenessScore: true,
             user: { select: { email: true } },
-            skills: { select: { level: true, skill: { select: { name: true } } } },
+            skills: {
+              select: {
+                level: true,
+                verifiedLevel: true,
+                status: true,
+                otherName: true,
+                skill: { select: { name: true } },
+              },
+            },
           },
         },
       },
@@ -126,7 +134,13 @@ export async function exportApplications(actor: AuditActor, query: z.infer<typeo
       g.nyscStatus,
       g.nyscStateCode,
       g.availability,
-      g.skills.map((s) => `${s.skill.name} (${s.level})`).join("; "),
+      g.skills
+        .map((s) => {
+          const name = s.skill?.name ?? s.otherName ?? "Skill";
+          const checked = s.status === "VERIFIED" ? `verified ${s.verifiedLevel}` : s.status.toLowerCase();
+          return `${name} (claimed ${s.level}, ${checked})`;
+        })
+        .join("; "),
       g.completenessScore,
     ];
   });

@@ -3,6 +3,7 @@ import type { ApplicationStatus } from "@siip/shared/enums";
 import { computeCompleteness, missingForApplication } from "@siip/shared/profile-completeness";
 import { ApiError } from "@/client/api/http";
 import type {
+  GraduateSkill,
   AdminApplicationRow,
   GraduateProfile,
   LimitedGraduate,
@@ -23,6 +24,8 @@ import {
   notify,
   openingById,
   skillName,
+  type DbGraduateSkill,
+  verifiedSkills,
   userById,
   type DbApplication,
   type DbGraduate,
@@ -167,6 +170,27 @@ export function scoringInput(g: DbGraduate) {
   return { ...g, cvPublicId: g.cvUploadedAt, skillCount: g.skills.length };
 }
 
+/** A skill as its owner and SIIP admins see it (same shape as the backend's presentSkill). */
+export function presentSkill(s: DbGraduateSkill): GraduateSkill {
+  const cat = s.skillId ? db.skills.find((x) => x.id === s.skillId) : undefined;
+  return {
+    id: s.id,
+    skillId: s.skillId,
+    name: cat?.name ?? s.otherName ?? "Skill",
+    category: cat?.category ?? "Other",
+    isOther: !s.skillId,
+    level: s.level,
+    verifiedLevel: s.verifiedLevel,
+    status: s.status,
+    rejectionReason: s.rejectionReason,
+    issuingBody: s.issuingBody,
+    issuedAt: s.issuedAt,
+    reviewedAt: s.reviewedAt,
+    createdAt: s.createdAt,
+    documents: s.documents.map((d) => ({ ...d, url: d.kind === "LINK" ? d.url : null })),
+  };
+}
+
 export function presentProfile(g: DbGraduate): GraduateProfile {
   const input = scoringInput(g);
   return {
@@ -196,10 +220,13 @@ export function presentProfile(g: DbGraduate): GraduateProfile {
     completenessScore: computeCompleteness(input),
     searchable: g.searchable,
     visibility: g.visibility,
-    skills: g.skills
-      .map((s) => ({ id: s.skillId, name: skillName(s.skillId), level: s.level }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
+    skills: g.skills.map(presentSkill),
     missingForApplication: missingForApplication(input),
+    skillsWithoutProof: g.skills.filter((s) => s.documents.length === 0).map((s) => presentSkill(s).name),
+    reviewStatus: g.reviewStatus,
+    submittedAt: g.submittedAt,
+    reviewedAt: g.reviewedAt,
+    reviewNote: g.reviewNote,
     updatedAt: g.updatedAt,
   };
 }
@@ -223,7 +250,8 @@ export function limitedGraduate(g: DbGraduate): LimitedGraduate {
     bio: g.bio,
     photoUrl: g.photoUrl,
     finalAssessmentPercent: bestFinal(g.id),
-    skills: g.skills.map((s) => ({ id: s.skillId, name: skillName(s.skillId), level: s.level })),
+    // Companies only ever see verified skills, at the verified level.
+    skills: verifiedSkills(g).map((s) => ({ id: s.skillId, name: skillName(s.skillId), level: s.level })),
   };
 }
 
@@ -249,7 +277,14 @@ export function adminRow(a: DbApplication): AdminApplicationRow {
       graduationYear: g.graduationYear,
       nyscStatus: g.nyscStatus,
       completenessScore: computeCompleteness(scoringInput(g)),
-      skills: g.skills.map((s) => ({ level: s.level, skill: { id: s.skillId, name: skillName(s.skillId) } })),
+      reviewStatus: g.reviewStatus,
+      skills: g.skills.map((s) => ({
+        level: s.level,
+        verifiedLevel: s.verifiedLevel,
+        status: s.status,
+        otherName: s.otherName,
+        skill: s.skillId ? { id: s.skillId, name: skillName(s.skillId) } : null,
+      })),
     },
   };
 }

@@ -26,6 +26,15 @@ export const UPLOAD_KINDS = {
     formats: ["pdf"],
     maxBytes: 5 * MB,
   },
+  // Proof of a skill (certificates, transcripts). Private like CVs; Cloudinary stores
+  // PDFs and images as image resources and checks the format itself.
+  skillDoc: {
+    folder: "siip/skill-docs",
+    resourceType: "image",
+    deliveryType: "authenticated",
+    formats: ["pdf", "jpg", "jpeg", "png"],
+    maxBytes: 5 * MB,
+  },
   photo: {
     folder: "siip/photos",
     resourceType: "image",

@@ -137,6 +137,26 @@ enum ProfileVisibility {
   VERIFIED_COMPANIES
 }
 
+// Each skill an intern lists is checked by SIIP against their documents.
+enum SkillStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+// Where an intern's profile is in SIIP's review.
+enum ProfileReviewStatus {
+  DRAFT
+  SUBMITTED
+  CHANGES_REQUESTED
+  APPROVED
+}
+
+enum SkillDocumentKind {
+  FILE
+  LINK
+}
+
 enum SkillLevel {
   BEGINNER
   INTERMEDIATE
@@ -179,6 +199,13 @@ model GraduateProfile {
 
   completenessScore Int @default(0)
 
+  // SIIP's review of the intern's skills and documents.
+  reviewStatus ProfileReviewStatus @default(DRAFT)
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  // Shown to the intern when more documents are requested.
+  reviewNote   String?
+
   // Phase 2 prep: graduate opts in to company search.
   searchable   Boolean                  @default(false)
   visibility   ProfileVisibility        @default(PRIVATE)
@@ -200,6 +227,7 @@ model GraduateProfile {
   @@index([stateOfResidence])
   @@index([country, city])
   @@index([internType])
+  @@index([reviewStatus, submittedAt])
   @@index([institution])
   @@index([searchable, visibility])
   @@index([searchVector], type: Gin)
@@ -222,14 +250,46 @@ model GraduateSkill {
   id         String          @id @default(cuid())
   graduateId String
   graduate   GraduateProfile @relation(fields: [graduateId], references: [id], onDelete: Cascade)
-  skillId    String
-  skill      Skill           @relation(fields: [skillId], references: [id], onDelete: Restrict)
-  level      SkillLevel
+  // Null for a skill not in the catalogue ("Other"), named in otherName.
+  skillId    String?
+  skill      Skill?          @relation(fields: [skillId], references: [id], onDelete: Restrict)
+  otherName  String?
+  // The level the intern claims. Companies only ever see verifiedLevel.
+  level         SkillLevel
+  verifiedLevel SkillLevel?
+  status        SkillStatus @default(PENDING)
+  rejectionReason String?
+  issuingBody   String?
+  issuedAt      DateTime?
+  reviewedAt    DateTime?
+  reviewedById  String?
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 
+  documents SkillDocument[]
+
   @@unique([graduateId, skillId])
-  @@index([skillId])
+  @@index([skillId, status])
+}
+
+// Proof for one skill: a private uploaded file (PDF/JPG/PNG) or a link
+// (a Coursera/Udemy certificate, a portfolio). Only the owner and admins see it.
+model SkillDocument {
+  id              String            @id @default(cuid())
+  graduateSkillId String
+  graduateSkill   GraduateSkill     @relation(fields: [graduateSkillId], references: [id], onDelete: Cascade)
+  kind            SkillDocumentKind
+  // FILE: authenticated Cloudinary asset, served through short-lived signed URLs.
+  publicId        String?
+  fileName        String?
+  format          String?
+  bytes           Int?
+  // LINK
+  url             String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([graduateSkillId])
 }
 
 // ───────────────────────────────── Programme ─────────────────────────────────

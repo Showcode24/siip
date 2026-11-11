@@ -11,6 +11,9 @@ import type {
   CompanyVerificationStatus,
   DegreeClass,
   InternType,
+  ProfileReviewStatus,
+  SkillDocumentKind,
+  SkillStatus,
   MatchStatus,
   NyscStatus,
   OpeningStatus,
@@ -47,11 +50,36 @@ export interface Skill {
   category: string | null;
 }
 
-export interface GraduateSkill {
+/** Proof for a skill. Files open through a short-lived link; `url` is set for links only. */
+export interface SkillDocument {
   id: string;
+  kind: SkillDocumentKind;
+  fileName: string | null;
+  format: string | null;
+  bytes: number | null;
+  url: string | null;
+  createdAt: ISODate;
+}
+
+/** A skill as its owner and SIIP admins see it. Companies only see verified skills. */
+export interface GraduateSkill {
+  /** The intern's skill entry (not the catalogue skill). */
+  id: string;
+  /** Catalogue skill; null for "Other". */
+  skillId: string | null;
   name: string;
-  category?: string | null;
+  category: string;
+  isOther: boolean;
+  /** Claimed level. */
   level: SkillLevel;
+  verifiedLevel: SkillLevel | null;
+  status: SkillStatus;
+  rejectionReason: string | null;
+  issuingBody: string | null;
+  issuedAt: ISODate | null;
+  reviewedAt: ISODate | null;
+  createdAt: ISODate;
+  documents: SkillDocument[];
 }
 
 export interface GraduateProfile {
@@ -83,6 +111,13 @@ export interface GraduateProfile {
   visibility: ProfileVisibility;
   skills: GraduateSkill[];
   missingForApplication: string[];
+  /** Names of skills that still need at least one document. */
+  skillsWithoutProof: string[];
+  reviewStatus: ProfileReviewStatus;
+  submittedAt: ISODate | null;
+  reviewedAt: ISODate | null;
+  /** SIIP's note when more documents are requested. */
+  reviewNote: string | null;
   updatedAt: ISODate;
 }
 
@@ -149,7 +184,14 @@ export interface AdminApplicationRow {
     graduationYear: number | null;
     nyscStatus: NyscStatus;
     completenessScore: number;
-    skills: Array<{ level: SkillLevel; skill: { id: string; name: string } }>;
+    reviewStatus: ProfileReviewStatus;
+    skills: Array<{
+      level: SkillLevel;
+      verifiedLevel: SkillLevel | null;
+      status: SkillStatus;
+      otherName: string | null;
+      skill: { id: string; name: string } | null;
+    }>;
   };
 }
 
@@ -161,10 +203,11 @@ export interface ApplicationNote {
   createdAt: ISODate;
 }
 
-export interface AdminApplicationDetail extends AdminApplicationRow {
+export interface AdminApplicationDetail extends Omit<AdminApplicationRow, "graduate"> {
   motivation: string | null;
   rejectionReason: string | null;
-  graduate: AdminApplicationRow["graduate"] & {
+  graduate: Omit<AdminApplicationRow["graduate"], "skills"> & {
+    skills: GraduateSkill[];
     phone: string | null;
     lga: string | null;
     workPreference: WorkMode | null;

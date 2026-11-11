@@ -1,11 +1,13 @@
 import type { z } from "zod";
+import type { ProfileReviewStatus } from "@siip/shared/enums";
 import type { applySchema } from "@siip/shared/validators/application";
 import type { checkInSchema } from "@siip/shared/validators/internship";
-import type { setSkillsSchema, updateProfileSchema } from "@siip/shared/validators/graduate";
-import { call, callPage, get, patch, post, put } from "./http";
+import type { addSkillSchema, updateProfileSchema, updateSkillSchema } from "@siip/shared/validators/graduate";
+import { ApiError, call, callPage, del, get, patch, post } from "./http";
 import type {
   CheckIn,
   Certificate,
+  GraduateSkill,
   Cohort,
   GraduateProfile,
   MyApplication,
@@ -28,10 +30,69 @@ export const graduateApi = {
       () => patch<GraduateProfile>("/graduate/profile", input),
       async () => (await m()).updateProfile(input),
     ),
-  setSkills: (input: z.input<typeof setSkillsSchema>) =>
+  // ─── Skills and the documents that prove them ──────────────────────────────
+  listMySkills: () =>
     call(
-      () => put<GraduateProfile>("/graduate/profile/skills", input),
-      async () => (await m()).setSkills(input),
+      () => get<GraduateSkill[]>("/graduate/skills"),
+      async () => (await m()).listMySkills(),
+      { read: true },
+    ),
+  addSkill: (input: z.input<typeof addSkillSchema>) =>
+    call(
+      () => post<GraduateSkill>("/graduate/skills", input),
+      async () => (await m()).addSkill(input),
+    ),
+  updateSkill: (id: string, input: z.input<typeof updateSkillSchema>) =>
+    call(
+      () => patch<GraduateSkill>(`/graduate/skills/${id}`, input),
+      async () => (await m()).updateSkill(id, input),
+    ),
+  removeSkill: (id: string) =>
+    call(
+      () => del<{ deleted: true }>(`/graduate/skills/${id}`),
+      async () => (await m()).removeSkill(id),
+    ),
+  /** Real: sign → upload straight to Cloudinary → confirm (the server checks type, size and owner). */
+  addSkillFile: (id: string, file: File) =>
+    call(
+      async () => {
+        const sig = (
+          await post<{ uploadUrl: string; fields: Record<string, string>; publicId: string }>(
+            `/graduate/skills/${id}/documents/sign`,
+          )
+        ).data;
+        const form = new FormData();
+        Object.entries(sig.fields).forEach(([k, v]) => form.append(k, v));
+        form.append("file", file);
+        const upload = await fetch(sig.uploadUrl, { method: "POST", body: form });
+        if (!upload.ok) throw new ApiError("UPLOAD_FAILED", "The upload didn't go through. Please try again.", upload.status);
+        return post<GraduateSkill>(`/graduate/skills/${id}/documents`, {
+          kind: "FILE",
+          publicId: sig.publicId,
+          fileName: file.name,
+        });
+      },
+      async () => (await m()).addSkillFile(id, file),
+    ),
+  addSkillLink: (id: string, url: string) =>
+    call(
+      () => post<GraduateSkill>(`/graduate/skills/${id}/documents`, { kind: "LINK", url }),
+      async () => (await m()).addSkillLink(id, url),
+    ),
+  removeSkillDocument: (id: string, documentId: string) =>
+    call(
+      () => del<GraduateSkill>(`/graduate/skills/${id}/documents/${documentId}`),
+      async () => (await m()).removeSkillDocument(id, documentId),
+    ),
+  getSkillDocumentUrl: (documentId: string) =>
+    call(
+      () => get<{ url: string; kind: "FILE" | "LINK" }>(`/graduate/skill-documents/${documentId}/url`),
+      async () => (await m()).getSkillDocumentUrl(documentId),
+    ),
+  submitForReview: () =>
+    call(
+      () => post<{ reviewStatus: ProfileReviewStatus; submittedAt: string }>("/graduate/profile/submit"),
+      async () => (await m()).submitForReview(),
     ),
 
   /** Mock: pretends the browser upload to Cloudinary succeeded. Real: sign → upload → confirm. */

@@ -52,7 +52,9 @@ async function qualifiedGraduate(key: string, state: string, nysc: NyscStatus, w
     where: { id: graduateId },
     data: {
       nyscStatus: nysc,
-      ...(withSkill ? { skills: { create: { skillId, level: "ADVANCED" } } } : {}),
+      ...(withSkill
+        ? { skills: { create: { skillId, level: "ADVANCED", status: "VERIFIED", verifiedLevel: "ADVANCED" } } }
+        : {}),
     },
   });
   const app = await db.application.create({ data: { graduateId, cohortId, status: "QUALIFIED" } });

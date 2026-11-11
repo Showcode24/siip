@@ -29,7 +29,19 @@ export async function exportMyData(user: CurrentUser) {
       createdAt: true,
       graduateProfile: {
         include: {
-          skills: { select: { level: true, skill: { select: { name: true } } } },
+          skills: {
+            select: {
+              level: true,
+              verifiedLevel: true,
+              status: true,
+              rejectionReason: true,
+              otherName: true,
+              issuingBody: true,
+              issuedAt: true,
+              skill: { select: { name: true } },
+              documents: { select: { kind: true, fileName: true, url: true, createdAt: true } },
+            },
+          },
           applications: {
             select: {
               id: true,

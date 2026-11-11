@@ -90,7 +90,7 @@ export async function transitionApplication(tx: Tx, input: TransitionInput): Pro
   if (to === "REJECTED" && !input.reason) {
     throw errors.badRequest("Give the graduate a reason when rejecting an application");
   }
-  if (to === "SHORTLISTED") await assertCohortHasPlace(tx, app.cohortId, app.cohort.capacity);
+  if (to === "SHORTLISTED" && app.cohortId && app.cohort) await assertCohortHasPlace(tx, app.cohortId, app.cohort.capacity);
 
   const now = new Date();
   // Guarded on the current status so two concurrent moves can't both succeed.
@@ -138,7 +138,7 @@ export async function transitionApplication(tx: Tx, input: TransitionInput): Pro
   await createNotification(tx, {
     userId: app.graduate.user.id,
     type: "application.status_changed",
-    ...statusNotification(to, app.cohort.name),
+    ...statusNotification(to, app.cohort?.name ?? "SIIP"),
     data: { applicationId: app.id, status: to },
   });
 
@@ -147,7 +147,7 @@ export async function transitionApplication(tx: Tx, input: TransitionInput): Pro
     from: app.status,
     to,
     reason: input.reason ?? null,
-    cohortName: app.cohort.name,
+    cohortName: app.cohort?.name ?? "SIIP",
     recipient: {
       userId: app.graduate.user.id,
       email: app.graduate.user.email,
@@ -221,7 +221,7 @@ export async function applyToCohort(
     throw errors.badRequest("Complete your profile before applying", { missing });
   }
   if (active) {
-    throw errors.conflict(`You already have an active application (${active.cohort.name})`);
+    throw errors.conflict(`You already have an active application (${active.cohort?.name ?? "SIIP"})`);
   }
 
   const change = await db.$transaction(async (tx) => {
@@ -401,7 +401,7 @@ export async function getApplicationForAdmin(applicationId: string) {
       graduate: {
         include: {
           user: { select: { email: true, emailVerified: true, createdAt: true } },
-          skills: { select: skillSelect, orderBy: { createdAt: "asc" } },
+          skills: { select: skillSelect, orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
         },
       },
       events: { orderBy: { createdAt: "asc" } },

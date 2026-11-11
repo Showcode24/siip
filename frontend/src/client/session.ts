@@ -7,7 +7,7 @@ import type { Me } from "./api/types";
 import { ApiError, USE_MOCKS, get } from "./api/http";
 
 const KEY = "siip-mock-persona";
-export const DEFAULT_PERSONA = "graduate-training";
+export const DEFAULT_PERSONA = "graduate-approved";
 
 /** Dev/capture only: `?as=<persona>` opens a page as that demo account (mock mode). */
 export const isCaptureMode = () => typeof window !== "undefined" && new URLSearchParams(location.search).has("capture");

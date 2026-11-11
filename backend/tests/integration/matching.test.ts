@@ -122,7 +122,7 @@ describe("matching", () => {
     expect(ranked).not.toContain(apps.unreviewed.applicationId);
     // A lower verified level than the company asked for is never sent.
     expect(ranked).not.toContain(apps.beginner.applicationId);
-    expect(json.data.suggestions[0].breakdown.skills).toMatchObject({ weight: 40, fit: 1 });
+    expect(json.data.suggestions[0].breakdown.skills).toMatchObject({ weight: 50, fit: 1 });
     expect(JSON.stringify(json)).not.toContain("+234");
 
     const asGrad = await call(suggestions, {

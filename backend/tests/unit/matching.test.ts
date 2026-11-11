@@ -79,10 +79,9 @@ describe("scoreMatch", () => {
     expect(scoreMatch({ ...ideal, nyscStatus: "SERVING" }, opening).eligible).toBe(true);
   });
 
-  it("scores zero for a missing final assessment", () => {
-    expect(scoreMatch({ ...ideal, finalAssessmentPercent: null }, opening).breakdown.assessment.points).toBe(
-      0,
-    );
+  it("no longer scores the retired final assessment", () => {
+    expect(Object.keys(MATCH_WEIGHTS)).not.toContain("assessment");
+    expect(scoreMatch({ ...ideal, finalAssessmentPercent: null }, opening).total).toBe(100);
   });
 });
 

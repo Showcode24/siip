@@ -30,8 +30,7 @@ import {
   type DbApplication,
   type DbGraduate,
   type DbOpening,
-  type DbPlacement,
-} from "./db";
+  type DbPlacement, cohortName } from "./db";
 import { currentUserId } from "./me";
 
 // ─── Guards (same error codes as the backend) ─────────────────────────────────
@@ -80,10 +79,11 @@ const A: Actor[] = ["ADMIN"],
   AS: Actor[] = ["ADMIN", "SYSTEM"],
   AG: Actor[] = ["ADMIN", "GRADUATE"];
 const APP_TABLE: Record<ApplicationStatus, Partial<Record<ApplicationStatus, Actor[]>>> = {
-  SUBMITTED: { SCREENING: AS, REJECTED: A, WITHDRAWN: AG },
-  SCREENING: { SHORTLISTED: A, REJECTED: A, WITHDRAWN: AG },
-  SHORTLISTED: { IN_TRAINING: AS, REJECTED: A, WITHDRAWN: AG },
-  IN_TRAINING: { FINAL_ASSESSMENT: AS, REJECTED: A, WITHDRAWN: AG },
+  // Cohorts and training are retired: approval moves an old application to the waiting list.
+  SUBMITTED: { SCREENING: AS, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
+  SCREENING: { SHORTLISTED: A, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
+  SHORTLISTED: { IN_TRAINING: AS, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
+  IN_TRAINING: { FINAL_ASSESSMENT: AS, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
   FINAL_ASSESSMENT: { QUALIFIED: AS, REJECTED: AS, WITHDRAWN: AG },
   QUALIFIED: { MATCHED: S, WITHDRAWN: AG },
   MATCHED: { PLACED: S, QUALIFIED: S, WITHDRAWN: AG },
@@ -108,7 +108,7 @@ export function transition(
     throw new ApiError("INVALID_TRANSITION", `Application cannot move from ${app.status} to ${to}`, 409);
   if (to === "REJECTED" && !opts.reason)
     throw badRequest("Give the graduate a reason when rejecting an application");
-  if (to === "SHORTLISTED") {
+  if (to === "SHORTLISTED" && app.cohortId) {
     const cohort = cohortById(app.cohortId)!;
     const taken = db.applications.filter(
       (a) =>
@@ -153,7 +153,7 @@ export function transition(
     g.userId,
     "application.status_changed",
     APPLICATION_STATUS[to].label,
-    `Your application to ${cohortById(app.cohortId)!.name} is now: ${APPLICATION_STATUS[to].label.toLowerCase()}.`,
+    `Your application to ${cohortName(app.cohortId)} is now: ${APPLICATION_STATUS[to].label.toLowerCase()}.`,
     { applicationId: app.id, status: to },
   );
 }
@@ -262,7 +262,7 @@ export function adminRow(a: DbApplication): AdminApplicationRow {
     status: a.status,
     createdAt: a.createdAt,
     statusChangedAt: a.statusChangedAt,
-    cohort: { id: a.cohortId, name: cohortById(a.cohortId)!.name },
+    cohort: a.cohortId ? { id: a.cohortId, name: cohortName(a.cohortId) } : null,
     graduate: {
       id: g.id,
       firstName: g.firstName,

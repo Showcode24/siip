@@ -60,7 +60,8 @@ export async function remindGraduates(now: Date) {
   let sent = 0;
   for (const app of apps) {
     let pending: string | null = null;
-    if (app.status === "IN_TRAINING") {
+    // Training is retired; only legacy cohort interns can still be in it.
+    if (app.status === "IN_TRAINING" && app.cohortId) {
       const scope = { module: { course: { cohortId: app.cohortId, published: true } } };
       const [total, done] = await Promise.all([
         db.lesson.count({ where: scope }),

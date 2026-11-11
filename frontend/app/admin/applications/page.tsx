@@ -45,7 +45,6 @@ const columns: ColumnDef<AdminApplicationRow, unknown>[] = [
     accessorFn: (r) => r.status,
     cell: ({ row }) => <StatusPill map={APPLICATION_STATUS} value={row.original.status} />,
   },
-  { id: "cohort", header: "Cohort", accessorFn: (r) => r.cohort.name },
   { id: "institution", header: "Institution", accessorFn: (r) => r.graduate.institution ?? "" },
   { id: "type", header: "Type", accessorFn: (r) => INTERN_TYPE[r.graduate.internType].label },
   {
@@ -90,7 +89,6 @@ const COUNTRIES = countryOptions();
 function ApplicationsScreen() {
   const params = useSearchParams();
   const qc = useQueryClient();
-  const [cohortId, setCohortId] = useState(params.get("cohortId") ?? "");
   const [status, setStatus] = useState<ApplicationStatus | "">(
     (params.get("status") as ApplicationStatus | null) ?? "",
   );
@@ -99,18 +97,16 @@ function ApplicationsScreen() {
   const [skillId, setSkillId] = useState("");
   const [institution, setInstitution] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
-  const cohorts = useQuery({ queryKey: ["admin", "cohorts"], queryFn: adminApi.listCohorts });
   const skills = useQuery({ queryKey: ["skills"], queryFn: graduateApi.listSkills, staleTime: Infinity });
   const query = useMemo(
     () => ({
-      cohortId: cohortId || undefined,
       status: status ? [status] : undefined,
       country: (country || undefined) as never,
       internType: internType || undefined,
       skillId: skillId || undefined,
       institution: institution.length >= 2 ? institution : undefined,
     }),
-    [cohortId, status, country, internType, skillId, institution],
+    [status, country, internType, skillId, institution],
   );
   const q = useQuery({
     queryKey: ["admin", "applications", query],
@@ -144,8 +140,8 @@ function ApplicationsScreen() {
   return (
     <>
       <PageHeader
-        title="Applications"
-        description="Screen applicants, move them through the programme and keep notes."
+        title="Interns"
+        description="Everyone on the waiting list and beyond. Skills are checked in Skill reviews; approved interns join the waiting list."
       />
       <DataTable
         columns={columns}
@@ -155,23 +151,10 @@ function ApplicationsScreen() {
         onRetry={() => q.refetch()}
         getRowId={(r) => r.id}
         searchPlaceholder="Search by name, course or institution"
-        exportName="applications"
+        exportName="interns"
         onRowClick={(r) => setOpenId(r.id)}
         toolbar={
           <>
-            <Select
-              aria-label="Cohort"
-              className="h-11 w-44"
-              value={cohortId}
-              onChange={(e) => setCohortId(e.target.value)}
-            >
-              <option value="">All cohorts</option>
-              {cohorts.data?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
             <Select
               aria-label="Status"
               className="h-11 w-44"
@@ -317,7 +300,7 @@ function ApplicantPanel({ id }: { id: string }) {
   return (
     <SheetContent
       title={name}
-      description={q.data ? `${q.data.cohort.name}, applied ${formatDate(q.data.createdAt)}` : undefined}
+      description={q.data ? `${q.data.cohort?.name ?? "Waiting list"}, since ${formatDate(q.data.createdAt)}` : undefined}
     >
       <QueryState query={q}>
         {(a) => (
@@ -340,7 +323,7 @@ function ApplicantPanel({ id }: { id: string }) {
                 <Badge tone="warning">No CV</Badge>
               )}
             </div>
-            <JourneyTracker status={a.status} />
+            <JourneyTracker journey={{ reviewStatus: a.graduate.reviewStatus, appStatus: a.status }} />
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
               {[
                 ["Email", a.graduate.user.email],

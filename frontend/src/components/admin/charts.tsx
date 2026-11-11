@@ -18,38 +18,10 @@ const tooltipStyle = {
 };
 const axis = { stroke: "var(--muted-foreground)", fontSize: 13, tickLine: false, axisLine: false } as const;
 
-/** Funnel stages: how many applications reached each stage or beyond. */
+/** Funnel stages: how many approved interns reached each stage or beyond. */
 const FUNNEL: Array<{ label: string; statuses: ApplicationStatus[] }> = [
-  {
-    label: "Registered",
-    statuses: [
-      "SUBMITTED",
-      "SCREENING",
-      "SHORTLISTED",
-      "IN_TRAINING",
-      "FINAL_ASSESSMENT",
-      "QUALIFIED",
-      "MATCHED",
-      "PLACED",
-      "COMPLETED",
-      "REJECTED",
-      "WITHDRAWN",
-    ],
-  },
-  {
-    label: "Shortlisted",
-    statuses: [
-      "SHORTLISTED",
-      "IN_TRAINING",
-      "FINAL_ASSESSMENT",
-      "QUALIFIED",
-      "MATCHED",
-      "PLACED",
-      "COMPLETED",
-    ],
-  },
-  { label: "Trained", statuses: ["FINAL_ASSESSMENT", "QUALIFIED", "MATCHED", "PLACED", "COMPLETED"] },
-  { label: "Qualified", statuses: ["QUALIFIED", "MATCHED", "PLACED", "COMPLETED"] },
+  { label: "Approved", statuses: ["QUALIFIED", "MATCHED", "PLACED", "COMPLETED"] },
+  { label: "Matched", statuses: ["MATCHED", "PLACED", "COMPLETED"] },
   { label: "Placed", statuses: ["PLACED", "COMPLETED"] },
   { label: "Completed", statuses: ["COMPLETED"] },
 ];

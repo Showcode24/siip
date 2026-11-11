@@ -14,7 +14,7 @@ import { missingForApplication } from "@siip/shared/profile-completeness";
 import { normaliseProfileUpdate } from "@siip/shared/profile-rules";
 import { ApiError } from "@/client/api/http";
 import type { Certificate, MyApplication, MyPlacement } from "@/client/api/types";
-import { audit, cohortById, companyById, db, iso, newId, notify, openingById } from "./db";
+import { audit, cohortById, companyById, db, iso, newId, notify, openingById, cohortName } from "./db";
 import {
   badRequest,
   canMove,
@@ -223,7 +223,7 @@ function presentApplication(id: string): MyApplication {
   const { graduate } = requireGraduate();
   const a = db.applications.find((x) => x.id === id && x.graduateId === graduate.id);
   if (!a) throw notFound("Application");
-  const c = cohortById(a.cohortId)!;
+  const c = cohortById(a.cohortId);
   return {
     id: a.id,
     status: a.status,
@@ -231,14 +231,16 @@ function presentApplication(id: string): MyApplication {
     rejectionReason: a.rejectionReason,
     createdAt: a.createdAt,
     statusChangedAt: a.statusChangedAt,
-    cohort: {
-      id: c.id,
-      name: c.name,
-      trainingStartsAt: c.trainingStartsAt,
-      trainingEndsAt: c.trainingEndsAt,
-      internshipStartsAt: c.internshipStartsAt,
-      internshipEndsAt: c.internshipEndsAt,
-    },
+    cohort: c
+      ? {
+          id: c.id,
+          name: c.name,
+          trainingStartsAt: c.trainingStartsAt,
+          trainingEndsAt: c.trainingEndsAt,
+          internshipStartsAt: c.internshipStartsAt,
+          internshipEndsAt: c.internshipEndsAt,
+        }
+      : null,
     timeline: a.events.map(({ actorId: _a, ...e }) => e),
     canWithdraw: canMove(a.status, "WITHDRAWN", "GRADUATE"),
   };
@@ -268,7 +270,7 @@ export function apply(input: z.input<typeof applySchema>) {
   if (missing.length) throw badRequest("Complete your profile before applying", { missing });
   const active = currentApplication(graduate.id);
   if (active && active.status !== "COMPLETED")
-    throw conflict(`You already have an active application (${cohortById(active.cohortId)!.name})`);
+    throw conflict(`You already have an active application (${cohortName(active.cohortId)})`);
   const app = {
     id: newId("app"),
     graduateId: graduate.id,

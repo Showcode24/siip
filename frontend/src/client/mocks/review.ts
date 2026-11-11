@@ -10,8 +10,8 @@ import {
 } from "@siip/shared/validators/review";
 import { ApiError } from "@/client/api/http";
 import type { ReviewDetail, ReviewQueueRow } from "@/client/api/types";
-import { audit, db, graduateById, notify, userById, type DbGraduate } from "./db";
-import { conflict, notFound, presentSkill, requireAdmin, transition } from "./logic";
+import { audit, db, graduateById, newId, notify, userById, type DbGraduate } from "./db";
+import { conflict, currentApplication, notFound, presentSkill, requireAdmin, transition } from "./logic";
 
 const DAY = 24 * 60 * 60 * 1000;
 const nameOf = (g: DbGraduate, skillId: string) => {
@@ -171,6 +171,7 @@ export function decideProfile(graduateId: string, input: z.input<typeof profileD
     if (!g.skills.some((s) => s.status === "VERIFIED")) throw conflict("Verify at least one skill before approving");
     Object.assign(g, { reviewStatus: "APPROVED", reviewedAt: now, reviewNote: null });
     audit(admin.id, "profile.approved", "GraduateProfile", g.id, null, { reviewStatus: "APPROVED" });
+    joinWaitingList(g, admin.id);
     notify(g.userId, "profile.approved", "Your profile is approved", "Your skills are checked. You're on the list for matching with companies.", { href: "/settings" });
     return getReview(graduateId);
   }
@@ -207,6 +208,32 @@ export function decideProfile(graduateId: string, input: z.input<typeof profileD
 }
 
 /** Demo: links open as they are; demo files picked by an intern are only in their browser tab. */
+const OLD_STEPS = ["SUBMITTED", "SCREENING", "SHORTLISTED", "IN_TRAINING", "FINAL_ASSESSMENT"];
+const WAITING_NOTE = "Skills verified by SIIP: on the waiting list for matching";
+
+/** Approved interns are on the waiting list that matching draws from. */
+function joinWaitingList(g: DbGraduate, adminId: string) {
+  const current = currentApplication(g.id);
+  if (current && !OLD_STEPS.includes(current.status)) return;
+  if (current) {
+    transition(current, "QUALIFIED", "SYSTEM", adminId, { reason: WAITING_NOTE });
+    return;
+  }
+  const now = new Date().toISOString();
+  db.applications.push({
+    id: newId("app"),
+    graduateId: g.id,
+    cohortId: null,
+    status: "QUALIFIED",
+    motivation: null,
+    rejectionReason: null,
+    createdAt: now,
+    statusChangedAt: now,
+    events: [{ fromStatus: null, toStatus: "QUALIFIED", actorId: adminId, note: WAITING_NOTE, createdAt: now }],
+    notes: [],
+  });
+}
+
 export function getSkillDocumentUrl(documentId: string) {
   const admin = requireAdmin();
   for (const g of db.graduates) {

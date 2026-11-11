@@ -124,7 +124,7 @@ export async function issueCertificate(actor: AuditActor, placementId: string) {
   const { graduate } = placement;
   const pdf = await renderCertificatePdf({
     graduateName: [graduate.firstName, graduate.otherNames, graduate.lastName].filter(Boolean).join(" "),
-    cohortName: placement.application.cohort.name,
+    cohortName: placement.application.cohort?.name ?? "SIIP",
     companyName: placement.company.name,
     roleTitle: placement.opening.title,
     startDate: fmt(placement.startDate),
@@ -152,7 +152,7 @@ export async function issueCertificate(actor: AuditActor, placementId: string) {
       idempotencyKey: `certificate-issued:${certificate.id}`,
       props: {
         firstName: graduate.firstName,
-        cohortName: placement.application.cohort.name,
+        cohortName: placement.application.cohort?.name ?? "SIIP",
         downloadUrl: `${env().APP_URL}/dashboard/certificates`,
         verifyUrl: verifyUrl(certificate.verificationCode),
         verificationCode: certificate.verificationCode,
@@ -226,7 +226,7 @@ export async function verifyCertificate(code: string) {
   return {
     valid: !cert.revokedAt,
     graduateName: [g.firstName, g.otherNames, g.lastName].filter(Boolean).join(" "),
-    cohortName: cert.placement.application.cohort.name,
+    cohortName: cert.placement.application.cohort?.name ?? "SIIP",
     companyName: cert.placement.company.name,
     roleTitle: cert.placement.opening.title,
     issuedAt: cert.issuedAt,

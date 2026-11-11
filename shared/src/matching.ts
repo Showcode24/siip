@@ -11,11 +11,12 @@
 import type { Availability, NyscStatus, SkillLevel, WorkMode, WorkSchedule } from "./enums";
 
 export const MATCH_WEIGHTS = {
-  skills: 40,
-  assessment: 20,
+  // The final assessment is retired (the SIIP test comes after the internship),
+  // so its share went to verified skills, location and availability.
+  skills: 50,
   discipline: 15,
-  location: 10,
-  availability: 10,
+  location: 15,
+  availability: 15,
   nysc: 5,
 } as const;
 
@@ -60,7 +61,8 @@ export interface MatchCandidate {
   nyscStatus: NyscStatus;
   skills: Array<{ skillId: string; level: SkillLevel }>;
   /** Best FINAL assessment percentage (0-100), null if none taken. */
-  finalAssessmentPercent: number | null;
+  /** Legacy: the retired final assessment. Not scored. */
+  finalAssessmentPercent?: number | null;
 }
 
 export interface MatchOpening {
@@ -178,10 +180,6 @@ function availabilityFit(c: MatchCandidate, o: MatchOpening) {
 export function scoreMatch(c: MatchCandidate, o: MatchOpening): MatchScore {
   const fits: Record<MatchFactor, { fit: number; detail: string }> = {
     skills: skillFit(c, o),
-    assessment:
-      c.finalAssessmentPercent === null
-        ? { fit: 0, detail: "No final assessment" }
-        : { fit: c.finalAssessmentPercent / 100, detail: `${c.finalAssessmentPercent}% in final assessment` },
     discipline: disciplineFit(c, o),
     location: locationFit(c, o),
     availability: availabilityFit(c, o),

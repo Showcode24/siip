@@ -113,7 +113,7 @@ export async function exportApplications(actor: AuditActor, query: z.infer<typeo
     const g = r.graduate;
     return [
       r.id,
-      r.cohort.name,
+      r.cohort?.name ?? "Waiting list",
       r.status,
       r.createdAt,
       r.statusChangedAt,
@@ -205,7 +205,7 @@ export async function exportPlacements(actor: AuditActor, query: z.infer<typeof 
   ];
   const body: CsvValue[][] = rows.map((r) => [
     r.id,
-    r.application.cohort.name,
+    r.application.cohort?.name ?? "Waiting list",
     r.status,
     r.company.name,
     r.opening.title,

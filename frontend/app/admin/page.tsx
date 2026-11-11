@@ -3,28 +3,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { adminApi } from "@/client/api/admin";
 import { FunnelChart } from "@/components/admin/charts";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, PageHeader, Skeleton, StatCard } from "@/components/ui/display";
-import { Select } from "@/components/ui/form-controls";
 import { APPLICATION_STATUS } from "@/lib/labels";
 import { formatRelative } from "@/lib/utils";
 
 const pct = (v: number | null) => (v === null ? "No data" : `${v}%`);
 
 export default function AdminOverview() {
-  const cohorts = useQuery({ queryKey: ["admin", "cohorts"], queryFn: adminApi.listCohorts });
-  const [cohortId, setCohortId] = useState<string>("");
-  const selected =
-    cohortId || cohorts.data?.find((c) => c.status === "IN_PROGRESS")?.id || cohorts.data?.[0]?.id || "";
-  const analytics = useQuery({
-    queryKey: ["admin", "analytics", selected],
-    queryFn: () => adminApi.getAnalytics(selected || undefined),
-    enabled: cohorts.isSuccess,
-  });
+  const analytics = useQuery({ queryKey: ["admin", "analytics", ""], queryFn: () => adminApi.getAnalytics() });
+  const waiting = useQuery({ queryKey: ["admin", "reviews", "WAITING", ""], queryFn: () => adminApi.listReviews("WAITING") });
   const audit = useQuery({ queryKey: ["admin", "audit"], queryFn: adminApi.listAudit });
   const companies = useQuery({
     queryKey: ["admin", "companies", "PENDING"],
@@ -37,18 +28,11 @@ export default function AdminOverview() {
         title="Overview"
         description="How the programme is doing right now."
         actions={
-          <div className="w-64">
-            <label htmlFor="cohort" className="sr-only">
-              Cohort
-            </label>
-            <Select id="cohort" value={selected} onChange={(e) => setCohortId(e.target.value)}>
-              {cohorts.data?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </div>
+          <Button asChild>
+            <Link href="/admin/reviews">
+              Skill reviews {waiting.data ? `(${waiting.data.items.length} waiting)` : ""} <ArrowRight />
+            </Link>
+          </Button>
         }
       />
       <QueryState
@@ -64,11 +48,11 @@ export default function AdminOverview() {
         {(a) => (
           <div className="grid gap-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Applications" value={a.totals.applications} tone="dark" />
+              <StatCard label="On the waiting list" value={a.totals.byStage.QUALIFIED ?? 0} tone="dark" />
               <StatCard
                 label="Placement rate"
                 value={pct(a.rates.placementRate)}
-                hint="Placed of those qualified"
+                hint="Placed of those approved"
               />
               <StatCard
                 label="Completion rate"
@@ -84,7 +68,7 @@ export default function AdminOverview() {
             </div>
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
               <Card>
-                <CardHeader title="Programme funnel" description="Graduates who reached each stage." />
+                <CardHeader title="Programme funnel" description="Approved interns who reached each stage." />
                 <CardBody>
                   <FunnelChart byStage={a.totals.byStage} />
                 </CardBody>
@@ -100,7 +84,7 @@ export default function AdminOverview() {
                 />
                 <CardBody>
                   <ul className="grid gap-2">
-                    {(Object.keys(APPLICATION_STATUS) as Array<keyof typeof APPLICATION_STATUS>).map((s) => (
+                    {(["QUALIFIED", "MATCHED", "PLACED", "COMPLETED"] as const).map((s) => (
                       <li
                         key={s}
                         className="flex items-center justify-between rounded-md px-3 py-2 text-[15px] odd:bg-surface-muted/60"

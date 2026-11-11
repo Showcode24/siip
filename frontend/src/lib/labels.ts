@@ -32,7 +32,8 @@ export const APPLICATION_STATUS: Record<ApplicationStatus, StatusMeta> = {
   SHORTLISTED: { label: "Shortlisted", tone: "brand" },
   IN_TRAINING: { label: "In training", tone: "brand" },
   FINAL_ASSESSMENT: { label: "Final assessment", tone: "warning" },
-  QUALIFIED: { label: "Qualified", tone: "success" },
+  // Approved by SIIP's skill review: waiting to be matched with a company.
+  QUALIFIED: { label: "On the waiting list", tone: "success" },
   MATCHED: { label: "Matched", tone: "brand" },
   PLACED: { label: "Placed", tone: "success" },
   COMPLETED: { label: "Completed", tone: "dark" },
@@ -186,19 +187,36 @@ export const WORK_SCHEDULE: Record<WorkSchedule, string> = {
 };
 
 /** The 7 programme stages graduates see, and which application statuses belong to each. */
-export const JOURNEY: Array<{ key: string; label: string; statuses: ApplicationStatus[] }> = [
-  { key: "register", label: "Register", statuses: ["SUBMITTED"] },
-  { key: "screening", label: "Screening", statuses: ["SCREENING", "SHORTLISTED"] },
-  { key: "training", label: "Training", statuses: ["IN_TRAINING"] },
-  { key: "assessment", label: "Final assessment", statuses: ["FINAL_ASSESSMENT"] },
-  { key: "matching", label: "Matching", statuses: ["QUALIFIED", "MATCHED"] },
-  { key: "internship", label: "Internship", statuses: ["PLACED"] },
-  { key: "certified", label: "Certified", statuses: ["COMPLETED"] },
+/**
+ * The intern's journey: prove skills, get them checked, wait to be matched,
+ * do the internship, pass the SIIP test, get certified. (Cohorts and training
+ * are retired.)
+ */
+export const JOURNEY: Array<{ key: string; label: string }> = [
+  { key: "profile", label: "Skills and proof" },
+  { key: "review", label: "SIIP review" },
+  { key: "waiting", label: "Waiting list" },
+  { key: "matched", label: "Matched" },
+  { key: "internship", label: "Internship" },
+  { key: "test", label: "SIIP test" },
+  { key: "certified", label: "Certified" },
 ];
 
-/** 0-based journey stage for an application status (-1 if the journey has ended early). */
-export function journeyStage(status: ApplicationStatus | null | undefined): number {
-  if (!status) return 0;
-  if (status === "REJECTED" || status === "WITHDRAWN") return -1;
-  return JOURNEY.findIndex((s) => s.statuses.includes(status));
+export interface JourneyInput {
+  reviewStatus?: ProfileReviewStatus | null;
+  appStatus?: ApplicationStatus | null;
+  /** The SIIP test state, when known (see MySiipTest). */
+  siipState?: string | null;
+}
+
+/** 0-based journey stage. */
+export function journeyStage(j: JourneyInput): number {
+  const app = j.appStatus;
+  const testOpen = Boolean(j.siipState && !["LOCKED_INTERNSHIP", "LOCKED_REVIEW"].includes(j.siipState));
+  if (app === "COMPLETED") return j.siipState === "PASSED" ? 6 : 5;
+  if (app === "PLACED") return j.siipState === "PASSED" ? 6 : testOpen ? 5 : 4;
+  if (app === "MATCHED") return 3;
+  if (j.reviewStatus === "APPROVED") return 2;
+  if (j.reviewStatus === "SUBMITTED" || j.reviewStatus === "CHANGES_REQUESTED") return 1;
+  return 0;
 }

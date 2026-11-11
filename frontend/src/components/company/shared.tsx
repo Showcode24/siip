@@ -33,7 +33,6 @@ import { cn, formatDate } from "@/lib/utils";
 
 const FACTOR_LABEL: Record<keyof ScoreBreakdown, string> = {
   skills: "Skills",
-  assessment: "Final assessment",
   discipline: "Discipline",
   location: "Location",
   availability: "Availability",
@@ -121,10 +120,6 @@ export function GraduateSummary({ g }: { g: LimitedGraduate }) {
           ["Lives in", formatLocation(g) || "Not given"],
           ["Works", g.workPreference ? WORK_MODE[g.workPreference] : "Not given"],
           ["Availability", g.availability ? AVAILABILITY[g.availability] : "Not given"],
-          [
-            "Final assessment",
-            g.finalAssessmentPercent !== null ? `${g.finalAssessmentPercent}%` : "Not taken",
-          ],
         ].map(([k, v]) => (
           <div key={k as string}>
             <dt className="text-muted-foreground">{k}</dt>

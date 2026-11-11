@@ -24,8 +24,9 @@ export function findCurrentApplication(graduateId: string, client: DbOrTx = db) 
 /** The current application, provided it gives access to training. */
 export async function requireTrainingAccess(graduateId: string, client: DbOrTx = db) {
   const app = await findCurrentApplication(graduateId, client);
-  if (!app || !TRAINING_ACCESS.includes(app.status)) {
-    throw errors.forbidden("Training opens once you are admitted to a cohort");
+  // Training is retired: only interns from the old cohorts can still open it.
+  if (!app || !app.cohortId || !TRAINING_ACCESS.includes(app.status)) {
+    throw errors.forbidden("Training is no longer part of SIIP");
   }
-  return app;
+  return { ...app, cohortId: app.cohortId };
 }

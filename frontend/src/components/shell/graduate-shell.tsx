@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, BookOpen, Briefcase, ClipboardCheck, Home, User } from "lucide-react";
+import { Award, Briefcase, ClipboardCheck, Home, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -10,7 +10,6 @@ import { Logo, NotificationsBell, ProfileMenu, RoleGate, isActive, type NavItem 
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Home", icon: Home, exact: true },
-  { href: "/training", label: "Training", icon: BookOpen },
   { href: "/assessments", label: "Tests", icon: ClipboardCheck },
   { href: "/placement", label: "Internship", icon: Briefcase },
   { href: "/certificates", label: "Certificate", icon: Award },
@@ -78,7 +77,7 @@ export function GraduateShell({ children }: { children: ReactNode }) {
             aria-label="Main"
             className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
           >
-            <ul className="grid grid-cols-5">
+            <ul className="grid grid-cols-4">
               {BOTTOM.map((item) => {
                 const active = isActive(pathname, item);
                 return (

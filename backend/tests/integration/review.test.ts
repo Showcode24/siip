@@ -3,6 +3,7 @@ import { POST as decide } from "../../app/api/v1/admin/reviews/[id]/decision/rou
 import { GET as getReview } from "../../app/api/v1/admin/reviews/[id]/route";
 import { POST as decideSkill } from "../../app/api/v1/admin/reviews/[id]/skills/[skillId]/route";
 import { GET as queue } from "../../app/api/v1/admin/reviews/route";
+import { GET as suggestions } from "../../app/api/v1/admin/matching/suggestions/route";
 import { db } from "@/server/db";
 import { anonymiseDeletedUsers } from "@/server/services/cron.service";
 import {
@@ -117,11 +118,53 @@ describe("admin review queue", () => {
     expect(json.data.reviewStatus).toBe("APPROVED");
     expect(sent.map((e) => [e.template, e.props.verifiedSkills])).toEqual([["profile-approved", ["Graphic Design"]]]);
     expect(await db.notification.count({ where: { userId: intern.id, type: "profile.approved" } })).toBe(1);
+    // Approved means on the waiting list that matching draws from (no cohort needed).
+    const onList = await db.application.findFirstOrThrow({ where: { graduateId }, include: { events: true } });
+    expect(onList).toMatchObject({ status: "QUALIFIED", cohortId: null });
+    expect(onList.events[0].note).toContain("waiting list");
     const log = await db.auditLog.findFirst({ where: { action: "profile.approved", entityId: graduateId } });
     expect(log?.actorId).toBe(admin.id);
     expect(json.data.history.map((h: { action: string }) => h.action)).toEqual(
       expect.arrayContaining(["profile.approved", "skill.rejected", "skill.verified"]),
     );
+  });
+
+  it("puts the approved intern in front of companies, with no cohort", async () => {
+    const owner = await createUser("COMPANY_MEMBER", "Lola");
+    const company = await db.company.create({
+      data: {
+        name: "Remote Studio",
+        country: "GB",
+        city: "London",
+        timeZone: "Europe/London",
+        businessRegNumber: `GB${Date.now() % 1_000_000}`,
+        industry: "Design",
+        address: "1 High Street",
+        verificationStatus: "VERIFIED",
+        members: { create: { userId: owner.id, role: "OWNER" } },
+      },
+    });
+    const design = await ensureSkill("Graphic Design");
+    const opening = await db.internshipOpening.create({
+      data: {
+        companyId: company.id,
+        title: "Design Intern",
+        description: "Design social posts for our clients every week.",
+        slots: 1,
+        workMode: "REMOTE",
+        schedule: "FULL_TIME",
+        status: "OPEN",
+        createdById: owner.id,
+        skills: { create: { skillId: design.id, minLevel: "INTERMEDIATE", required: true } },
+      },
+    });
+    const { json } = await call(suggestions, {
+      method: "GET",
+      cookie: admin.cookie,
+      path: `/?openingId=${opening.id}`,
+    });
+    const app = await db.application.findFirstOrThrow({ where: { graduateId, status: "QUALIFIED" } });
+    expect(json.data.suggestions.map((x: { applicationId: string }) => x.applicationId)).toContain(app.id);
   });
 
   it("sends a profile back for more documents with a note", async () => {

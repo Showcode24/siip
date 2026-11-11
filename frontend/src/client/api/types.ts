@@ -156,10 +156,11 @@ export interface MyApplication {
   rejectionReason: string | null;
   createdAt: ISODate;
   statusChangedAt: ISODate;
+  /** Null for waiting-list entries (cohorts are retired). */
   cohort: Pick<
     Cohort,
     "id" | "name" | "trainingStartsAt" | "trainingEndsAt" | "internshipStartsAt" | "internshipEndsAt"
-  >;
+  > | null;
   timeline: TimelineEvent[];
   canWithdraw: boolean;
 }
@@ -169,7 +170,8 @@ export interface AdminApplicationRow {
   status: ApplicationStatus;
   createdAt: ISODate;
   statusChangedAt: ISODate;
-  cohort: { id: string; name: string };
+  /** Null for waiting-list entries (cohorts are retired). */
+  cohort: { id: string; name: string } | null;
   graduate: {
     id: string;
     firstName: string;
@@ -460,7 +462,9 @@ export interface Opening {
 
 // ─── Matching & placement ─────────────────────────────────────────────────────
 
-export type MatchFactor = "skills" | "assessment" | "discipline" | "location" | "availability" | "nysc";
+// The same factors as shared/src/matching.ts (one source of truth).
+export type { MatchFactor } from "@siip/shared/matching";
+import type { MatchFactor } from "@siip/shared/matching";
 export type ScoreBreakdown = Record<
   MatchFactor,
   { fit: number; weight: number; points: number; detail: string }
@@ -490,7 +494,7 @@ export interface LimitedGraduate {
 
 export interface Suggestion {
   applicationId: string;
-  cohortId: string;
+  cohortId: string | null;
   score: number;
   breakdown: ScoreBreakdown;
   graduate: LimitedGraduate;
@@ -597,7 +601,7 @@ export interface Evaluation {
 
 export interface AdminPlacement extends Placement {
   match: { id: string; score: number; scoreBreakdown: ScoreBreakdown };
-  application: { id: string; status: ApplicationStatus; cohort: { id: string; name: string } };
+  application: { id: string; status: ApplicationStatus; cohort: { id: string; name: string } | null };
   checkIns: CheckIn[];
   evaluation: Evaluation | null;
   programmeEvaluation: {

@@ -8,6 +8,9 @@ const QUALIFIED_OR_BEYOND: ApplicationStatus[] = ["QUALIFIED", "MATCHED", "PLACE
 const PLACED_OR_BEYOND: ApplicationStatus[] = ["PLACED", "COMPLETED"];
 
 /** Programme analytics, for one cohort or all. Percentages are 0-100 (null when there is no data). */
+/** Interns approved since cohorts were retired have no cohort; they are grouped here. */
+const WAITING_LIST = "waiting-list";
+
 export async function getAnalytics(cohortId?: string) {
   const appScope = cohortId ? { cohortId } : {};
   const placementScope = cohortId ? { application: { cohortId } } : {};
@@ -43,9 +46,10 @@ export async function getAnalytics(cohortId?: string) {
   const stagesByCohort = new Map<string, Record<string, number>>();
   const totals: Partial<Record<ApplicationStatus, number>> = {};
   for (const row of stageRows) {
-    const stages = stagesByCohort.get(row.cohortId) ?? {};
+    const cohortKey = row.cohortId ?? WAITING_LIST;
+    const stages = stagesByCohort.get(cohortKey) ?? {};
     stages[row.status] = row._count._all;
-    stagesByCohort.set(row.cohortId, stages);
+    stagesByCohort.set(cohortKey, stages);
     totals[row.status] = (totals[row.status] ?? 0) + row._count._all;
   }
   const sum = (statuses: ApplicationStatus[]) => statuses.reduce((n, s) => n + (totals[s] ?? 0), 0);
@@ -86,7 +90,7 @@ export async function getAnalytics(cohortId?: string) {
   return {
     stagesByCohort: [...stagesByCohort.entries()].map(([id, stages]) => ({
       cohortId: id,
-      cohortName: cohortName.get(id) ?? null,
+      cohortName: id === WAITING_LIST ? "Waiting list" : (cohortName.get(id) ?? null),
       stages,
     })),
     totals: { applications: sum(Object.keys(totals) as ApplicationStatus[]), byStage: totals },

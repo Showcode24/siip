@@ -142,7 +142,8 @@ export interface DbGraduateSkill {
 export interface DbApplication {
   id: string;
   graduateId: string;
-  cohortId: string;
+  /** Null for waiting-list entries (cohorts are retired). */
+  cohortId: string | null;
   status: ApplicationStatus;
   motivation: string | null;
   rejectionReason: string | null;
@@ -363,7 +364,9 @@ export const userById = (id: string) => db.users.find((u) => u.id === id);
 export const graduateById = (id: string) => db.graduates.find((g) => g.id === id);
 export const companyById = (id: string) => db.companies.find((c) => c.id === id);
 export const openingById = (id: string) => db.openings.find((o) => o.id === id);
-export const cohortById = (id: string) => db.cohorts.find((c) => c.id === id);
+export const cohortById = (id: string | null) => (id ? db.cohorts.find((c) => c.id === id) : undefined);
+/** A cohort's name, or "SIIP" for waiting-list entries. */
+export const cohortName = (id: string | null) => cohortById(id)?.name ?? "SIIP";
 
 export function notify(
   userId: string,
@@ -840,20 +843,20 @@ function seedAssessments() {
   );
 }
 
-const STAGES: Array<[ApplicationStatus, number, string]> = [
-  // status, count, cohort
-  ["IN_TRAINING", 3, "coh_2"],
-  ["FINAL_ASSESSMENT", 4, "coh_2"],
+/**
+ * The journey without cohorts or training: interns wait for SIIP to check their
+ * skills (REVIEW), some are asked for more documents (CHANGES), approved ones
+ * are on the waiting list (QUALIFIED), then matched, placed and finished.
+ */
+type Stage = "REVIEW" | "CHANGES" | "QUALIFIED" | "MATCHED" | "PLACED" | "COMPLETED";
+const STAGES: Array<[Stage, number]> = [
+  ["REVIEW", 8],
+  ["CHANGES", 2],
   // Waiting to be matched: enough for every open role to show real suggestions.
-  ["QUALIFIED", 8, "coh_2"],
-  ["MATCHED", 4, "coh_2"],
-  ["PLACED", 6, "coh_2"],
-  ["COMPLETED", 4, "coh_2"],
-  ["REJECTED", 2, "coh_2"],
-  ["WITHDRAWN", 1, "coh_2"],
-  ["SUBMITTED", 4, "coh_3"],
-  ["SCREENING", 3, "coh_3"],
-  ["SHORTLISTED", 1, "coh_3"],
+  ["QUALIFIED", 8],
+  ["MATCHED", 4],
+  ["PLACED", 6],
+  ["COMPLETED", 4],
 ];
 const PATH: ApplicationStatus[] = [
   "SUBMITTED",
@@ -1080,7 +1083,7 @@ function seedOpenings() {
     db.openings.push({
       id: newId("opn"),
       companyId: company.id,
-      cohortId: i % 4 === 0 ? null : "coh_2",
+      cohortId: null,
       title: t.title,
       department: t.department,
       description: `Join ${company.name}'s ${t.department.toLowerCase()} team for three months. You'll work on real projects with a dedicated supervisor and get hands-on experience in ${t.skills[0].toLowerCase()}.`,
@@ -1106,120 +1109,74 @@ function seedOpenings() {
 
 function seedJourney(adminId: string) {
   let i = 0;
-  const firstOf: Partial<Record<ApplicationStatus, DbGraduate>> = {};
-  for (const [status, count, cohortId] of STAGES) {
+  const firstOf: Partial<Record<Stage, DbGraduate>> = {};
+  for (const [stage, count] of STAGES) {
     for (let k = 0; k < count; k++, i++) {
       const g = makeGraduate(i);
-      // Graduates who reached the final stages were trained for real openings:
-      // give them the skills and course a matching opening asks for.
-      if (["FINAL_ASSESSMENT", "QUALIFIED", "MATCHED", "PLACED", "COMPLETED"].includes(status)) {
-        const t = OPENING_TITLES[i % OPENING_TITLES.length];
-        g.skills = t.skills.map((name, k) => {
-          const level = k === 0 ? "ADVANCED" : "INTERMEDIATE";
-          const sk = makeSkill(db.skills.find((s) => s.name === name)!.id, level, `${g.firstName}-${name}`);
-          return { ...sk, status: "VERIFIED", verifiedLevel: level, reviewedAt: iso(-40) };
-        });
-        g.reviewStatus = "APPROVED";
-        g.reviewedAt = iso(-40);
-        // Interns waiting to be matched live where a role needing their skills is,
-        // so on-site and hybrid roles have real candidates in the demo.
-        if (status === "QUALIFIED") {
-          const role = db.openings.find((o) => o.title === t.title && o.status === "OPEN" && o.workMode !== "REMOTE");
-          if (role) Object.assign(g, { country: role.country, city: role.city, stateOfResidence: role.state, lga: null });
+      firstOf[stage] ??= g;
+      if (stage === "REVIEW") continue; // sent for review, proof attached (makeGraduate's default)
+      if (stage === "CHANGES") {
+        g.reviewStatus = "CHANGES_REQUESTED";
+        g.reviewedAt = iso(-4);
+        g.reviewNote = "Please upload a certificate that shows your full name for each skill.";
+        const first = g.skills[0];
+        if (first) {
+          Object.assign(first, {
+            status: "REJECTED",
+            rejectionReason: "The certificate link shows someone else's name.",
+            reviewedAt: iso(-4),
+          });
         }
-        if (t.disciplines[0]) g.courseOfStudy = t.disciplines[0];
-        g.availability = "FULL_TIME";
-        g.internType = "GRADUATE";
-        g.nyscStatus = i % 2 ? "COMPLETED" : "EXEMPTED";
-        g.nyscStateCode = null;
-        g.nyscBatch = null;
-        g.currentPpa = null;
-        g.degreeClass ??= "SECOND_CLASS_UPPER";
-        if (g.graduationYear && g.graduationYear > 2025) g.graduationYear = 2025;
+        continue;
       }
-      firstOf[status] ??= g;
-      const steps =
-        status === "REJECTED" || status === "WITHDRAWN"
-          ? (["SUBMITTED", "SCREENING", status] as ApplicationStatus[])
-          : PATH.slice(0, PATH.indexOf(status) + 1);
-      const base = cohortId === "coh_2" ? -110 : -8;
+      // Approved: verified skills that real openings ask for.
+      const t = OPENING_TITLES[i % OPENING_TITLES.length];
+      g.skills = t.skills.map((name, n) => {
+        const level = n === 0 ? "ADVANCED" : "INTERMEDIATE";
+        const sk = makeSkill(db.skills.find((s) => s.name === name)!.id, level, `${g.firstName}-${name}`);
+        return { ...sk, status: "VERIFIED", verifiedLevel: level, reviewedAt: iso(-40) };
+      });
+      g.reviewStatus = "APPROVED";
+      g.reviewedAt = iso(-40);
+      // Interns waiting to be matched live where a role needing their skills is,
+      // so on-site and hybrid roles have real candidates in the demo.
+      if (stage === "QUALIFIED") {
+        const role = db.openings.find((o) => o.title === t.title && o.status === "OPEN" && o.workMode !== "REMOTE");
+        if (role) Object.assign(g, { country: role.country, city: role.city, stateOfResidence: role.state, lga: null });
+      }
+      if (t.disciplines[0]) g.courseOfStudy = t.disciplines[0];
+      g.availability = "FULL_TIME";
+      g.internType = "GRADUATE";
+      g.nyscStatus = i % 2 ? "COMPLETED" : "EXEMPTED";
+      g.nyscStateCode = null;
+      g.nyscBatch = null;
+      g.currentPpa = null;
+      g.degreeClass ??= "SECOND_CLASS_UPPER";
+      if (g.graduationYear && g.graduationYear > 2025) g.graduationYear = 2025;
+
+      const steps = PATH.slice(PATH.indexOf("QUALIFIED"), PATH.indexOf(stage) + 1);
       const events = steps.map((to, idx) => ({
         fromStatus: idx === 0 ? null : steps[idx - 1],
         toStatus: to,
-        actorId: idx === 0 ? g.userId : adminId,
-        note:
-          to === "REJECTED"
-            ? "Thank you for applying. Your screening score was below what this cohort needed."
-            : null,
-        createdAt: iso(base + idx * (cohortId === "coh_2" ? 12 : 2)),
+        actorId: adminId,
+        note: idx === 0 ? "Skills verified by SIIP: on the waiting list for matching" : null,
+        createdAt: iso(-40 + idx * 8),
       }));
-      const app: DbApplication = {
+      db.applications.push({
         id: newId("app"),
         graduateId: g.id,
-        cohortId,
-        status,
-        motivation: "I want real workplace experience and to grow my skills.",
-        rejectionReason: status === "REJECTED" ? events.at(-1)!.note : null,
+        cohortId: null,
+        status: stage,
+        motivation: null,
+        rejectionReason: null,
         createdAt: events[0].createdAt,
         statusChangedAt: events.at(-1)!.createdAt,
         events,
-        notes:
-          k === 0 && cohortId === "coh_3"
-            ? [
-                {
-                  id: newId("note"),
-                  body: "Strong CV, strong communication skills.",
-                  authorId: adminId,
-                  authorName: "SIIP Admin",
-                  createdAt: iso(-3),
-                },
-              ]
-            : [],
-      };
-      db.applications.push(app);
-      seedProgressFor(g, app);
+        notes: [],
+      });
     }
   }
   return firstOf;
-}
-
-function lessonsOf(cohortId: string) {
-  return db.courses
-    .filter((c) => c.cohortId === cohortId && c.published)
-    .flatMap((c) => c.modules.flatMap((m) => m.lessons));
-}
-
-function seedProgressFor(g: DbGraduate, app: DbApplication) {
-  const idx = PATH.indexOf(app.status);
-  if (idx < PATH.indexOf("IN_TRAINING")) return;
-  const lessons = lessonsOf(app.cohortId);
-  const done =
-    app.status === "IN_TRAINING" ? Math.floor(lessons.length * (0.2 + rand() * 0.6)) : lessons.length;
-  lessons.slice(0, done).forEach((l, n) => db.lessonProgress.set(`${g.id}:${l.id}`, iso(-80 + n)));
-  // Screening attempt for everyone past screening.
-  addFinishedAttempt("asm_screen", g.id, 60 + Math.floor(rand() * 35));
-  if (idx >= PATH.indexOf("QUALIFIED")) addFinishedAttempt("asm_final", g.id, 62 + Math.floor(rand() * 35));
-}
-
-function addFinishedAttempt(assessmentId: string, graduateId: string, percentage: number) {
-  const a = db.assessments.find((x) => x.id === assessmentId)!;
-  const passed = percentage >= a.passMark;
-  db.attempts.push({
-    id: newId("att"),
-    assessmentId,
-    graduateId,
-    attemptNumber: 1,
-    status: "SUBMITTED",
-    startedAt: iso(-70),
-    deadlineAt: iso(-70),
-    submittedAt: iso(-70),
-    layout: a.questions.map((q) => ({ questionId: q.id, optionIds: q.options.map((o) => o.id) })),
-    answers: {},
-    score: Math.round((percentage / 100) * a.questions.length),
-    maxScore: a.questions.length,
-    percentage,
-    passed,
-  });
 }
 
 function seedMatching(adminId: string) {
@@ -1348,7 +1305,7 @@ function seedNotifications() {
         userId: g.userId,
         type: "application.status_changed",
         title: `Application ${e.toStatus.toLowerCase().replace(/_/g, " ")}`,
-        body: `Your application to ${cohortById(app.cohortId)!.name} moved to a new stage.`,
+        body: `Your application to ${cohortName(app.cohortId)} moved to a new stage.`,
         data: { applicationId: app.id, status: e.toStatus },
         readAt: e === app.events.at(-1) ? null : e.createdAt,
         createdAt: e.createdAt,
@@ -1374,27 +1331,27 @@ function seed() {
   const owner = db.members.find((m) => m.companyId === db.companies[0].id && m.role === "OWNER")!;
   const supervisor = db.members.find((m) => m.companyId === db.companies[0].id && m.role === "SUPERVISOR")!;
   const pendingOwner = db.members.find((m) => m.companyId === db.companies[7].id && m.role === "OWNER")!;
-  const grad = (s: ApplicationStatus) => firstOf[s]!.userId;
+  const grad = (s: Stage) => firstOf[s]!.userId;
   Object.assign(personas, {
     "graduate-new": {
       userId: fresh.userId,
       label: "Graduate, just signed up",
-      description: "Profile incomplete, no application yet",
+      description: "Profile incomplete, nothing sent yet",
     },
-    "graduate-submitted": {
-      userId: grad("SUBMITTED"),
-      label: "Graduate, applied",
-      description: "Application submitted to Cohort 3",
+    "graduate-review": {
+      userId: grad("REVIEW"),
+      label: "Graduate, sent for review",
+      description: "SIIP is checking their documents",
     },
-    "graduate-training": {
-      userId: grad("IN_TRAINING"),
-      label: "Graduate, in training",
-      description: "Working through lessons",
+    "graduate-changes": {
+      userId: grad("CHANGES"),
+      label: "Graduate, more documents needed",
+      description: "SIIP asked for better proof",
     },
-    "graduate-assessment": {
-      userId: grad("FINAL_ASSESSMENT"),
-      label: "Graduate, final assessment",
-      description: "Ready to take the final test",
+    "graduate-approved": {
+      userId: grad("QUALIFIED"),
+      label: "Graduate, on the waiting list",
+      description: "Skills verified, waiting to be matched",
     },
     "graduate-matched": {
       userId: grad("MATCHED"),

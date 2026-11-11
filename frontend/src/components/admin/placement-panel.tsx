@@ -94,7 +94,6 @@ export function PlacementPanel({ id }: { id: string }) {
               </div>
               <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
                 {[
-                  ["Cohort", p.application.cohort.name],
                   ["Supervisor", p.supervisor?.user.name ?? "Not assigned"],
                   ["Start", formatDate(p.startDate)],
                   ["End", formatDate(p.endDate)],

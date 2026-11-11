@@ -55,10 +55,12 @@ const AG = ["ADMIN", "GRADUATE"] as const;
 // MATCHED/PLACED/COMPLETED are driven by the matching & placement services (SYSTEM),
 // never set by hand, so the application can't drift from its Match/Placement rows.
 export const applicationMachine = createStateMachine<ApplicationStatus>("Application", {
-  SUBMITTED: { SCREENING: AS, REJECTED: A, WITHDRAWN: AG },
-  SCREENING: { SHORTLISTED: A, REJECTED: A, WITHDRAWN: AG },
-  SHORTLISTED: { IN_TRAINING: AS, REJECTED: A, WITHDRAWN: AG },
-  IN_TRAINING: { FINAL_ASSESSMENT: AS, REJECTED: A, WITHDRAWN: AG },
+  // Cohorts and training are retired: when SIIP approves the profile, an application
+  // still in the old steps moves straight to the waiting list (QUALIFIED) by SYSTEM.
+  SUBMITTED: { SCREENING: AS, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
+  SCREENING: { SHORTLISTED: A, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
+  SHORTLISTED: { IN_TRAINING: AS, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
+  IN_TRAINING: { FINAL_ASSESSMENT: AS, QUALIFIED: S, REJECTED: A, WITHDRAWN: AG },
   FINAL_ASSESSMENT: { QUALIFIED: AS, REJECTED: AS, WITHDRAWN: AG },
   QUALIFIED: { MATCHED: S, WITHDRAWN: AG },
   // Back to QUALIFIED when the company rejects or the admin withdraws the match.

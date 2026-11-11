@@ -3,7 +3,6 @@
 import {
   Award,
   BarChart3,
-  BookOpen,
   Briefcase,
   Building2,
   ClipboardCheck,
@@ -12,7 +11,6 @@ import {
   History,
   LayoutDashboard,
   ShieldCheck,
-  Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { AppShell, type NavSection } from "@/components/shell/app-shell";
@@ -23,9 +21,7 @@ const SECTIONS: NavSection[] = [
     title: "Programme",
     items: [
       { href: "/admin/reviews", label: "Skill reviews", icon: ShieldCheck },
-      { href: "/admin/cohorts", label: "Cohorts", icon: Users },
-      { href: "/admin/applications", label: "Applications", icon: ClipboardList },
-      { href: "/admin/training", label: "Training content", icon: BookOpen },
+      { href: "/admin/applications", label: "Interns", icon: ClipboardList },
       // One test only: the SIIP test (videos + workplace-conduct quiz).
       { href: "/admin/assessments/siip_test", label: "SIIP test", icon: ClipboardCheck },
     ],

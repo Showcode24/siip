@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import { adminApi } from "@/client/api/admin";
 import { errorMessage } from "@/client/api/http";
@@ -10,23 +9,17 @@ import { FunnelChart, SkillsChart } from "@/components/admin/charts";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, PageHeader, StatCard } from "@/components/ui/display";
-import { Select } from "@/components/ui/form-controls";
 import { downloadFile } from "@/lib/csv";
 
 const pct = (v: number | null) => (v === null ? "No data" : `${v}%`);
 
 export default function AnalyticsPage() {
-  const cohorts = useQuery({ queryKey: ["admin", "cohorts"], queryFn: adminApi.listCohorts });
-  const [cohortId, setCohortId] = useState("");
-  const q = useQuery({
-    queryKey: ["admin", "analytics", cohortId],
-    queryFn: () => adminApi.getAnalytics(cohortId || undefined),
-  });
+  const q = useQuery({ queryKey: ["admin", "analytics", ""], queryFn: () => adminApi.getAnalytics() });
   const exportCsv = async (kind: "applications" | "placements") => {
     try {
       downloadFile(
         `siip-${kind}-${new Date().toISOString().slice(0, 10)}.csv`,
-        await adminApi.exportCsv(kind, { cohortId: cohortId || undefined }),
+        await adminApi.exportCsv(kind, {}),
       );
     } catch (err) {
       toast.error(errorMessage(err));
@@ -40,7 +33,7 @@ export default function AnalyticsPage() {
         actions={
           <>
             <Button variant="outline" onClick={() => exportCsv("applications")}>
-              <Download /> Applications CSV
+              <Download /> Interns CSV
             </Button>
             <Button variant="outline" onClick={() => exportCsv("placements")}>
               <Download /> Placements CSV
@@ -48,19 +41,6 @@ export default function AnalyticsPage() {
           </>
         }
       />
-      <div className="mb-6 w-64">
-        <label htmlFor="ac" className="sr-only">
-          Cohort
-        </label>
-        <Select id="ac" value={cohortId} onChange={(e) => setCohortId(e.target.value)}>
-          <option value="">All cohorts</option>
-          {cohorts.data?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
-      </div>
       <QueryState query={q}>
         {(a) => (
           <div className="grid gap-6 [&>*]:min-w-0">

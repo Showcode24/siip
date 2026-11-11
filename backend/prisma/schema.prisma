@@ -352,8 +352,9 @@ model Application {
   id              String            @id @default(cuid())
   graduateId      String
   graduate        GraduateProfile   @relation(fields: [graduateId], references: [id], onDelete: Cascade)
-  cohortId        String
-  cohort          Cohort            @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  // Legacy: cohorts are retired. New interns join the waiting list without one.
+  cohortId        String?
+  cohort          Cohort?           @relation(fields: [cohortId], references: [id], onDelete: Restrict)
   status          ApplicationStatus @default(SUBMITTED)
   motivation      String?
   rejectionReason String?

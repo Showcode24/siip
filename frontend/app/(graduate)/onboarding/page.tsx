@@ -122,11 +122,9 @@ export default function OnboardingPage() {
                     <ReviewSubmitCard profile={profile} />
                     <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
                       {back}
-                      {profile.missingForApplication.length ? null : (
-                        <Button asChild size="lg" variant="outline">
-                          <Link href="/applications">Apply to a cohort</Link>
-                        </Button>
-                      )}
+                      <Button asChild size="lg" variant="outline">
+                        <Link href="/dashboard">Go to my dashboard</Link>
+                      </Button>
                     </div>
                   </div>
                 ) : null}

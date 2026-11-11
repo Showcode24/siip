@@ -23,6 +23,7 @@ import {
 import type { z } from "zod";
 import type { reviewQueueQuery } from "@/server/validators/review";
 import { sendApplicationEmail, transitionApplication, type ApplicationChange } from "./application.service";
+import { findCurrentApplication } from "./enrolment";
 import { createNotification } from "./notification.service";
 import { presentSkill, skillSelect } from "./skill.service";
 
@@ -128,7 +129,7 @@ export async function getReview(graduateId: string) {
       removedAt: true,
       removalReason: true,
       user: { select: { id: true, email: true, createdAt: true } },
-      skills: { select: skillSelect, orderBy: { createdAt: "asc" } },
+      skills: { select: skillSelect, orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
     },
   });
   if (!profile) throw errors.notFound("Profile");
@@ -254,6 +255,55 @@ async function loadForDecision(tx: Tx, graduateId: string): Promise<ProfileForDe
 
 const profileUrl = () => `${env().APP_URL}/settings`;
 
+/** Application steps from before cohorts and training were retired. */
+const OLD_STEPS = ["SUBMITTED", "SCREENING", "SHORTLISTED", "IN_TRAINING", "FINAL_ASSESSMENT"] as const;
+
+/**
+ * An approved intern is on the waiting list (status QUALIFIED), which is what
+ * matching draws from. Someone part-way through the old cohort steps moves
+ * straight there; anyone else gets a new waiting-list entry (no cohort). Interns
+ * already matched, placed or finished are left as they are.
+ */
+async function joinWaitingList(tx: Tx, graduateId: string, actor: AuditActor) {
+  const current = await findCurrentApplication(graduateId, tx);
+  if (current && !(OLD_STEPS as readonly string[]).includes(current.status)) return;
+  if (current) {
+    // No separate email: the "profile approved" email says they're on the list.
+    await transitionApplication(tx, {
+      applicationId: current.id,
+      to: "QUALIFIED",
+      actor: "SYSTEM",
+      auditActor: actor,
+      reason: "Skills verified by SIIP: on the waiting list for matching",
+    });
+    return;
+  }
+  const app = await tx.application.create({
+    data: {
+      graduateId,
+      cohortId: null,
+      status: "QUALIFIED",
+      events: {
+        create: {
+          fromStatus: null,
+          toStatus: "QUALIFIED",
+          actorId: actor?.userId ?? null,
+          note: "Skills verified by SIIP: on the waiting list for matching",
+        },
+      },
+    },
+    select: { id: true },
+  });
+  await recordAudit(tx, {
+    actor,
+    action: "application.waiting_list_joined",
+    entityType: "Application",
+    entityId: app.id,
+    after: { status: "QUALIFIED" },
+    metadata: { graduateId },
+  });
+}
+
 export async function decideProfile(actor: AuditActor, graduateId: string, input: ProfileDecisionInput) {
   const outcome = await db.$transaction(async (tx) => {
     const p = await loadForDecision(tx, graduateId);
@@ -302,6 +352,7 @@ export async function decideProfile(actor: AuditActor, graduateId: string, input
         data: { reviewStatus: "APPROVED", reviewedAt: now, reviewNote: null },
       });
       await audit("profile.approved", { reviewStatus: "APPROVED" }, { verifiedSkills: verified.length });
+      await joinWaitingList(tx, graduateId, actor);
       await createNotification(tx, {
         userId: p.user.id,
         type: "profile.approved",

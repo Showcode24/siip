@@ -4,34 +4,39 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Award,
-  BookOpen,
   Briefcase,
-  CalendarDays,
   ClipboardCheck,
   Hourglass,
+  MailWarning,
   Search,
+  Send,
+  ShieldCheck,
   UserRoundPen,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { graduateApi, notificationsApi } from "@/client/api/graduate";
-import { assessmentApi, trainingApi } from "@/client/api/learning";
-import type { GraduateProfile, MyApplication } from "@/client/api/types";
+import { siipTestApi } from "@/client/api/learning";
+import type { GraduateProfile, MySiipTest } from "@/client/api/types";
 import { useSession } from "@/client/session";
 import { JourneyTracker } from "@/components/graduate/journey";
 import { Button } from "@/components/ui/button";
-import { Card, CardBody, CardHeader, Progress, Skeleton, StatusPill } from "@/components/ui/display";
-import { APPLICATION_STATUS } from "@/lib/labels";
+import { Card, CardBody, CardHeader, Skeleton, StatusPill } from "@/components/ui/display";
+import { JOURNEY, SKILL_LEVEL, SKILL_STATUS, journeyStage, type JourneyInput } from "@/lib/labels";
 import { formatDate, formatRelative } from "@/lib/utils";
-
-type AppSummary = Omit<MyApplication, "timeline" | "motivation" | "rejectionReason">;
 
 export default function DashboardPage() {
   const { me } = useSession();
   const apps = useQuery({ queryKey: ["graduate", "applications"], queryFn: graduateApi.listApplications });
   const profile = useQuery({ queryKey: ["graduate", "profile"], queryFn: graduateApi.getProfile });
-  const current =
-    apps.data?.find((a) => a.status !== "REJECTED" && a.status !== "WITHDRAWN") ?? apps.data?.[0];
+  const test = useQuery({ queryKey: ["graduate", "siip-test"], queryFn: siipTestApi.getMine });
+  const current = apps.data?.find((a) => a.status !== "REJECTED" && a.status !== "WITHDRAWN");
+  const journey: JourneyInput = {
+    reviewStatus: profile.data?.reviewStatus,
+    appStatus: current?.status,
+    siipState: test.data?.state,
+  };
+  const loading = apps.isPending || profile.isPending;
   const firstName = me?.name.split(" ")[0] ?? "";
 
   return (
@@ -41,37 +46,23 @@ export default function DashboardPage() {
           {greeting()}, {firstName}
         </h1>
         <p className="mt-1 text-muted-foreground">
-          {current
-            ? `${APPLICATION_STATUS[current.status].label}, ${current.cohort.name}`
-            : "Let's get your application started."}
+          {loading ? " " : `Step ${journeyStage(journey) + 1} of 7: ${JOURNEY[journeyStage(journey)].label}`}
         </p>
       </div>
 
       <Card className="overflow-hidden">
-        <CardBody>
-          {apps.isPending ? (
-            <Skeleton className="h-10" />
-          ) : (
-            <JourneyTracker status={current?.status ?? null} />
-          )}
-        </CardBody>
+        <CardBody>{loading ? <Skeleton className="h-10" /> : <JourneyTracker journey={journey} />}</CardBody>
       </Card>
 
-      {apps.isPending || profile.isPending ? (
+      {loading ? (
         <Skeleton className="h-52 rounded-xl" />
       ) : (
-        <NextStep app={current} profile={profile.data} />
+        <NextStep step={nextStepFor(journey, profile.data, test.data ?? null)} />
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <div className="grid content-start gap-6">
-          {current &&
-          ["IN_TRAINING", "FINAL_ASSESSMENT", "QUALIFIED", "MATCHED", "PLACED", "COMPLETED"].includes(
-            current.status,
-          ) ? (
-            <TrainingCard />
-          ) : null}
-          {current ? <DatesCard app={current} /> : null}
+          {profile.data ? <SkillsCard profile={profile.data} /> : null}
         </div>
         <RecentNotifications />
       </div>
@@ -80,11 +71,7 @@ export default function DashboardPage() {
 }
 
 function greeting() {
-  const h = Number(
-    new Intl.DateTimeFormat("en-NG", { hour: "numeric", hourCycle: "h23", timeZone: "Africa/Lagos" }).format(
-      new Date(),
-    ),
-  );
+  const h = new Date().getHours();
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
@@ -96,124 +83,92 @@ interface StepContent {
   action?: string;
 }
 
-function nextStepFor(
-  app: AppSummary | undefined,
-  profile: GraduateProfile | undefined,
-  screeningOpen: boolean,
-): StepContent {
-  if (!app || app.status === "REJECTED" || app.status === "WITHDRAWN") {
-    if (profile && profile.missingForApplication.length > 0) {
-      return {
-        icon: <UserRoundPen />,
-        title: "Complete your profile",
-        body: `Add ${profile.missingForApplication.slice(0, 3).join(", ").toLowerCase()}${profile.missingForApplication.length > 3 ? " and more" : ""} so you can apply.`,
-        href: "/onboarding",
-        action: "Continue profile",
-      };
-    }
+const TEST_OPEN = ["VIDEOS", "READY", "IN_PROGRESS", "COOLDOWN"];
+
+function nextStepFor(j: JourneyInput, profile: GraduateProfile | undefined, test: MySiipTest | null): StepContent {
+  const testStep: StepContent = {
+    icon: <ClipboardCheck />,
+    title: "Take the SIIP test",
+    body: test?.message ?? "Watch the short videos, then answer the quiz.",
+    href: "/assessments",
+    action: "Go to the SIIP test",
+  };
+  if (j.appStatus === "COMPLETED") {
+    return test?.state === "PASSED"
+      ? {
+          icon: <Award />,
+          title: "You completed SIIP",
+          body: "Download your certificate and share its verification link with employers.",
+          href: "/certificates",
+          action: "Get my certificate",
+        }
+      : testStep;
+  }
+  if (j.appStatus === "PLACED") {
+    return test && TEST_OPEN.includes(test.state)
+      ? testStep
+      : {
+          icon: <Briefcase />,
+          title: "Your internship is under way",
+          body: "Share a short check-in every month. The SIIP test opens 2 to 3 months in.",
+          href: "/placement",
+          action: "Open my internship",
+        };
+  }
+  if (j.appStatus === "MATCHED") {
     return {
-      icon: <Search />,
-      title: app ? "Apply to the next cohort" : "Apply to a cohort",
-      body: "Your profile is ready. Choose an open cohort to apply to.",
-      href: "/applications",
-      action: "See open cohorts",
+      icon: <Hourglass />,
+      title: "A company is reviewing your profile",
+      body: "Most companies reply within three days.",
+      href: "/placement",
+      action: "See details",
     };
   }
-  switch (app.status) {
-    case "SUBMITTED":
-      return screeningOpen
-        ? {
-            icon: <ClipboardCheck />,
-            title: "Take the screening test",
-            body: "A short timed test. It helps us review your application faster.",
-            href: "/assessments",
-            action: "Go to the test",
-          }
-        : {
-            icon: <Hourglass />,
-            title: "We're reviewing your application",
-            body: "We'll email you as soon as your application moves forward.",
-            href: `/applications/${app.id}`,
-            action: "View application",
-          };
-    case "SCREENING":
-      return {
-        icon: <Hourglass />,
-        title: "Your application is in review",
-        body: "Our team is reviewing your profile and screening result.",
-        href: `/applications/${app.id}`,
-        action: "View application",
-      };
-    case "SHORTLISTED":
-      return {
-        icon: <CalendarDays />,
-        title: "You're shortlisted",
-        body: `Training starts ${formatDate(app.cohort.trainingStartsAt)}. We'll email you when your courses open.`,
-        href: `/applications/${app.id}`,
-        action: "View timeline",
-      };
-    case "IN_TRAINING":
-      return {
-        icon: <BookOpen />,
-        title: "Continue your training",
-        body: "Finish every lesson to unlock the final assessment.",
-        href: "/training",
-        action: "Continue learning",
-      };
-    case "FINAL_ASSESSMENT":
-      return {
-        icon: <ClipboardCheck />,
-        title: "Take your final assessment",
-        body: "You've finished training. Pass the final assessment to qualify for placement.",
-        href: "/assessments",
-        action: "Go to the assessment",
-      };
-    case "QUALIFIED":
+  switch (j.reviewStatus) {
+    case "APPROVED":
       return {
         icon: <Search />,
-        title: "We're matching you with companies",
-        body: "You qualified. We'll let you know as soon as a company is interested.",
+        title: "You're on the waiting list",
+        body: "Your skills are verified. We'll let you know as soon as a company wants to take you on.",
         href: "/settings",
         action: "Keep your profile fresh",
       };
-    case "MATCHED":
+    case "SUBMITTED":
       return {
-        icon: <Hourglass />,
-        title: "A company is reviewing your profile",
-        body: "Most companies reply within three days.",
-        href: "/placement",
-        action: "See details",
+        icon: <ShieldCheck />,
+        title: "SIIP is checking your documents",
+        body: "We check each skill against your proof. We'll email you when we're done.",
+        href: "/settings",
+        action: "See my skills",
       };
-    case "PLACED":
+    case "CHANGES_REQUESTED":
       return {
-        icon: <Briefcase />,
-        title: "Your internship is under way",
-        body: "Share a short check-in every month with SIIP.",
-        href: "/placement",
-        action: "Open my internship",
-      };
-    case "COMPLETED":
-      return {
-        icon: <Award />,
-        title: "You completed SIIP",
-        body: "Download your certificate and share its verification link with employers.",
-        href: "/certificates",
-        action: "Get my certificate",
+        icon: <MailWarning />,
+        title: "SIIP needs more documents",
+        body: profile?.reviewNote ?? "Add the documents we asked for, then send your profile again.",
+        href: "/settings",
+        action: "Add documents",
       };
   }
+  const todo = [...(profile?.missingForApplication ?? []), ...(profile?.skillsWithoutProof ?? []).map((n) => `proof for ${n}`)];
+  return todo.length
+    ? {
+        icon: <UserRoundPen />,
+        title: "Add your skills and proof",
+        body: `Still to do: ${todo.slice(0, 3).join(", ").toLowerCase()}${todo.length > 3 ? " and more" : ""}.`,
+        href: "/onboarding",
+        action: "Continue",
+      }
+    : {
+        icon: <Send />,
+        title: "Send your profile for review",
+        body: "Everything is ready. SIIP checks each skill against your documents.",
+        href: "/onboarding",
+        action: "Send for review",
+      };
 }
 
-function NextStep({ app, profile }: { app: AppSummary | undefined; profile: GraduateProfile | undefined }) {
-  const tests = useQuery({
-    queryKey: ["graduate", "assessments"],
-    queryFn: assessmentApi.listMine,
-    enabled: app?.status === "SUBMITTED",
-  });
-  const step = nextStepFor(
-    app,
-    profile,
-    Boolean(tests.data?.some((t) => t.type === "SCREENING" && t.canStart)),
-  );
+function NextStep({ step }: { step: StepContent }) {
   return (
     <section
       aria-labelledby="next-step"
@@ -244,71 +199,37 @@ function NextStep({ app, profile }: { app: AppSummary | undefined; profile: Grad
   );
 }
 
-function TrainingCard() {
-  const q = useQuery({ queryKey: ["graduate", "training"], queryFn: trainingApi.getMyTraining });
+/** The intern's skills and where each stands with SIIP. */
+function SkillsCard({ profile }: { profile: GraduateProfile }) {
   return (
     <Card>
       <CardHeader
-        title="Training progress"
+        title="Your skills"
+        description={
+          profile.reviewedAt ? `Checked by SIIP ${formatDate(profile.reviewedAt)}` : "Companies only see skills SIIP has verified."
+        }
         action={
           <Button asChild variant="ghost" size="sm">
-            <Link href="/training">Open</Link>
+            <Link href="/settings">Manage</Link>
           </Button>
         }
       />
-      <CardBody className="grid gap-5">
-        {q.isPending ? (
-          <Skeleton className="h-24" />
-        ) : q.data ? (
-          <>
-            <div className="flex items-end justify-between">
-              <p className="font-display text-4xl font-semibold tabular-nums">{q.data.progress.percent}%</p>
-              <p className="text-sm text-muted-foreground">
-                {q.data.progress.completed} of {q.data.progress.total} lessons
-              </p>
-            </div>
-            <Progress value={q.data.progress.percent} label="Overall training progress" />
-            <ul className="grid gap-3">
-              {q.data.courses.map((c) => (
-                <li key={c.id} className="flex items-center justify-between gap-4 text-[15px]">
-                  <span className="truncate">{c.title}</span>
-                  <span className="shrink-0 text-muted-foreground tabular-nums">{c.progress.percent}%</span>
-                </li>
-              ))}
-            </ul>
-          </>
+      <CardBody className="pt-3">
+        {profile.skills.length ? (
+          <ul className="grid divide-y divide-border">
+            {profile.skills.map((s) => (
+              <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3">
+                <span className="min-w-0 flex-1 font-semibold">{s.name}</span>
+                <span className="text-sm text-muted-foreground">
+                  {s.status === "VERIFIED" && s.verifiedLevel ? SKILL_LEVEL[s.verifiedLevel] : `Claims ${SKILL_LEVEL[s.level]}`}
+                </span>
+                <StatusPill map={SKILL_STATUS} value={s.status} />
+              </li>
+            ))}
+          </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">Training progress isn&apos;t available right now.</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">No skills yet.</p>
         )}
-      </CardBody>
-    </Card>
-  );
-}
-
-function DatesCard({ app }: { app: AppSummary }) {
-  const rows: Array<[string, string]> = [
-    ["Training starts", app.cohort.trainingStartsAt],
-    ["Internships start", app.cohort.internshipStartsAt],
-  ];
-  return (
-    <Card>
-      <CardHeader
-        title={app.cohort.name}
-        description="Key dates for your cohort"
-        action={<StatusPill map={APPLICATION_STATUS} value={app.status} />}
-      />
-      <CardBody>
-        <dl className="grid gap-3">
-          {rows.map(([label, date]) => (
-            <div
-              key={label}
-              className="flex items-center justify-between gap-4 rounded-lg bg-surface-muted px-4 py-3"
-            >
-              <dt className="text-[15px]">{label}</dt>
-              <dd className="font-semibold">{formatDate(date)}</dd>
-            </div>
-          ))}
-        </dl>
       </CardBody>
     </Card>
   );

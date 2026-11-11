@@ -39,8 +39,8 @@ export default function ApplicationDetailPage() {
       {(app) => (
         <>
           <PageHeader
-            breadcrumbs={[{ label: "Applications", href: "/applications" }, { label: app.cohort.name }]}
-            title={app.cohort.name}
+            breadcrumbs={[{ label: "Home", href: "/dashboard" }, { label: app.cohort?.name ?? "Waiting list" }]}
+            title={app.cohort?.name ?? "Waiting list"}
             description={`Applied ${formatDate(app.createdAt)}`}
             actions={<StatusPill map={APPLICATION_STATUS} value={app.status} />}
           />
@@ -48,7 +48,7 @@ export default function ApplicationDetailPage() {
             <div className="grid content-start gap-6">
               <Card>
                 <CardBody>
-                  <JourneyTracker status={app.status} />
+                  <JourneyTracker journey={{ appStatus: app.status }} />
                 </CardBody>
               </Card>
               {app.status === "REJECTED" && app.rejectionReason ? (
@@ -92,16 +92,19 @@ export default function ApplicationDetailPage() {
               <Card>
                 <CardHeader title="Cohort dates" />
                 <CardBody className="grid gap-3 text-[15px]">
-                  {[
-                    [
-                      "Training",
-                      `${formatDate(app.cohort.trainingStartsAt)} to ${formatDate(app.cohort.trainingEndsAt)}`,
-                    ],
-                    [
-                      "Internship",
-                      `${formatDate(app.cohort.internshipStartsAt)} to ${formatDate(app.cohort.internshipEndsAt)}`,
-                    ],
-                  ].map(([k, v]) => (
+                  {(app.cohort
+                    ? [
+                        [
+                          "Training",
+                          `${formatDate(app.cohort.trainingStartsAt)} to ${formatDate(app.cohort.trainingEndsAt)}`,
+                        ],
+                        [
+                          "Internship",
+                          `${formatDate(app.cohort.internshipStartsAt)} to ${formatDate(app.cohort.internshipEndsAt)}`,
+                        ],
+                      ]
+                    : []
+                  ).map(([k, v]) => (
                     <div key={k}>
                       <p className="text-muted-foreground">{k}</p>
                       <p className="font-semibold">{v}</p>

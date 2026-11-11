@@ -28,8 +28,7 @@ import {
   skillName,
   verifiedSkills,
   userById,
-  type DbCohort,
-} from "./db";
+  type DbCohort, cohortName } from "./db";
 import {
   adminRow,
   badRequest,
@@ -348,7 +347,6 @@ export function getSuggestions(openingId: string, limit: number) {
         // Only interns SIIP has approved (and not removed) reach companies.
         graduateById(a.graduateId)?.reviewStatus === "APPROVED" &&
         !graduateById(a.graduateId)?.removedAt &&
-        (!o.cohortId || a.cohortId === o.cohortId) &&
         !db.matches.some(
           (mt) => mt.openingId === o.id && mt.graduateId === a.graduateId && mt.status === "COMPANY_REJECTED",
         ),
@@ -484,7 +482,7 @@ export function getPlacement(id: string): AdminPlacement {
     application: {
       id: app.id,
       status: app.status,
-      cohort: { id: app.cohortId, name: cohortById(app.cohortId)!.name },
+      cohort: app.cohortId ? { id: app.cohortId, name: cohortName(app.cohortId) } : null,
     },
     checkIns: db.checkIns
       .filter((c) => c.placementId === id)
@@ -591,9 +589,10 @@ export function getAnalytics(cohortId?: string): Analytics {
   const perCohort = new Map<string, Partial<Record<ApplicationStatus, number>>>();
   apps.forEach((a) => {
     byStage[a.status] = (byStage[a.status] ?? 0) + 1;
-    const s = perCohort.get(a.cohortId) ?? {};
+    const key = a.cohortId ?? "waiting-list";
+    const s = perCohort.get(key) ?? {};
     s[a.status] = (s[a.status] ?? 0) + 1;
-    perCohort.set(a.cohortId, s);
+    perCohort.set(key, s);
   });
   const sum = (xs: ApplicationStatus[]) => xs.reduce((n, s) => n + (byStage[s] ?? 0), 0);
   const rate = (p: number, w: number) => (w === 0 ? null : Math.round((p / w) * 1000) / 10);
@@ -618,7 +617,7 @@ export function getAnalytics(cohortId?: string): Analytics {
   return {
     stagesByCohort: [...perCohort.entries()].map(([id, stages]) => ({
       cohortId: id,
-      cohortName: cohortById(id)?.name ?? null,
+      cohortName: id === "waiting-list" ? "Waiting list" : (cohortById(id)?.name ?? null),
       stages,
     })),
     totals: { applications: apps.length, byStage },
@@ -666,7 +665,7 @@ export function exportCsv(kind: "applications" | "placements") {
         const g = graduateById(a.graduateId)!;
         return [
           a.id,
-          cohortById(a.cohortId)!.name,
+          cohortName(a.cohortId),
           a.status,
           g.firstName,
           g.lastName,
@@ -711,7 +710,7 @@ export function verifyCertificate(raw: string) {
   return {
     valid: true,
     graduateName: `${g.firstName} ${g.lastName}`,
-    cohortName: cohortById(db.applications.find((a) => a.id === p.applicationId)!.cohortId)!.name,
+    cohortName: cohortName(db.applications.find((a) => a.id === p.applicationId)!.cohortId),
     companyName: companyById(p.companyId)!.name,
     roleTitle: openingById(p.openingId)!.title,
     issuedAt: c.issuedAt,

@@ -1,23 +1,16 @@
 import { Check } from "lucide-react";
-import type { ApplicationStatus } from "@siip/shared/enums";
-import { JOURNEY, journeyStage } from "@/lib/labels";
+import { JOURNEY, journeyStage, type JourneyInput } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
-/** The 7 programme stages with the current one highlighted. Horizontal on desktop, compact on phones. */
-export function JourneyTracker({
-  status,
-  className,
-}: {
-  status: ApplicationStatus | null | undefined;
-  className?: string;
-}) {
-  const current = journeyStage(status);
+/** The 7 journey stages with the current one highlighted. Horizontal on desktop, compact on phones. */
+export function JourneyTracker({ journey, className }: { journey: JourneyInput; className?: string }) {
+  const current = journeyStage(journey);
   const ended = current === -1;
   return (
     <div className={className}>
       <ol
         className="grid grid-cols-7 gap-1.5 sm:gap-2"
-        aria-label={`Programme progress: step ${Math.max(current, 0) + 1} of 7`}
+        aria-label={`Your progress: step ${Math.max(current, 0) + 1} of 7`}
       >
         {JOURNEY.map((s, i) => {
           const done = !ended && i < current;

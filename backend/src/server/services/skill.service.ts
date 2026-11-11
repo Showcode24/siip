@@ -89,7 +89,11 @@ async function loadSkill(client: DbOrTx, graduateSkillId: string) {
 }
 
 export async function listMySkills(graduateId: string) {
-  const rows = await db.graduateSkill.findMany({ where: { graduateId }, select: skillSelect, orderBy: { createdAt: "asc" } });
+  const rows = await db.graduateSkill.findMany({
+    where: { graduateId },
+    select: skillSelect,
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+  });
   return rows.map(presentSkill);
 }
 
@@ -286,7 +290,10 @@ export async function reviewBlockers(client: DbOrTx, graduateId: string) {
       bio: true,
       cvPublicId: true,
       photoUrl: true,
-      skills: { select: { skillId: true, otherName: true, skill: { select: { name: true } }, _count: { select: { documents: true } } } },
+      skills: {
+        select: { skillId: true, otherName: true, skill: { select: { name: true } }, _count: { select: { documents: true } } },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      },
     },
   });
   const missing = missingForApplication({ ...profile, skillCount: profile.skills.length });

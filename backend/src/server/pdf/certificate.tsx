@@ -48,7 +48,7 @@ function CertificateDocument(d: CertificateData) {
           <Text style={s.lead}>This certifies that</Text>
           <Text style={s.name}>{d.graduateName}</Text>
           <Text style={s.body}>
-            completed the SIIP training programme ({d.cohortName}) and a three-month internship as{" "}
+            completed a SIIP internship with verified skills as{" "}
             {d.roleTitle} at {d.companyName}, from {d.startDate} to {d.endDate}.
           </Text>
           <View style={s.footer}>

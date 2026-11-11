@@ -11,7 +11,7 @@ export function CompanyVerifiedEmail({ firstName, companyName, dashboardUrl }: C
     <Layout preview={`${companyName} is now verified on SIIP`} heading="Your company is verified">
       <P>
         Hi {firstName}, good news: <strong>{companyName}</strong> has been verified as a SIIP partner. You can
-        now publish internship openings, and we will start matching qualified graduates to them.
+        now publish internship openings, and we will start matching verified interns to them.
       </P>
       <CTA href={dashboardUrl}>Post an opening</CTA>
       <Small>Invite your supervisors from the company dashboard so they can follow their interns.</Small>

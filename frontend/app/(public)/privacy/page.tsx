@@ -29,8 +29,8 @@ export default function PrivacyPage() {
           body: (
             <>
               <p>
-                Your name, email, phone number, state and LGA, education, NYSC status, skills, CV, assessment
-                results, training progress and internship records.
+                Your name, email, phone number, location, education, NYSC status, skills and the proof you upload,
+                CV, SIIP test results and internship records.
               </p>
               <p>
                 For company users: your name, work email, job title and your company&apos;s registration
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
           heading: "Why we use it",
           body: (
             <p>
-              To run the programme: screening, training, assessments, matching you to companies, monitoring
+              To run the programme: checking your skills, the SIIP test, matching you to companies, monitoring
               internships and issuing certificates. We rely on your consent, given when you register, and on
               our legitimate interest in running a fair programme.
             </p>

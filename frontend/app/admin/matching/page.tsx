@@ -37,7 +37,7 @@ export default function MatchingPage() {
     <>
       <PageHeader
         title="Matching"
-        description="Pick an opening to see qualified graduates ranked by fit, then propose the best ones to the company."
+        description="Pick an opening to see verified interns ranked by fit, then propose the best ones to the company."
       />
       <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside aria-label="Open openings" className="grid content-start gap-3">
@@ -154,7 +154,7 @@ function Suggestions({ openingId }: { openingId: string }) {
           </Card>
           {suggestions.length === 0 ? (
             <EmptyState
-              title="No qualified graduates fit this opening"
+              title="No verified interns fit this opening"
               description="Graduates appear here once they've qualified and aren't already matched."
             />
           ) : (

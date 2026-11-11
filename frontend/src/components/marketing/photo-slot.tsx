@@ -2,7 +2,7 @@ import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Placeholder for a real photo of Nigerian graduates or workplaces.
+ * Placeholder for a real photo of interns at work.
  * Replace with <Image src=… /> (next/image) once photos are supplied.
  */
 export function PhotoSlot({ label, className }: { label: string; className?: string }) {

@@ -23,10 +23,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           />
         </div>
         <p className="font-display text-4xl leading-tight font-semibold">
-          From graduate to hired, one clear step at a time.
+          Proven skills, put to work, one clear step at a time.
         </p>
         <p className="mt-6 flex items-center gap-2 text-[var(--grey-200)]">
-          <ShieldCheck className="size-5 text-orange" /> SIIP is free. We never ask graduates to pay.
+          <ShieldCheck className="size-5 text-orange" /> SIIP is free. We never ask interns to pay.
         </p>
       </aside>
     </div>

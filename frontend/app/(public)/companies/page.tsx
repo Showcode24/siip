@@ -7,19 +7,19 @@ import { PhotoSlot } from "@/components/marketing/photo-slot";
 export const metadata: Metadata = {
   title: "For companies",
   description:
-    "Partner with SIIP to host trained, assessed Nigerian graduates as three-month interns. Free to join.",
+    "Partner with SIIP to host interns whose skills are verified at the level you ask for. Free to join.",
 };
 
 const WHY = [
   {
     icon: UserCheck,
-    title: "Graduates who are ready",
-    body: "Every candidate has passed screening, finished practical training and passed a final assessment.",
+    title: "Skills you can trust",
+    body: "Every skill is checked against real certificates. You see the level SIIP verified, not the one claimed.",
   },
   {
     icon: GitMerge,
-    title: "Matches you can understand",
-    body: "Each proposal shows a score and the reasons behind it: skills, discipline, location and availability.",
+    title: "The level you ask for",
+    body: "Ask for Expert and you only get Experts. Intermediate gets Intermediate and above. Each proposal shows why it fits.",
   },
   {
     icon: BadgeCheck,
@@ -31,18 +31,18 @@ const WHY = [
 const EXPECT = [
   {
     icon: ClipboardCheck,
-    title: "Post clear openings",
-    body: "Tell us the role, the skills you need, slots, location and schedule.",
+    title: "Post clear requests",
+    body: "Tell us the role, the skills and level you need, how many interns, when, and whether it's remote, on-site or hybrid.",
   },
   {
     icon: UserCheck,
     title: "Decide within three days",
-    body: "Review proposed graduates and accept or decline with a short reason.",
+    body: "Review proposed interns and accept or decline with a short reason.",
   },
   {
     icon: MessageSquareText,
     title: "A monthly check-in",
-    body: "A few lines from the supervisor each month of the three-month internship.",
+    body: "A few lines from the supervisor each month. Good reviews open the intern's SIIP test.",
   },
   {
     icon: FileCheck2,
@@ -58,12 +58,11 @@ export default function CompaniesPage() {
         <div className="absolute inset-0 -z-10 bg-[image:var(--night-texture),var(--night-fill)]" />
         <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div>
-            <p className="text-sm font-semibold text-orange">For companies</p>
-            <h1 className="mt-3 text-[44px] leading-[1.03] break-words sm:text-7xl">
+            <h1 className="text-[44px] leading-[1.03] break-words sm:text-7xl">
               Host interns who are ready to work.
             </h1>
             <p className="mt-6 max-w-lg text-lg text-[var(--grey-200)]">
-              We train and assess Nigerian graduates, then match them to your openings.
+              We verify each intern&rsquo;s skills and level, then match them to your requests.
             </p>
             <div className="mt-8">
               <CtaButton href="/sign-up">Become a partner</CtaButton>
@@ -128,18 +127,17 @@ export default function CompaniesPage() {
               How matching works
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Each qualified graduate gets a score out of 100 for your opening. You see the score and the
-              reasons before you decide.
+              Only interns with every required skill verified at your level are considered. Each gets a score out
+              of 100, and you see the reasons before you decide.
             </p>
           </div>
           <ul className="grid gap-3">
             {[
-              ["Skills", 40, "The skills you asked for, at the level you need"],
-              ["Final assessment", 20, "How well they did after training"],
+              ["Verified skills", 50, "The skills you asked for, verified at your level or above"],
               ["Discipline", 15, "Course of study against your preferred fields"],
-              ["Location", 10, "Same state, or remote-friendly"],
-              ["Availability", 10, "Full-time, part-time or weekends"],
-              ["NYSC status", 5, "Available for the full three months"],
+              ["Location", 15, "Lives where on-site work is, or any place for remote roles"],
+              ["Availability", 15, "Full-time, part-time or weekends"],
+              ["Other", 5, "Free for the whole internship"],
             ].map(([k, w, d]) => (
               <li
                 key={k as string}

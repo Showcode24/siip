@@ -65,7 +65,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
           <p className="mt-2 text-xs text-[var(--grey-500)] sm:mt-4 sm:text-sm">This certifies that</p>
           <p className="mt-1 font-display text-2xl font-semibold sm:text-5xl">{me?.name}</p>
           <p className="mt-2 max-w-xl text-[11px] text-[var(--grey-500)] sm:mt-4 sm:text-base">
-            completed the SIIP training programme and a three-month internship as{" "}
+            completed a SIIP internship with verified skills as{" "}
             {cert.placement.opening.title} at {cert.placement.company.name}.
           </p>
           <div className="absolute inset-x-4 bottom-3 flex justify-between text-[8px] text-[var(--grey-500)] sm:inset-x-10 sm:bottom-6 sm:text-xs">

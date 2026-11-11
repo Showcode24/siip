@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, Mail, MapPin, MessageCircle } from "lucide-react";
+import { CheckCircle2, Mail, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -86,7 +86,6 @@ export default function ContactPage() {
           {[
             [Mail, "Email", "hello@siip.ng"],
             [MessageCircle, "WhatsApp", "+234 800 000 0000 (placeholder)"],
-            [MapPin, "Office", "Lagos, Nigeria (address to be confirmed)"],
           ].map(([Icon, label, value]) => {
             const I = Icon as typeof Mail;
             return (

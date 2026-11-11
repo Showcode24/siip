@@ -6,7 +6,7 @@ import { PhotoSlot } from "@/components/marketing/photo-slot";
 export const metadata: Metadata = {
   title: "About SIIP",
   description:
-    "SIIP is a free programme by SkillzBridge Trades Africa that turns fresh Nigerian graduates into confident, employable professionals.",
+    "SIIP is a free programme by SkillzBridge Trades Africa that checks people's skills and puts them to work in real internships.",
 };
 
 export default function AboutPage() {
@@ -14,21 +14,21 @@ export default function AboutPage() {
     <>
       <PageHero
         kicker="About SIIP"
-        title="Bridging the gap between graduation and a first job."
-        intro="Every year, thousands of Nigerian graduates finish school with talent but no first job to prove it. SIIP builds that bridge: free training, a fair assessment and a real internship."
+        title="Bridging the gap between skills and a first job."
+        intro="Many people learn real skills through courses and practice, but have no work experience to show for them. SIIP checks those skills and puts them to work in a real internship."
       />
       <section className="mx-auto max-w-6xl px-6 pb-20">
-        <PhotoSlot label="SIIP cohort at a training session" className="aspect-[16/7] rounded-xl" />
+        <PhotoSlot label="SIIP interns at work" className="aspect-[16/7] rounded-xl" />
       </section>
       <section className="mx-auto grid max-w-6xl gap-10 px-6 pb-24 md:grid-cols-3">
         {[
           [
             "Free, always",
-            "No graduate pays to take part. Not for training, tests, placement or the certificate.",
+            "No intern pays to take part. Not for verification, matching, the SIIP test or the certificate.",
           ],
           [
             "Fair by design",
-            "Assessments are timed and scored on our servers. Matching scores are shown with their reasons.",
+            "Every skill is checked against real proof. Matching scores are shown with their reasons.",
           ],
           [
             "Your data, protected",
@@ -46,12 +46,12 @@ export default function AboutPage() {
           <div>
             <h2 className="text-3xl sm:text-4xl">Run by SkillzBridge Trades Africa</h2>
             <p className="mt-3 max-w-xl text-muted-foreground">
-              SkillzBridge connects African talent with the skills and workplaces that build careers. SIIP is
-              our graduate internship programme.
+              SkillzBridge connects skilled people with the workplaces that build careers. SIIP is our internship
+              programme.
             </p>
           </div>
           <CtaButton href="/sign-up" tone="dark">
-            Apply free
+            Create your profile
           </CtaButton>
         </div>
       </section>

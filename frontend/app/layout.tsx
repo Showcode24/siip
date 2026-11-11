@@ -20,14 +20,14 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  title: { default: "SIIP: from graduate to hired | SkillzBridge Trades Africa", template: "%s | SIIP" },
+  title: { default: "SIIP: proven skills, put to work | SkillzBridge Trades Africa", template: "%s | SIIP" },
   description:
-    "SIIP is a free programme that trains Nigerian graduates and NYSC members, then places them in three-month internships with verified companies.",
+    "SIIP is a free programme that verifies people's skills against real certificates, then places them in internships with verified companies.",
   openGraph: {
     type: "website",
     siteName: "SIIP by SkillzBridge Trades Africa",
-    title: "From graduate to hired, in seven clear steps",
-    description: "Free training, assessment and three-month internships with verified Nigerian companies.",
+    title: "Proven skills, put to work",
+    description: "Prove your skills, get verified, and intern with companies that need exactly what you can do.",
   },
 };
 

@@ -7,47 +7,41 @@ import { ScreenSteps, type ScreenStep } from "@/components/marketing/motion";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "From graduate to hired",
+  title: "Proven skills, put to work",
   description:
-    "Free training, assessment and three-month internships with verified Nigerian companies. Apply in about ten minutes.",
+    "Prove your skills with certificates, get them verified by SIIP, and intern with companies that need exactly what you can do. Free.",
 };
 
 const STEPS: ScreenStep[] = [
   {
-    title: "Register and build your profile",
-    body: "Sign up free, add your degree, NYSC status and skills, and upload your CV.",
-    src: "/screens/applications-home-desktop.png",
-    alt: "The applications page showing a graduate's application and its stage",
+    title: "Show what you can do",
+    body: "List your skills and the level you work at, with a certificate or link for each.",
+    src: "/screens/skills-home-desktop.png",
+    alt: "An intern's skills page: each skill with its level, its proof and SIIP's check",
   },
   {
-    title: "Take the screening test",
-    body: "A short, timed test that is scored instantly. Then our team reviews your application.",
-    src: "/screens/tests-home-desktop.png",
-    alt: "The tests page with a passed screening test and the final assessment ready to start",
+    title: "SIIP checks every skill",
+    body: "We check each skill against your proof, and confirm the level it supports.",
+    src: "/screens/reviews-home-desktop.png",
+    alt: "SIIP's review queue of interns waiting for their skills to be checked",
   },
   {
-    title: "Train for real work",
-    body: "Practical courses in skills like social media, Excel, video editing and sales, on your phone.",
-    src: "/screens/training-home-desktop.png",
-    alt: "The training page listing courses and lesson progress",
-  },
-  {
-    title: "Pass the final assessment",
-    body: "Show what you've learned and qualify for placement.",
-    src: "/screens/tests-home-desktop.png",
-    alt: "The tests page with the final assessment",
-  },
-  {
-    title: "Get matched to a company",
-    body: "We match you on skills, discipline, location and availability.",
+    title: "Get matched at your level",
+    body: "Companies ask for a skill and a level. Only verified interns at that level are put forward.",
     src: "/screens/matching-home-desktop.png",
-    alt: "The matching screen ranking qualified graduates for an opening by score",
+    alt: "The matching screen: a role's skills and levels, and verified interns ranked by fit",
   },
   {
-    title: "Do a three-month internship",
-    body: "Work with a supervisor and share a short check-in every month.",
+    title: "Intern on real work",
+    body: "Work with a supervisor, remote, on-site or hybrid, and share a short check-in every month.",
     src: "/screens/placement-home-desktop.png",
     alt: "The internship page with the placement and monthly check-ins",
+  },
+  {
+    title: "Pass the SIIP test",
+    body: "Short videos on working well with others, then a quiz, a couple of months in.",
+    src: "/screens/tests-home-desktop.png",
+    alt: "The SIIP test page: the videos to watch, then the quiz",
   },
   {
     title: "Earn a verified certificate",
@@ -58,34 +52,33 @@ const STEPS: ScreenStep[] = [
 ];
 
 const FIGURES = [
-  ["₦0", "What graduates pay for training, assessment, placement and the certificate."],
-  ["3 months", "Internship length, with a supervisor and monthly check-ins."],
-  ["7 steps", "From sign-up to certificate, with one clear next action at each."],
-  ["36 + FCT", "Every state can apply. Training works on a phone."],
+  ["Free", "What interns pay, from sign-up to certificate."],
+  ["4 levels", "Beginner to Expert. Companies see the level SIIP verified."],
+  ["6 steps", "From proof of your skills to a verified certificate."],
+  ["1 test", "On workplace conduct, taken during your internship."],
 ] as const;
 
-// Mirrors MATCH_WEIGHTS in shared/src/matching.ts.
+// Mirrors MATCH_WEIGHTS in shared/src/matching.ts (NYSC timing shown as "Other").
 const FACTORS = [
-  ["Skills", 40],
-  ["Final assessment", 20],
+  ["Verified skills", 50],
   ["Discipline", 15],
-  ["Location", 10],
-  ["Availability", 10],
-  ["NYSC status", 5],
+  ["Location", 15],
+  ["Availability", 15],
+  ["Other", 5],
 ] as const;
 
 const FAQ = [
   [
     "Does SIIP cost anything?",
-    "No. Training, tests, placement and the certificate are free. We never ask you to pay.",
+    "No. Verification, matching, the internship placement, the SIIP test and the certificate are free.",
   ],
   [
-    "Can NYSC corps members apply?",
-    "Yes. Many partner openings welcome serving corps members.",
+    "Who can join?",
+    "Students, graduates and corps members with skills they can prove.",
   ],
   [
-    "What do I need to apply?",
-    "Your degree details, state, availability, a PDF of your CV and one skill.",
+    "What counts as proof?",
+    "A certificate file or a link, such as a Coursera or Udemy certificate or your portfolio.",
   ],
   ["Is the internship paid?", "Each company sets its own terms. You see them before you start."],
 ] as const;
@@ -93,7 +86,7 @@ const FAQ = [
 export default function LandingPage() {
   return (
     <>
-      {/* Hero: the graduate's real home screen */}
+      {/* Hero: the intern's real home screen */}
       <section
         aria-labelledby="hero-title"
         className="relative isolate m-2.5 overflow-hidden rounded-[32px] bg-night text-white [--ring:var(--orange-500)] sm:rounded-[40px]"
@@ -105,13 +98,13 @@ export default function LandingPage() {
               id="hero-title"
               className="max-w-[11ch] font-display text-[48px] leading-[1.02] font-semibold tracking-[-0.035em] break-words sm:text-[68px] xl:text-[80px]"
             >
-              From graduate to hired.
+              Proven skills, put to work.
             </h1>
             <p className="mt-6 max-w-[38ch] text-lg text-[var(--grey-200)] sm:text-xl">
-              Free training, then a three-month internship with a verified Nigerian company.
+              Prove your skills, get verified, and intern where they count.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <CtaButton href="/sign-up">Start your application</CtaButton>
+              <CtaButton href="/sign-up">Create your profile</CtaButton>
               <Button asChild size="lg" variant="ghost" className="text-white ring-1 ring-white/40 hover:bg-white/10">
                 <Link href="/companies">I&apos;m hiring interns</Link>
               </Button>
@@ -120,7 +113,7 @@ export default function LandingPage() {
           <div className="relative min-w-0 lg:-mr-24 xl:-mr-40">
             <Image
               src="/screens/dashboard-home-desktop.png"
-              alt="A graduate's SIIP home screen: the seven-step tracker, the next step and training progress"
+              alt="An intern's SIIP home screen: the journey tracker, the next step and their verified skills"
               width={2880}
               height={1800}
               priority
@@ -142,7 +135,7 @@ export default function LandingPage() {
       {/* Journey: seven steps, real screens */}
       <section id="journey" aria-labelledby="journey-title" className="mx-auto max-w-7xl scroll-mt-24 px-6 pt-32">
         <h2 id="journey-title" className="max-w-[16ch] text-4xl sm:text-6xl">
-          Seven steps. One clear path.
+          Six steps. One clear path.
         </h2>
         <p className="mt-4 max-w-xl text-lg text-muted-foreground">
           You always know where you are and what to do next.
@@ -173,11 +166,11 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <div className="min-w-0">
             <h2 id="co-title" className="max-w-[16ch] text-4xl sm:text-5xl">
-              Trained graduates, matched to your openings.
+              Interns verified at the level you need.
             </h2>
             <p className="mt-5 max-w-md text-lg text-muted-foreground">
-              Every graduate we propose has passed screening, training and a final assessment. The score shows why
-              they fit.
+              Every skill is checked against real proof. Ask for Expert and you only get Experts. The score shows
+              why each intern fits.
             </p>
             <dl className="mt-8 grid max-w-md gap-3">
               {FACTORS.map(([label, weight]) => (
@@ -186,7 +179,7 @@ export default function LandingPage() {
                   <dd className="h-2 overflow-hidden rounded-full bg-surface" aria-hidden>
                     <span
                       className="block h-full origin-left rounded-full bg-secondary"
-                      style={{ transform: `scaleX(${weight / 40})` }}
+                      style={{ transform: `scaleX(${weight / 50})` }}
                     />
                   </dd>
                   <dd className="text-right text-[15px] text-muted-foreground tabular-nums">{weight}</dd>
@@ -203,7 +196,7 @@ export default function LandingPage() {
           <figure className="min-w-0">
             <Image
               src="/screens/matching-home-desktop.png"
-              alt="SIIP's matching screen: an opening, and qualified graduates ranked by score with a Propose button"
+              alt="SIIP's matching screen: a role's skills and levels, and verified interns ranked by score"
               width={2880}
               height={1800}
               sizes="(min-width: 1024px) 58vw, 100vw"
@@ -225,7 +218,7 @@ export default function LandingPage() {
               Check any certificate in seconds.
             </h2>
             <p className="mt-4 max-w-md text-[var(--grey-200)]">
-              Enter the code printed on a SIIP certificate to confirm the name, cohort and company.
+              Enter the code printed on a SIIP certificate to confirm the name, internship and company.
             </p>
             <form action="/verify" className="mt-7 flex max-w-md gap-2">
               <label htmlFor="hero-code" className="sr-only">
@@ -281,15 +274,15 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-24 lg:flex-row lg:items-end lg:justify-between lg:py-28">
           <div>
             <h2 id="close-title" className="max-w-[14ch] text-5xl sm:text-7xl">
-              Start with one free application.
+              Show us what you can do.
             </h2>
             <p className="mt-5 max-w-lg text-lg">
-              About ten minutes. Have your degree details and CV ready.
+              About ten minutes. Have your CV and certificates ready.
             </p>
           </div>
           <div className="shrink-0">
             <CtaButton href="/sign-up" tone="dark">
-              Start your application
+              Create your profile
             </CtaButton>
           </div>
         </div>

@@ -56,7 +56,7 @@ export default function OpeningsPage() {
     <>
       <PageHeader
         title="Openings"
-        description="The internships you're offering. SIIP matches qualified graduates to open ones."
+        description="The internships you're offering. SIIP matches verified interns to open ones."
         actions={
           <Button asChild>
             <Link href="/company/openings/new">

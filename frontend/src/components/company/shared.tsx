@@ -14,7 +14,15 @@ import { Button } from "@/components/ui/button";
 import { Avatar, Badge } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Checkbox, Input, Select, Switch, Textarea } from "@/components/ui/form-controls";
-import { AVAILABILITY, DEGREE_CLASS, NYSC_STATUS, SKILL_LEVEL, WORK_MODE, WORK_SCHEDULE } from "@/lib/labels";
+import {
+  AVAILABILITY,
+  DEGREE_CLASS,
+  INTERN_TYPE,
+  SKILL_LEVEL,
+  WORK_MODE,
+  WORK_SCHEDULE,
+  formatLocation,
+} from "@/lib/labels";
 import { cn, formatDate } from "@/lib/utils";
 
 // ─── Match score ──────────────────────────────────────────────────────────────
@@ -102,11 +110,13 @@ export function GraduateSummary({ g }: { g: LimitedGraduate }) {
       </div>
       <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
         {[
-          ["Degree", g.degreeClass ? DEGREE_CLASS[g.degreeClass] : "Not given"],
-          ["Graduated", g.graduationYear ?? "Not given"],
-          ["Lives in", g.stateOfResidence ?? "Not given"],
+          ["Intern type", INTERN_TYPE[g.internType].label],
+          g.internType === "UNDERGRADUATE"
+            ? ["Graduates", g.graduationYear ?? "Not given"]
+            : ["Degree", g.degreeClass ? DEGREE_CLASS[g.degreeClass] : "Not given"],
+          ["Lives in", formatLocation(g) || "Not given"],
+          ["Works", g.workPreference ? WORK_MODE[g.workPreference] : "Not given"],
           ["Availability", g.availability ? AVAILABILITY[g.availability] : "Not given"],
-          ["NYSC", NYSC_STATUS[g.nyscStatus]],
           [
             "Final assessment",
             g.finalAssessmentPercent !== null ? `${g.finalAssessmentPercent}%` : "Not taken",

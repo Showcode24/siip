@@ -1,6 +1,7 @@
 import { db, type DbOrTx } from "@/server/db";
 import { recordAudit, type AuditActor } from "@/server/lib/audit";
 import { errors } from "@/server/lib/errors";
+import { normaliseProfileUpdate } from "@/server/lib/profile-rules";
 import {
   computeCompleteness,
   missingForApplication,
@@ -21,6 +22,10 @@ const profileSelect = {
   lastName: true,
   otherNames: true,
   phone: true,
+  internType: true,
+  country: true,
+  city: true,
+  workPreference: true,
   stateOfResidence: true,
   lga: true,
   institution: true,
@@ -29,6 +34,8 @@ const profileSelect = {
   graduationYear: true,
   nyscStatus: true,
   currentPpa: true,
+  nyscStateCode: true,
+  nyscBatch: true,
   availability: true,
   bio: true,
   cvPublicId: true,
@@ -83,7 +90,12 @@ export async function getProfile(graduateId: string) {
 
 export async function updateProfile(graduateId: string, input: UpdateProfileInput) {
   const profile = await db.$transaction(async (tx) => {
-    await tx.graduateProfile.update({ where: { id: graduateId }, data: input });
+    const current = await tx.graduateProfile.findUnique({
+      where: { id: graduateId },
+      select: { country: true, internType: true },
+    });
+    if (!current) throw errors.notFound("Profile");
+    await tx.graduateProfile.update({ where: { id: graduateId }, data: normaliseProfileUpdate(current, input) });
     return refreshCompleteness(tx, graduateId);
   });
   return present(profile);

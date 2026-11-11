@@ -162,6 +162,8 @@ export function listApplications(q: Partial<z.input<typeof adminApplicationListQ
         (!q.cohortId || a.cohortId === q.cohortId) &&
         (!statuses?.length || statuses.includes(a.status)) &&
         (!q.state || g.stateOfResidence === q.state) &&
+        (!q.country || g.country === q.country) &&
+        (!q.internType || g.internType === q.internType) &&
         (!q.skillId || g.skills.some((s) => s.skillId === q.skillId)) &&
         (!q.institution || (g.institution ?? "").toLowerCase().includes(String(q.institution).toLowerCase()))
       );
@@ -187,6 +189,9 @@ export function getApplication(id: string): AdminApplicationDetail {
       ...row.graduate,
       phone: g.phone,
       lga: g.lga,
+      workPreference: g.workPreference,
+      nyscStateCode: g.nyscStateCode,
+      nyscBatch: g.nyscBatch,
       availability: g.availability,
       bio: g.bio,
       hasCv: Boolean(g.cvUploadedAt),
@@ -358,6 +363,10 @@ export function getSuggestions(openingId: string, limit: number) {
         id: g.id,
         firstName: g.firstName,
         lastName: g.lastName,
+        internType: g.internType,
+        country: g.country,
+        city: g.city,
+        workPreference: g.workPreference,
         stateOfResidence: g.stateOfResidence,
         institution: g.institution,
         courseOfStudy: g.courseOfStudy,

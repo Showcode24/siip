@@ -20,6 +20,15 @@ export const NyscStatus = {
 export type NyscStatus = (typeof NyscStatus)[keyof typeof NyscStatus]
 
 
+export const InternType = {
+  NYSC_CORPS_MEMBER: 'NYSC_CORPS_MEMBER',
+  UNDERGRADUATE: 'UNDERGRADUATE',
+  GRADUATE: 'GRADUATE'
+} as const
+
+export type InternType = (typeof InternType)[keyof typeof InternType]
+
+
 export const Availability = {
   FULL_TIME: 'FULL_TIME',
   PART_TIME: 'PART_TIME',

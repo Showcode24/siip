@@ -2,9 +2,12 @@
 // Pure functions so they can be unit-tested and reused by the seed.
 
 export interface ProfileForScoring {
+  /** Undergraduates have no degree class yet, so it isn't counted against them. */
+  internType?: string | null;
   phone: string | null;
-  stateOfResidence: string | null;
-  lga: string | null;
+  country: string | null;
+  city: string | null;
+  workPreference: string | null;
   institution: string | null;
   courseOfStudy: string | null;
   degreeClass: string | null;
@@ -16,13 +19,14 @@ export interface ProfileForScoring {
   skillCount: number;
 }
 
-type Field = Exclude<keyof ProfileForScoring, "skillCount">;
+type Field = Exclude<keyof ProfileForScoring, "skillCount" | "internType">;
 
 /** Weights sum to 100. Skills are scored separately (see SKILLS_WEIGHT). */
 const FIELD_WEIGHTS: Record<Field, number> = {
   phone: 10,
-  stateOfResidence: 5,
-  lga: 5,
+  country: 0,
+  city: 5,
+  workPreference: 5,
   institution: 10,
   courseOfStudy: 10,
   degreeClass: 5,
@@ -37,11 +41,13 @@ const SKILLS_WEIGHT = 10;
 const SKILLS_TARGET = 3;
 
 const isFilled = (v: string | number | null) => v !== null && String(v).trim() !== "";
+const notApplicable = (p: ProfileForScoring, field: Field) =>
+  field === "degreeClass" && p.internType === "UNDERGRADUATE";
 
 export function computeCompleteness(p: ProfileForScoring): number {
   let score = 0;
   for (const [field, weight] of Object.entries(FIELD_WEIGHTS) as Array<[Field, number]>) {
-    if (isFilled(p[field])) score += weight;
+    if (isFilled(p[field]) || notApplicable(p, field)) score += weight;
   }
   score += Math.round((Math.min(p.skillCount, SKILLS_TARGET) / SKILLS_TARGET) * SKILLS_WEIGHT);
   return score;
@@ -53,7 +59,9 @@ export function computeCompleteness(p: ProfileForScoring): number {
  */
 const REQUIRED_TO_APPLY: Array<{ key: Field | "skills"; label: string }> = [
   { key: "phone", label: "Phone number" },
-  { key: "stateOfResidence", label: "State of residence" },
+  { key: "country", label: "Country" },
+  { key: "city", label: "City" },
+  { key: "workPreference", label: "Work preference" },
   { key: "institution", label: "Institution" },
   { key: "courseOfStudy", label: "Course of study" },
   { key: "graduationYear", label: "Graduation year" },

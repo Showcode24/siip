@@ -105,6 +105,13 @@ enum NyscStatus {
   EXEMPTED
 }
 
+// Who the intern is. NYSC-only fields (state code, batch, PPA) apply to NYSC_CORPS_MEMBER.
+enum InternType {
+  NYSC_CORPS_MEMBER
+  UNDERGRADUATE
+  GRADUATE
+}
+
 enum Availability {
   FULL_TIME
   PART_TIME
@@ -146,6 +153,11 @@ model GraduateProfile {
   lastName         String
   otherNames       String?
   phone            String?
+  internType       InternType    @default(GRADUATE)
+  // ISO 3166-1 alpha-2, chosen by the intern. Nigerian state/LGA apply only when country = "NG".
+  country          String?
+  city             String?
+  workPreference   WorkMode?
   stateOfResidence String?
   lga              String?
   institution      String?
@@ -154,6 +166,8 @@ model GraduateProfile {
   graduationYear   Int?
   nyscStatus       NyscStatus    @default(NOT_YET)
   currentPpa       String?
+  nyscStateCode    String?
+  nyscBatch        String?
   availability     Availability?
   bio              String?
 
@@ -184,6 +198,8 @@ model GraduateProfile {
   certificates   Certificate[]
 
   @@index([stateOfResidence])
+  @@index([country, city])
+  @@index([internType])
   @@index([institution])
   @@index([searchable, visibility])
   @@index([searchVector], type: Gin)

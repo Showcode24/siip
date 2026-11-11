@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { ApplicationStatus, NyscStatus } from "../enums";
+import { ApplicationStatus, NyscStatus, InternType } from "../enums";
+import { COUNTRY_CODES } from "../countries";
 import { NIGERIAN_STATES } from "../nigeria";
 import { paginationQuery } from "../pagination";
 import { listParam } from "./common";
@@ -21,6 +22,8 @@ export const adminApplicationListQuery = paginationQuery.extend({
   skillId: id.optional(),
   institution: z.string().trim().min(2).max(160).optional(),
   nyscStatus: z.enum(NyscStatus).optional(),
+  internType: z.enum(InternType).optional(),
+  country: z.enum(COUNTRY_CODES).optional(),
   sort: z.enum(["newest", "oldest", "recently_updated"]).default("newest"),
 });
 export type AdminApplicationListQuery = z.infer<typeof adminApplicationListQuery>;

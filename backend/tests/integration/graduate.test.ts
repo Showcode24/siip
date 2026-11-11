@@ -91,6 +91,49 @@ describe("graduate profile", () => {
     expect(state.res.status).toBe(422);
   });
 
+  it("opens registration: interns anywhere, NYSC details only for corps members", async () => {
+    const nysc = await call(patchProfile, {
+      method: "PATCH",
+      cookie: gradA.cookie,
+      body: {
+        internType: "NYSC_CORPS_MEMBER",
+        country: "NG",
+        stateOfResidence: "Lagos",
+        nyscStateCode: "la/24a/1234",
+        nyscBatch: "2024 Batch A",
+      },
+    });
+    expect(nysc.res.status).toBe(200);
+    expect(nysc.json.data).toMatchObject({ nyscStateCode: "LA/24A/1234", nyscStatus: "SERVING" });
+
+    const abroad = await call(patchProfile, {
+      method: "PATCH",
+      cookie: gradA.cookie,
+      body: {
+        internType: "UNDERGRADUATE",
+        country: "KE",
+        city: "Nairobi",
+        workPreference: "REMOTE",
+        phone: "+254 712 345 678",
+      },
+    });
+    expect(abroad.res.status).toBe(200);
+    expect(abroad.json.data).toMatchObject({
+      country: "KE",
+      city: "Nairobi",
+      phone: "+254712345678",
+      stateOfResidence: null,
+      nyscStateCode: null,
+      nyscBatch: null,
+    });
+
+    const bad = await call(patchProfile, { method: "PATCH", cookie: gradA.cookie, body: { country: "ZZ" } });
+    expect(bad.res.status).toBe(422);
+
+    // Back to the Nigerian graduate the later tests expect.
+    await call(patchProfile, { method: "PATCH", cookie: gradA.cookie, body: { internType: "GRADUATE", country: "NG" } });
+  });
+
   it("replaces skills and rejects unknown ones", async () => {
     const [excel, sales] = await Promise.all([ensureSkill("Microsoft Excel"), ensureSkill("Sales")]);
     const { json } = await call(putSkills, {

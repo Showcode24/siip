@@ -55,8 +55,8 @@ export default function SignUpPage() {
               <RadioGroup value={field.value} onValueChange={field.onChange} className="grid-cols-2">
                 <RadioCard value="GRADUATE">
                   <GraduationCap className="mb-1 size-5 text-brand-text" />
-                  <span className="block font-semibold">A graduate</span>
-                  <span className="block text-sm text-muted-foreground">or NYSC member</span>
+                  <span className="block font-semibold">An intern</span>
+                  <span className="block text-sm text-muted-foreground">Student, graduate or corps member</span>
                 </RadioCard>
                 <RadioCard value="COMPANY">
                   <Building2 className="mb-1 size-5 text-brand-text" />

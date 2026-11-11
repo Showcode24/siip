@@ -4,6 +4,7 @@ import type { checkInSchema } from "@siip/shared/validators/internship";
 import type { setSkillsSchema, updateProfileSchema } from "@siip/shared/validators/graduate";
 import { updateProfileSchema as profileSchema } from "@siip/shared/validators/graduate";
 import { missingForApplication } from "@siip/shared/profile-completeness";
+import { normaliseProfileUpdate } from "@siip/shared/profile-rules";
 import type { Certificate, MyApplication, MyPlacement } from "@/client/api/types";
 import { cohortById, companyById, db, iso, newId, notify, openingById } from "./db";
 import {
@@ -26,7 +27,9 @@ export function getProfile() {
 
 export function updateProfile(input: z.input<typeof updateProfileSchema>) {
   const { graduate } = requireGraduate();
-  Object.assign(graduate, profileSchema.parse(input), { updatedAt: new Date().toISOString() });
+  // Same consistency rules as the backend (Nigeria-only and NYSC-only fields).
+  const data = normaliseProfileUpdate(graduate, profileSchema.parse(input));
+  Object.assign(graduate, data, { updatedAt: new Date().toISOString() });
   return presentProfile(graduate);
 }
 

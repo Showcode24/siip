@@ -1,6 +1,8 @@
 import { z } from "zod";
-import { Availability, DegreeClass, NyscStatus, ProfileVisibility, SkillLevel } from "../enums";
-import { NIGERIAN_STATES, normaliseNigerianPhone } from "../nigeria";
+import { COUNTRY_CODES } from "../countries";
+import { Availability, DegreeClass, InternType, NyscStatus, ProfileVisibility, SkillLevel, WorkMode } from "../enums";
+import { NIGERIAN_STATES } from "../nigeria";
+import { normalisePhone } from "../phone";
 import { optionalText } from "./common";
 
 const phone = z
@@ -9,9 +11,9 @@ const phone = z
   .nullish()
   .transform((v, ctx) => {
     if (!v) return null;
-    const normalised = normaliseNigerianPhone(v);
+    const normalised = normalisePhone(v);
     if (!normalised) {
-      ctx.addIssue({ code: "custom", message: "Enter a valid Nigerian mobile number" });
+      ctx.addIssue({ code: "custom", message: "Enter your number with its country code, e.g. +44 7700 900123" });
       return z.NEVER;
     }
     return normalised;
@@ -26,6 +28,11 @@ export const updateProfileSchema = z
     lastName: z.string().trim().min(1).max(80),
     otherNames: optionalText(80),
     phone,
+    internType: z.enum(InternType),
+    country: z.enum(COUNTRY_CODES, { message: "Choose a country from the list" }),
+    city: optionalText(80),
+    workPreference: z.enum(WorkMode).nullable(),
+    // Nigeria only: the service clears these when the country isn't Nigeria.
     stateOfResidence: z.enum(NIGERIAN_STATES).nullable(),
     lga: optionalText(80),
     institution: optionalText(160),
@@ -35,10 +42,22 @@ export const updateProfileSchema = z
       .number()
       .int()
       .min(1980)
-      .max(thisYear + 1)
+      // Undergraduates give their expected year.
+      .max(thisYear + 8)
       .nullable(),
     nyscStatus: z.enum(NyscStatus),
     currentPpa: optionalText(160),
+    // NYSC corps members only, e.g. LA/24A/1234.
+    nyscStateCode: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .nullish()
+      .transform((v) => (v ? v : null))
+      .refine((v) => v === null || /^[A-Z]{2}\/\d{2}[A-C]\/\d{3,6}$/.test(v), {
+        message: "Use the format on your call-up letter, e.g. LA/24A/1234",
+      }),
+    nyscBatch: optionalText(30),
     availability: z.enum(Availability).nullable(),
     bio: optionalText(1500),
     // Phase 2 prep: opt-in to being found by verified companies.

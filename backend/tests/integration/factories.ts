@@ -55,6 +55,9 @@ export async function completeProfile(user: TestUser, state = "Lagos") {
     where: { id: graduateId },
     data: {
       phone: "+2348030000000",
+      country: "NG",
+      city: state,
+      workPreference: "HYBRID",
       stateOfResidence: state,
       institution: "University of Ibadan",
       courseOfStudy: "Economics",

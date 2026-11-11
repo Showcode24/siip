@@ -13,7 +13,7 @@ import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardBody, EmptyState, PageHeader, Skeleton } from "@/components/ui/display";
 import { Input, Select } from "@/components/ui/form-controls";
-import { AVAILABILITY, WORK_MODE } from "@/lib/labels";
+import { AVAILABILITY, WORK_MODE, formatLocation } from "@/lib/labels";
 import { SPRING } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
@@ -172,7 +172,7 @@ function Suggestions({ openingId }: { openingId: string }) {
                           {s.graduate.firstName} {s.graduate.lastName}
                         </p>
                         <p className="truncate text-sm text-muted-foreground">
-                          {[s.graduate.courseOfStudy, s.graduate.institution, s.graduate.stateOfResidence]
+                          {[s.graduate.courseOfStudy, s.graduate.institution, formatLocation(s.graduate)]
                             .filter(Boolean)
                             .join(", ")}
                         </p>

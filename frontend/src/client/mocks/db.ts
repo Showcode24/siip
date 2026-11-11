@@ -7,6 +7,7 @@ import type {
   CompanyMemberRole,
   CompanyVerificationStatus,
   DegreeClass,
+  InternType,
   MatchStatus,
   NyscStatus,
   OpeningStatus,
@@ -80,6 +81,10 @@ export interface DbGraduate {
   lastName: string;
   otherNames: string | null;
   phone: string | null;
+  internType: InternType;
+  country: string | null;
+  city: string | null;
+  workPreference: WorkMode | null;
   stateOfResidence: string | null;
   lga: string | null;
   institution: string | null;
@@ -88,6 +93,8 @@ export interface DbGraduate {
   graduationYear: number | null;
   nyscStatus: NyscStatus;
   currentPpa: string | null;
+  nyscStateCode: string | null;
+  nyscBatch: string | null;
   availability: Availability | null;
   bio: string | null;
   cvUploadedAt: string | null;
@@ -723,6 +730,15 @@ const PATH: ApplicationStatus[] = [
   "COMPLETED",
 ];
 
+const ABROAD = [
+  { code: "GH", city: "Accra", dial: "+23324" },
+  { code: "KE", city: "Nairobi", dial: "+25471" },
+  { code: "GB", city: "London", dial: "+4477" },
+  { code: "ZA", city: "Cape Town", dial: "+2782" },
+  { code: "US", city: "Houston", dial: "+1713" },
+] as const;
+const NG_CITY: Record<string, string> = { Lagos: "Lagos", FCT: "Abuja", Rivers: "Port Harcourt", Kano: "Kano", Oyo: "Ibadan" };
+
 function makeGraduate(i: number, complete = true): DbGraduate {
   const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
   const lastName = LAST_NAMES[(i * 7) % LAST_NAMES.length];
@@ -735,18 +751,31 @@ function makeGraduate(i: number, complete = true): DbGraduate {
   const state =
     i < 8 ? (["Lagos", "FCT", "Rivers"] as const)[i % 3] : NIGERIAN_STATES[i % NIGERIAN_STATES.length];
   const nysc: NyscStatus = (["COMPLETED", "SERVING", "NOT_YET", "COMPLETED", "EXEMPTED"] as const)[i % 5];
+  // Open registration: about a quarter of interns live outside Nigeria.
+  const abroad = i % 4 === 3 ? ABROAD[i % ABROAD.length] : null;
+  const internType: InternType =
+    !abroad && nysc === "SERVING" ? "NYSC_CORPS_MEMBER" : i % 6 === 2 ? "UNDERGRADUATE" : "GRADUATE";
+  const corps = internType === "NYSC_CORPS_MEMBER";
   const g: DbGraduate = {
     id: newId("grd"),
     userId: user.id,
     firstName,
     lastName,
     otherNames: null,
-    phone: complete ? `+23480${String(31000000 + i * 1371).padStart(8, "0")}` : null,
-    stateOfResidence: complete ? state : null,
-    lga: complete ? "Ikeja" : null,
+    phone: complete
+      ? abroad
+        ? `${abroad.dial}${String(70000000 + i * 1371).padStart(9, "0")}`
+        : `+23480${String(31000000 + i * 1371).padStart(8, "0")}`
+      : null,
+    internType,
+    country: complete ? (abroad?.code ?? "NG") : null,
+    city: complete ? (abroad?.city ?? NG_CITY[state] ?? state) : null,
+    workPreference: complete ? (["HYBRID", "REMOTE", "ONSITE"] as const)[i % 3] : null,
+    stateOfResidence: complete && !abroad ? state : null,
+    lga: complete && !abroad ? "Ikeja" : null,
     institution: complete ? pick(INSTITUTIONS) : null,
     courseOfStudy: complete ? pick(COURSES) : null,
-    degreeClass: complete
+    degreeClass: complete && internType !== "UNDERGRADUATE"
       ? pick([
           "SECOND_CLASS_UPPER",
           "SECOND_CLASS_LOWER",
@@ -755,9 +784,11 @@ function makeGraduate(i: number, complete = true): DbGraduate {
           "UPPER_CREDIT",
         ] as const)
       : null,
-    graduationYear: complete ? pick([2023, 2024, 2025, 2025]) : null,
-    nyscStatus: nysc,
-    currentPpa: nysc === "SERVING" ? "Ministry of Youth Development" : null,
+    graduationYear: complete ? (internType === "UNDERGRADUATE" ? 2027 : pick([2023, 2024, 2025, 2025])) : null,
+    nyscStatus: corps ? "SERVING" : nysc === "SERVING" ? "COMPLETED" : nysc,
+    currentPpa: corps ? "Ministry of Youth Development" : null,
+    nyscStateCode: corps ? `LA/25A/${String(1000 + i * 37).slice(-4)}` : null,
+    nyscBatch: corps ? "2025 Batch A, Stream 1" : null,
     availability: complete ? pick(["FULL_TIME", "FULL_TIME", "FLEXIBLE", "PART_TIME"] as const) : null,
     bio: complete ? "Hardworking graduate who enjoys learning new tools and working with people." : null,
     cvUploadedAt: complete ? iso(-100 + i) : null,
@@ -903,7 +934,13 @@ function seedJourney(adminId: string) {
         g.skills = t.skills.map((name, k) => ({ skillId: db.skills.find((s) => s.name === name)!.id, level: k === 0 ? "ADVANCED" : "INTERMEDIATE" }));
         if (t.disciplines[0]) g.courseOfStudy = t.disciplines[0];
         g.availability = "FULL_TIME";
+        g.internType = "GRADUATE";
         g.nyscStatus = i % 2 ? "COMPLETED" : "EXEMPTED";
+        g.nyscStateCode = null;
+        g.nyscBatch = null;
+        g.currentPpa = null;
+        g.degreeClass ??= "SECOND_CLASS_UPPER";
+        if (g.graduationYear && g.graduationYear > 2025) g.graduationYear = 2025;
       }
       firstOf[status] ??= g;
       const steps =

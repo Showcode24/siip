@@ -340,6 +340,8 @@ export async function listApplicationsForAdmin(query: AdminApplicationListQuery)
   const graduate: Prisma.GraduateProfileWhereInput = {
     ...(query.state ? { stateOfResidence: query.state } : {}),
     ...(query.nyscStatus ? { nyscStatus: query.nyscStatus } : {}),
+    ...(query.internType ? { internType: query.internType } : {}),
+    ...(query.country ? { country: query.country } : {}),
     ...(query.institution ? { institution: { contains: query.institution, mode: "insensitive" } } : {}),
     ...(query.skillId ? { skills: { some: { skillId: query.skillId } } } : {}),
   };
@@ -361,6 +363,9 @@ export async function listApplicationsForAdmin(query: AdminApplicationListQuery)
           id: true,
           firstName: true,
           lastName: true,
+          internType: true,
+          country: true,
+          city: true,
           stateOfResidence: true,
           institution: true,
           courseOfStudy: true,

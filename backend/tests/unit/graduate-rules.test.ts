@@ -7,11 +7,14 @@ import {
 } from "@/server/lib/profile-completeness";
 import { cohortDateProblem } from "@/server/validators/cohort";
 import { updateProfileSchema } from "@/server/validators/graduate";
+import { normalisePhone } from "@siip/shared/phone";
+import { normaliseProfileUpdate } from "@/server/lib/profile-rules";
 
 const empty: ProfileForScoring = {
   phone: null,
-  stateOfResidence: null,
-  lga: null,
+  country: null,
+  city: null,
+  workPreference: null,
   institution: null,
   courseOfStudy: null,
   degreeClass: null,
@@ -25,8 +28,9 @@ const empty: ProfileForScoring = {
 
 const full: ProfileForScoring = {
   phone: "+2348031234567",
-  stateOfResidence: "Lagos",
-  lga: "Ikeja",
+  country: "NG",
+  city: "Lagos",
+  workPreference: "HYBRID",
   institution: "University of Lagos",
   courseOfStudy: "Economics",
   degreeClass: "SECOND_CLASS_UPPER",
@@ -58,7 +62,9 @@ describe("missingForApplication", () => {
   it("lists every required field on an empty profile", () => {
     expect(missingForApplication(empty)).toEqual([
       "Phone number",
-      "State of residence",
+      "Country",
+      "City",
+      "Work preference",
       "Institution",
       "Course of study",
       "Graduation year",
@@ -68,10 +74,14 @@ describe("missingForApplication", () => {
     ]);
   });
 
-  it("does not require optional fields (photo, bio, LGA, degree class)", () => {
-    expect(
-      missingForApplication({ ...full, photoUrl: null, bio: null, lga: null, degreeClass: null }),
-    ).toEqual([]);
+  it("does not require optional fields (photo, bio, degree class)", () => {
+    expect(missingForApplication({ ...full, photoUrl: null, bio: null, degreeClass: null })).toEqual([]);
+  });
+
+  it("does not count a missing degree class against undergraduates", () => {
+    const noClass = { ...full, degreeClass: null };
+    expect(computeCompleteness({ ...noClass, internType: "UNDERGRADUATE" })).toBe(100);
+    expect(computeCompleteness({ ...noClass, internType: "GRADUATE" })).toBe(95);
   });
 });
 
@@ -128,5 +138,67 @@ describe("cohortDateProblem", () => {
 
   it("rejects an internship that starts during training", () => {
     expect(cohortDateProblem({ ...valid, internshipStartsAt: d(15) })).toMatch(/after training/);
+  });
+});
+
+describe("normalisePhone (any country)", () => {
+  it.each([
+    ["+44 7700 900123", "+447700900123"],
+    ["0044 7700 900123", "+447700900123"],
+    ["+1 (415) 555-0132", "+14155550132"],
+    ["0803 123 4567", "+2348031234567"],
+  ])("normalises %s", (input, expected) => {
+    expect(normalisePhone(input)).toBe(expected);
+  });
+
+  it.each(["12345", "+0123456789", "phone", "+1234567890123456"])("rejects %s", (input) => {
+    expect(normalisePhone(input)).toBeNull();
+  });
+});
+
+describe("updateProfileSchema: open registration", () => {
+  it("accepts an undergraduate in another country with a work preference", () => {
+    const r = updateProfileSchema.safeParse({
+      internType: "UNDERGRADUATE",
+      country: "GH",
+      city: "Accra",
+      workPreference: "REMOTE",
+      phone: "+233 24 123 4567",
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejects an unknown country code", () => {
+    expect(updateProfileSchema.safeParse({ country: "XX" }).success).toBe(false);
+  });
+
+  it("checks the NYSC state code format and upper-cases it", () => {
+    expect(updateProfileSchema.parse({ nyscStateCode: "la/24a/1234" }).nyscStateCode).toBe("LA/24A/1234");
+    expect(updateProfileSchema.safeParse({ nyscStateCode: "Lagos 2024" }).success).toBe(false);
+  });
+});
+
+describe("normaliseProfileUpdate", () => {
+  const ng = { country: "NG", internType: "NYSC_CORPS_MEMBER" };
+
+  it("clears Nigerian state and LGA when the intern is outside Nigeria", () => {
+    const out = normaliseProfileUpdate(ng, { country: "KE", stateOfResidence: "Lagos", lga: "Ikeja" });
+    expect(out.stateOfResidence).toBeNull();
+    expect(out.lga).toBeNull();
+  });
+
+  it("keeps Nigerian state for interns in Nigeria", () => {
+    expect(normaliseProfileUpdate(ng, { stateOfResidence: "Lagos" }).stateOfResidence).toBe("Lagos");
+  });
+
+  it("marks corps members as serving", () => {
+    expect(normaliseProfileUpdate({ country: "NG", internType: "GRADUATE" }, { internType: "NYSC_CORPS_MEMBER" }).nyscStatus).toBe("SERVING");
+  });
+
+  it("drops NYSC details for anyone who is not a corps member", () => {
+    const out = normaliseProfileUpdate(ng, { internType: "UNDERGRADUATE", nyscStateCode: "LA/24A/1234", currentPpa: "X" });
+    expect(out.nyscStateCode).toBeNull();
+    expect(out.currentPpa).toBeNull();
+    expect(out.nyscStatus).toBe("COMPLETED");
   });
 });

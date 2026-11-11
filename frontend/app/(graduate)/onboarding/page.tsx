@@ -8,9 +8,9 @@ import { graduateApi } from "@/client/api/graduate";
 import {
   CvSection,
   EducationSection,
-  NyscSection,
   PersonalSection,
   SkillsSection,
+  WorkSection,
   profileKey,
 } from "@/components/graduate/profile-sections";
 import { QueryState } from "@/components/query-state";
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardBody, Progress } from "@/components/ui/display";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Personal", "Education", "NYSC", "Skills", "CV", "Review"] as const;
+const STEPS = ["Personal", "You and work", "Education", "Skills", "CV", "Review"] as const;
 
 export default function OnboardingPage() {
   const q = useQuery({ queryKey: profileKey, queryFn: graduateApi.getProfile });
@@ -74,7 +74,7 @@ export default function OnboardingPage() {
                   <PersonalSection profile={profile} onSaved={next} submitLabel="Save and continue" />
                 ) : null}
                 {step === 1 ? (
-                  <EducationSection
+                  <WorkSection
                     profile={profile}
                     onSaved={next}
                     submitLabel="Save and continue"
@@ -82,7 +82,7 @@ export default function OnboardingPage() {
                   />
                 ) : null}
                 {step === 2 ? (
-                  <NyscSection
+                  <EducationSection
                     profile={profile}
                     onSaved={next}
                     submitLabel="Save and continue"

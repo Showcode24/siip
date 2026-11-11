@@ -1,6 +1,7 @@
 "use client";
 
-import { NIGERIAN_STATES } from "@siip/shared/nigeria";
+import { countryOptions } from "@siip/shared/countries";
+import type { InternType } from "@siip/shared/enums";
 import type { ApplicationStatus } from "@siip/shared/enums";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -20,7 +21,7 @@ import { Badge, PageHeader, StatusPill } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/form-controls";
 import { Dialog, DialogClose, DialogContent, SheetContent } from "@/components/ui/overlays";
-import { APPLICATION_STATUS, AVAILABILITY, DEGREE_CLASS, NYSC_STATUS } from "@/lib/labels";
+import { APPLICATION_STATUS, AVAILABILITY, DEGREE_CLASS, INTERN_TYPE, WORK_MODE, formatLocation } from "@/lib/labels";
 import { ADMIN_SETTABLE } from "@/lib/flows";
 import { formatDate, formatDateTime } from "@/lib/utils";
 
@@ -46,7 +47,8 @@ const columns: ColumnDef<AdminApplicationRow, unknown>[] = [
   },
   { id: "cohort", header: "Cohort", accessorFn: (r) => r.cohort.name },
   { id: "institution", header: "Institution", accessorFn: (r) => r.graduate.institution ?? "" },
-  { id: "state", header: "State", accessorFn: (r) => r.graduate.stateOfResidence ?? "" },
+  { id: "type", header: "Type", accessorFn: (r) => INTERN_TYPE[r.graduate.internType].label },
+  { id: "location", header: "Location", accessorFn: (r) => formatLocation(r.graduate) },
   {
     id: "skills",
     header: "Skills",
@@ -77,6 +79,8 @@ const columns: ColumnDef<AdminApplicationRow, unknown>[] = [
   },
 ];
 
+const COUNTRIES = countryOptions();
+
 function ApplicationsScreen() {
   const params = useSearchParams();
   const qc = useQueryClient();
@@ -84,7 +88,8 @@ function ApplicationsScreen() {
   const [status, setStatus] = useState<ApplicationStatus | "">(
     (params.get("status") as ApplicationStatus | null) ?? "",
   );
-  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+  const [internType, setInternType] = useState<InternType | "">("");
   const [skillId, setSkillId] = useState("");
   const [institution, setInstitution] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -94,11 +99,12 @@ function ApplicationsScreen() {
     () => ({
       cohortId: cohortId || undefined,
       status: status ? [status] : undefined,
-      state: (state || undefined) as never,
+      country: (country || undefined) as never,
+      internType: internType || undefined,
       skillId: skillId || undefined,
       institution: institution.length >= 2 ? institution : undefined,
     }),
-    [cohortId, status, state, skillId, institution],
+    [cohortId, status, country, internType, skillId, institution],
   );
   const q = useQuery({
     queryKey: ["admin", "applications", query],
@@ -174,15 +180,28 @@ function ApplicationsScreen() {
               ))}
             </Select>
             <Select
-              aria-label="State"
-              className="h-11 w-36"
-              value={state}
-              onChange={(e) => setState(e.target.value)}
+              aria-label="Intern type"
+              className="h-11 w-44"
+              value={internType}
+              onChange={(e) => setInternType(e.target.value as InternType | "")}
             >
-              <option value="">All states</option>
-              {NIGERIAN_STATES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              <option value="">All types</option>
+              {(Object.keys(INTERN_TYPE) as InternType[]).map((t) => (
+                <option key={t} value={t}>
+                  {INTERN_TYPE[t].label}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Country"
+              className="h-11 w-44"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+            >
+              <option value="">All countries</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
                 </option>
               ))}
             </Select>
@@ -324,8 +343,15 @@ function ApplicantPanel({ id }: { id: string }) {
                 ["Course", a.graduate.courseOfStudy ?? "Not given"],
                 ["Degree", a.graduate.degreeClass ? DEGREE_CLASS[a.graduate.degreeClass] : "Not given"],
                 ["Graduated", a.graduate.graduationYear ?? "Not given"],
-                ["State", a.graduate.stateOfResidence ?? "Not given"],
-                ["NYSC", NYSC_STATUS[a.graduate.nyscStatus]],
+                ["Intern type", INTERN_TYPE[a.graduate.internType].label],
+                ["Location", formatLocation(a.graduate) || "Not given"],
+                ["Works", a.graduate.workPreference ? WORK_MODE[a.graduate.workPreference] : "Not given"],
+                ...(a.graduate.internType === "NYSC_CORPS_MEMBER"
+                  ? [
+                      ["NYSC state code", a.graduate.nyscStateCode ?? "Not given"],
+                      ["NYSC batch", a.graduate.nyscBatch ?? "Not given"],
+                    ]
+                  : []),
                 ["Availability", a.graduate.availability ? AVAILABILITY[a.graduate.availability] : "Not given"],
                 ["Profile", `${a.graduate.completenessScore}%`],
               ].map(([k, v]) => (

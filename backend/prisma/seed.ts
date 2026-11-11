@@ -554,6 +554,9 @@ async function seedGraduates(
 
     const fields = {
       phone: `+23480${String(10000000 + i).padStart(8, "0")}`,
+      country: "NG",
+      city: g.state === "FCT" ? "Abuja" : g.state,
+      workPreference: (["HYBRID", "ONSITE", "REMOTE"] as const)[i % 3],
       stateOfResidence: g.state,
       lga: null,
       institution: g.institution,
@@ -569,6 +572,7 @@ async function seedGraduates(
         firstName: g.first,
         lastName: g.last,
         nyscStatus: g.nysc,
+        internType: g.nysc === "SERVING" ? "NYSC_CORPS_MEMBER" : "GRADUATE",
         ...fields,
         // Demo profiles have no CV or photo (no Cloudinary assets in the seed).
         completenessScore: computeCompleteness({

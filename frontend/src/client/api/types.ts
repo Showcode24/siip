@@ -10,6 +10,7 @@ import type {
   CompanyMemberRole,
   CompanyVerificationStatus,
   DegreeClass,
+  InternType,
   MatchStatus,
   NyscStatus,
   OpeningStatus,
@@ -59,6 +60,10 @@ export interface GraduateProfile {
   lastName: string;
   otherNames: string | null;
   phone: string | null;
+  internType: InternType;
+  country: string | null;
+  city: string | null;
+  workPreference: WorkMode | null;
   stateOfResidence: string | null;
   lga: string | null;
   institution: string | null;
@@ -66,6 +71,8 @@ export interface GraduateProfile {
   degreeClass: DegreeClass | null;
   graduationYear: number | null;
   nyscStatus: NyscStatus;
+  nyscStateCode: string | null;
+  nyscBatch: string | null;
   currentPpa: string | null;
   availability: Availability | null;
   bio: string | null;
@@ -132,6 +139,9 @@ export interface AdminApplicationRow {
     id: string;
     firstName: string;
     lastName: string;
+    internType: InternType;
+    country: string | null;
+    city: string | null;
     stateOfResidence: string | null;
     institution: string | null;
     courseOfStudy: string | null;
@@ -157,6 +167,9 @@ export interface AdminApplicationDetail extends AdminApplicationRow {
   graduate: AdminApplicationRow["graduate"] & {
     phone: string | null;
     lga: string | null;
+    workPreference: WorkMode | null;
+    nyscStateCode: string | null;
+    nyscBatch: string | null;
     availability: Availability | null;
     bio: string | null;
     hasCv: boolean;
@@ -398,6 +411,10 @@ export interface LimitedGraduate {
   id: string;
   firstName: string;
   lastName: string;
+  internType: InternType;
+  country: string | null;
+  city: string | null;
+  workPreference: WorkMode | null;
   stateOfResidence: string | null;
   institution: string | null;
   courseOfStudy: string | null;

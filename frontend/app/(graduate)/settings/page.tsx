@@ -7,9 +7,9 @@ import { NotificationSettingsCard, PrivacyCard } from "@/components/account-priv
 import {
   CvSection,
   EducationSection,
-  NyscSection,
   PersonalSection,
   SkillsSection,
+  WorkSection,
   profileKey,
 } from "@/components/graduate/profile-sections";
 import { QueryState } from "@/components/query-state";
@@ -38,8 +38,8 @@ export default function GraduateSettingsPage() {
               <div className="grid gap-6">
                 {[
                   ["Personal details", <PersonalSection key="p" profile={p} />],
+                  ["You and work", <WorkSection key="w" profile={p} />],
                   ["Education", <EducationSection key="e" profile={p} />],
-                  ["NYSC and availability", <NyscSection key="n" profile={p} />],
                   ["Skills", <SkillsSection key="s" profile={p} />],
                   ["CV", <CvSection key="c" profile={p} />],
                 ].map(([title, node]) => (

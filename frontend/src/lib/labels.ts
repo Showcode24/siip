@@ -5,6 +5,7 @@ import type {
   CohortStatus,
   CompanyVerificationStatus,
   DegreeClass,
+  InternType,
   MatchStatus,
   NyscStatus,
   OpeningStatus,
@@ -14,6 +15,7 @@ import type {
   WorkSchedule,
   AttemptStatus,
 } from "@siip/shared/enums";
+import { countryName } from "@siip/shared/countries";
 
 export type Tone = "neutral" | "info" | "brand" | "success" | "warning" | "danger" | "dark";
 
@@ -111,6 +113,17 @@ export const SKILL_LEVEL: Record<SkillLevel, string> = {
 };
 
 export const WORK_MODE: Record<WorkMode, string> = { ONSITE: "On-site", REMOTE: "Remote", HYBRID: "Hybrid" };
+
+export const INTERN_TYPE: Record<InternType, { label: string; hint: string }> = {
+  NYSC_CORPS_MEMBER: { label: "NYSC corps member", hint: "Currently serving" },
+  UNDERGRADUATE: { label: "Undergraduate", hint: "Still studying" },
+  GRADUATE: { label: "Graduate", hint: "Finished your studies" },
+};
+
+/** "Nairobi, Kenya". Either part may be missing. */
+export function formatLocation(p: { city?: string | null; country?: string | null }): string {
+  return [p.city, p.country ? countryName(p.country) : null].filter(Boolean).join(", ");
+}
 export const WORK_SCHEDULE: Record<WorkSchedule, string> = {
   FULL_TIME: "Full-time",
   PART_TIME: "Part-time",

@@ -3,13 +3,14 @@
 // Profile sections shared by onboarding (as wizard steps) and settings (as tabs).
 // Each section validates with the backend's own schema and saves itself.
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Availability, DegreeClass, NyscStatus, SkillLevel } from "@siip/shared/enums";
+import { countryOptions } from "@siip/shared/countries";
+import { Availability, DegreeClass, InternType, SkillLevel } from "@siip/shared/enums";
 import { NIGERIAN_STATES } from "@siip/shared/nigeria";
 import { updateProfileSchema } from "@siip/shared/validators/graduate";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Plus, UploadCloud, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { Controller, useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { graduateApi } from "@/client/api/graduate";
@@ -17,8 +18,9 @@ import { errorMessage } from "@/client/api/http";
 import type { GraduateProfile } from "@/client/api/types";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { Input, Select, Textarea } from "@/components/ui/form-controls";
-import { AVAILABILITY, DEGREE_CLASS, NYSC_STATUS, SKILL_LEVEL } from "@/lib/labels";
+import { Combobox } from "@/components/ui/combobox";
+import { Input, RadioCard, RadioGroup, Select, Textarea } from "@/components/ui/form-controls";
+import { AVAILABILITY, DEGREE_CLASS, INTERN_TYPE, SKILL_LEVEL, WORK_MODE } from "@/lib/labels";
 import { handleFormError } from "@/lib/forms";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -103,19 +105,24 @@ const nullIfEmpty = <T extends Record<string, unknown>>(v: T) =>
 
 // ─── Personal ─────────────────────────────────────────────────────────────────
 
+const COUNTRY_OPTIONS = countryOptions().map((c) => ({ value: c.code, label: c.name }));
+
 export function PersonalSection({ profile, onSaved, submitLabel, extra }: SectionProps) {
   const save = useSaveProfile();
   const { form, clearDraft } = useSectionForm(
     "personal",
-    ["firstName", "lastName", "otherNames", "phone", "stateOfResidence", "lga", "bio"],
+    ["firstName", "lastName", "otherNames", "phone", "country", "city", "stateOfResidence", "lga", "bio"],
     profile,
   );
   const {
     register,
+    control,
     handleSubmit,
+    watch,
     setError,
     formState: { errors },
   } = form;
+  const inNigeria = watch("country") === "NG";
   return (
     <form
       noValidate
@@ -144,33 +151,50 @@ export function PersonalSection({ profile, onSaved, submitLabel, extra }: Sectio
       </Field>
       <Field
         label="Phone number"
-        hint="A Nigerian mobile number, e.g. 0803 123 4567."
+        hint="Include your country code, e.g. +44 7700 900123."
         error={errors.phone?.message}
         required
       >
-        <Input
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          placeholder="0803 123 4567"
-          {...register("phone")}
-        />
+        <Input type="tel" inputMode="tel" autoComplete="tel" placeholder="+44 7700 900123" {...register("phone")} />
       </Field>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="State of residence" error={errors.stateOfResidence?.message} required>
-          <Select {...register("stateOfResidence")}>
-            <option value="">Choose a state</option>
-            {NIGERIAN_STATES.map((s) => (
-              <option key={s} value={s}>
-                {s === "FCT" ? "FCT (Abuja)" : s}
-              </option>
-            ))}
-          </Select>
+        <Field label="Country" error={errors.country?.message} required>
+          <Controller
+            control={control}
+            name="country"
+            render={({ field }) => (
+              <Combobox
+                options={COUNTRY_OPTIONS}
+                value={field.value as string | null}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="Search countries"
+                emptyText="No country by that name"
+              />
+            )}
+          />
         </Field>
-        <Field label="LGA" optional hint="Your local government area." error={errors.lga?.message}>
-          <Input {...register("lga")} />
+        <Field label="City" error={errors.city?.message} required>
+          <Input autoComplete="address-level2" {...register("city")} />
         </Field>
       </div>
+      {inNigeria ? (
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="State" optional error={errors.stateOfResidence?.message}>
+            <Select {...register("stateOfResidence", { setValueAs: (v) => (v === "" ? null : v) })}>
+              <option value="">Choose a state</option>
+              {NIGERIAN_STATES.map((s) => (
+                <option key={s} value={s}>
+                  {s === "FCT" ? "FCT (Abuja)" : s}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="LGA" optional hint="Your local government area." error={errors.lga?.message}>
+            <Input {...register("lga")} />
+          </Field>
+        </div>
+      ) : null}
       <Field
         label="About you"
         optional
@@ -184,12 +208,136 @@ export function PersonalSection({ profile, onSaved, submitLabel, extra }: Sectio
   );
 }
 
+// ─── You and work: intern type, NYSC details, work preference ─────────────────
+
+export function WorkSection({ profile, onSaved, submitLabel, extra }: SectionProps) {
+  const save = useSaveProfile();
+  const { form, clearDraft } = useSectionForm(
+    "work",
+    ["internType", "nyscStateCode", "nyscBatch", "currentPpa", "workPreference", "availability"],
+    profile,
+  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setError,
+    formState: { errors },
+  } = form;
+  const isCorpsMember = watch("internType") === "NYSC_CORPS_MEMBER";
+  return (
+    <form
+      noValidate
+      className="grid gap-6"
+      onSubmit={handleSubmit(async (v) => {
+        if (v.internType === "NYSC_CORPS_MEMBER" && !v.nyscStateCode) {
+          return setError("nyscStateCode", { message: "Enter your state code" });
+        }
+        if (!v.workPreference) return setError("workPreference", { message: "Choose how you want to work" });
+        try {
+          await save.mutateAsync(nullIfEmpty(v));
+          clearDraft();
+          toast.success("Saved");
+          onSaved?.();
+        } catch (err) {
+          handleFormError(err, setError);
+        }
+      })}
+    >
+      <fieldset className="grid gap-3">
+        <legend className="mb-3 text-[15px] font-semibold">
+          Which describes you? <span className="text-brand-text">*</span>
+        </legend>
+        <Controller
+          control={control}
+          name="internType"
+          render={({ field }) => (
+            <RadioGroup value={field.value} onValueChange={field.onChange} className="sm:grid-cols-3">
+              {Object.values(InternType).map((t) => (
+                <RadioCard key={t} value={t}>
+                  <span className="block font-semibold">{INTERN_TYPE[t].label}</span>
+                  <span className="block text-sm text-muted-foreground">{INTERN_TYPE[t].hint}</span>
+                </RadioCard>
+              ))}
+            </RadioGroup>
+          )}
+        />
+      </fieldset>
+
+      {isCorpsMember ? (
+        <div className="grid gap-5 rounded-lg border border-border bg-surface-muted/50 p-4 sm:p-5">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              label="State code"
+              hint="As on your call-up letter, e.g. LA/24A/1234."
+              error={errors.nyscStateCode?.message}
+              required
+            >
+              <Input autoCapitalize="characters" placeholder="LA/24A/1234" {...register("nyscStateCode")} />
+            </Field>
+            <Field label="Batch" hint="e.g. 2024 Batch A, Stream 1." error={errors.nyscBatch?.message} optional>
+              <Input {...register("nyscBatch")} />
+            </Field>
+          </div>
+          <Field label="Place of primary assignment (PPA)" optional error={errors.currentPpa?.message}>
+            <Input {...register("currentPpa")} />
+          </Field>
+        </div>
+      ) : null}
+
+      <fieldset className="grid gap-3">
+        <legend className="mb-3 text-[15px] font-semibold">
+          How do you want to work? <span className="text-brand-text">*</span>
+        </legend>
+        <Controller
+          control={control}
+          name="workPreference"
+          render={({ field }) => (
+            <RadioGroup
+              value={(field.value as string | null) ?? ""}
+              onValueChange={field.onChange}
+              className="sm:grid-cols-3"
+            >
+              {(["REMOTE", "ONSITE", "HYBRID"] as const).map((m) => (
+                <RadioCard key={m} value={m}>
+                  <span className="font-semibold">{WORK_MODE[m]}</span>
+                </RadioCard>
+              ))}
+            </RadioGroup>
+          )}
+        />
+        {errors.workPreference?.message ? (
+          <p role="alert" className="text-sm font-medium text-danger">
+            {errors.workPreference.message}
+          </p>
+        ) : null}
+      </fieldset>
+
+      <Field label="When can you work during the internship?" required error={errors.availability?.message}>
+        <Select {...register("availability", { setValueAs: (v) => (v === "" ? null : v) })}>
+          <option value="">Choose</option>
+          {Object.values(Availability).map((a) => (
+            <option key={a} value={a}>
+              {AVAILABILITY[a]}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <Actions loading={save.isPending} submitLabel={submitLabel} extra={extra} />
+    </form>
+  );
+}
+
 // ─── Education ────────────────────────────────────────────────────────────────
 
-const YEARS = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() + 1 - i);
+const THIS_YEAR = new Date().getFullYear();
+const PAST_YEARS = Array.from({ length: 30 }, (_, i) => THIS_YEAR + 1 - i);
+const FUTURE_YEARS = Array.from({ length: 8 }, (_, i) => THIS_YEAR + i);
 
 export function EducationSection({ profile, onSaved, submitLabel, extra }: SectionProps) {
   const save = useSaveProfile();
+  const studying = profile.internType === "UNDERGRADUATE";
   const { form, clearDraft } = useSectionForm(
     "education",
     ["institution", "courseOfStudy", "degreeClass", "graduationYear"],
@@ -207,7 +355,7 @@ export function EducationSection({ profile, onSaved, submitLabel, extra }: Secti
       className="grid gap-5"
       onSubmit={handleSubmit(async (v) => {
         try {
-          await save.mutateAsync(nullIfEmpty(v));
+          await save.mutateAsync(nullIfEmpty(studying ? { ...v, degreeClass: null } : v));
           clearDraft();
           toast.success("Saved");
           onSaved?.();
@@ -217,51 +365,41 @@ export function EducationSection({ profile, onSaved, submitLabel, extra }: Secti
       })}
     >
       <Field
-        label="Institution"
-        hint="University, polytechnic or college of education."
+        label={studying ? "Where you study" : "Institution"}
+        hint="University, polytechnic or college."
         error={errors.institution?.message}
         required
       >
-        <Input list="institutions" {...register("institution")} />
+        <Input {...register("institution")} />
       </Field>
-      <datalist id="institutions">
-        {[
-          "University of Lagos",
-          "University of Ibadan",
-          "Obafemi Awolowo University",
-          "University of Nigeria, Nsukka",
-          "Ahmadu Bello University",
-          "University of Benin",
-          "University of Port Harcourt",
-          "Covenant University",
-          "Lagos State University",
-          "Yaba College of Technology",
-        ].map((i) => (
-          <option key={i} value={i} />
-        ))}
-      </datalist>
       <Field label="Course of study" error={errors.courseOfStudy?.message} required>
         <Input {...register("courseOfStudy")} />
       </Field>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Degree class" error={errors.degreeClass?.message} optional>
-          <Select {...register("degreeClass", { setValueAs: (v) => (v === "" ? null : v) })}>
-            <option value="">Choose</option>
-            {Object.values(DegreeClass).map((d) => (
-              <option key={d} value={d}>
-                {DEGREE_CLASS[d]}
-              </option>
-            ))}
-          </Select>
-        </Field>
-        <Field label="Graduation year" error={errors.graduationYear?.message} required>
+        {studying ? null : (
+          <Field label="Degree class" error={errors.degreeClass?.message} optional>
+            <Select {...register("degreeClass", { setValueAs: (v) => (v === "" ? null : v) })}>
+              <option value="">Choose</option>
+              {Object.values(DegreeClass).map((d) => (
+                <option key={d} value={d}>
+                  {DEGREE_CLASS[d]}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
+        <Field
+          label={studying ? "Expected graduation year" : "Graduation year"}
+          error={errors.graduationYear?.message}
+          required
+        >
           <Select
             {...register("graduationYear", {
               setValueAs: (v) => (v === "" || v === null ? null : Number(v)),
             })}
           >
             <option value="">Choose</option>
-            {YEARS.map((y) => (
+            {(studying ? FUTURE_YEARS : PAST_YEARS).map((y) => (
               <option key={y} value={y}>
                 {y}
               </option>
@@ -269,62 +407,6 @@ export function EducationSection({ profile, onSaved, submitLabel, extra }: Secti
           </Select>
         </Field>
       </div>
-      <Actions loading={save.isPending} submitLabel={submitLabel} extra={extra} />
-    </form>
-  );
-}
-
-// ─── NYSC & availability ──────────────────────────────────────────────────────
-
-export function NyscSection({ profile, onSaved, submitLabel, extra }: SectionProps) {
-  const save = useSaveProfile();
-  const { form, clearDraft } = useSectionForm("nysc", ["nyscStatus", "currentPpa", "availability"], profile);
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setError,
-    formState: { errors },
-  } = form;
-  return (
-    <form
-      noValidate
-      className="grid gap-5"
-      onSubmit={handleSubmit(async (v) => {
-        try {
-          await save.mutateAsync(nullIfEmpty(v));
-          clearDraft();
-          toast.success("Saved");
-          onSaved?.();
-        } catch (err) {
-          handleFormError(err, setError);
-        }
-      })}
-    >
-      <Field label="NYSC status" required error={errors.nyscStatus?.message}>
-        <Select {...register("nyscStatus")}>
-          {Object.values(NyscStatus).map((s) => (
-            <option key={s} value={s}>
-              {NYSC_STATUS[s]}
-            </option>
-          ))}
-        </Select>
-      </Field>
-      {watch("nyscStatus") === "SERVING" ? (
-        <Field label="Place of primary assignment (PPA)" optional error={errors.currentPpa?.message}>
-          <Input {...register("currentPpa")} />
-        </Field>
-      ) : null}
-      <Field label="When can you work during the internship?" required error={errors.availability?.message}>
-        <Select {...register("availability", { setValueAs: (v) => (v === "" ? null : v) })}>
-          <option value="">Choose</option>
-          {Object.values(Availability).map((a) => (
-            <option key={a} value={a}>
-              {AVAILABILITY[a]}
-            </option>
-          ))}
-        </Select>
-      </Field>
       <Actions loading={save.isPending} submitLabel={submitLabel} extra={extra} />
     </form>
   );

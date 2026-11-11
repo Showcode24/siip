@@ -26,7 +26,8 @@ const SECTIONS: NavSection[] = [
       { href: "/admin/cohorts", label: "Cohorts", icon: Users },
       { href: "/admin/applications", label: "Applications", icon: ClipboardList },
       { href: "/admin/training", label: "Training content", icon: BookOpen },
-      { href: "/admin/assessments", label: "Assessments", icon: ClipboardCheck },
+      // One test only: the SIIP test (videos + workplace-conduct quiz).
+      { href: "/admin/assessments/siip_test", label: "SIIP test", icon: ClipboardCheck },
     ],
   },
   {

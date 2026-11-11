@@ -130,7 +130,8 @@ export type ApplicationStatus = (typeof ApplicationStatus)[keyof typeof Applicat
 
 export const AssessmentType = {
   SCREENING: 'SCREENING',
-  FINAL: 'FINAL'
+  FINAL: 'FINAL',
+  SIIP: 'SIIP'
 } as const
 
 export type AssessmentType = (typeof AssessmentType)[keyof typeof AssessmentType]

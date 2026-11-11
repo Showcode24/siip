@@ -20,10 +20,22 @@ const assessmentFields = z.object({
   shuffleQuestions: z.boolean(),
   shuffleOptions: z.boolean(),
   published: z.boolean(),
+  // SIIP test settings.
+  retakeAfterHours: z.number().int().min(0).max(720),
+  unlockAfterWeeks: z.number().int().min(0).max(52),
+  minCheckInRating: z.number().int().min(1).max(5),
 });
 
 export const createAssessmentSchema = assessmentFields
-  .partial({ shuffleQuestions: true, shuffleOptions: true, published: true, maxAttempts: true })
+  .partial({
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    published: true,
+    maxAttempts: true,
+    retakeAfterHours: true,
+    unlockAfterWeeks: true,
+    minCheckInRating: true,
+  })
   .strict();
 export const updateAssessmentSchema = assessmentFields.partial().strict();
 
@@ -36,6 +48,8 @@ const questionFields = z.object({
   order: z.number().int().min(0).max(10_000).optional(),
   options: z.array(option).max(10).default([]),
   acceptedAnswers: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
+  // SIIP test: the video this question is about.
+  videoId: id.nullish(),
 });
 
 /** Each question type needs a coherent answer key. */
@@ -90,3 +104,55 @@ export const saveAnswersSchema = z.object({
 });
 
 export const submitAttemptSchema = saveAnswersSchema.partial();
+
+// ─── SIIP test videos ─────────────────────────────────────────────────────────
+
+/**
+ * The 11-character video id from any usual YouTube link (watch, youtu.be,
+ * shorts, embed), or null if it isn't one.
+ */
+export function youtubeIdFrom(input: string): string | null {
+  const v = input.trim();
+  if (/^[A-Za-z0-9_-]{11}$/.test(v)) return v;
+  let url: URL;
+  try {
+    url = new URL(v);
+  } catch {
+    return null;
+  }
+  const host = url.hostname.replace(/^(www\.|m\.)/, "");
+  let id: string | null = null;
+  if (host === "youtu.be") id = url.pathname.slice(1);
+  else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+    id = url.searchParams.get("v") ?? /^\/(?:embed|shorts|live)\/([^/?]+)/.exec(url.pathname)?.[1] ?? null;
+  }
+  return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+}
+
+const youtubeLink = z
+  .string()
+  .trim()
+  .nullish()
+  .transform((v, ctx) => {
+    if (!v) return null;
+    const id = youtubeIdFrom(v);
+    if (!id) {
+      ctx.addIssue({ code: "custom", message: "Paste a YouTube link, e.g. https://www.youtube.com/watch?v=..." });
+      return z.NEVER;
+    }
+    return id;
+  });
+
+export const testVideoSchema = z
+  .object({
+    title: z.string().trim().min(3, "Give the video a title").max(160),
+    description: z.string().trim().max(500).nullish(),
+    /** Any YouTube link; stored as its video id. Leave empty for a placeholder. */
+    youtubeUrl: youtubeLink,
+  })
+  .strict();
+export const updateTestVideoSchema = testVideoSchema.partial().strict();
+
+export const reorderVideosSchema = z.object({
+  ids: z.array(id).min(1).max(30),
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { questionSchema } from "@siip/shared/validators/assessment";
+import { questionSchema, testVideoSchema } from "@siip/shared/validators/assessment";
 import type { QuestionType } from "@siip/shared/enums";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -9,8 +9,8 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "@/client/api/http";
-import { assessmentApi } from "@/client/api/learning";
-import type { AdminQuestion, AttemptRow } from "@/client/api/types";
+import { assessmentApi, siipTestApi } from "@/client/api/learning";
+import type { AdminQuestion, AttemptRow, SiipTestAdmin } from "@/client/api/types";
 import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -37,6 +37,8 @@ const TYPE_LABEL: Record<QuestionType, string> = {
   SHORT_TEXT: "Short answer",
 };
 
+const SIIP_KEY = ["admin", "siip-test"] as const;
+
 export default function AssessmentBuilderPage() {
   const { id } = useParams<{ id: string }>();
   const qc = useQueryClient();
@@ -56,17 +58,25 @@ export default function AssessmentBuilderPage() {
     onError: fail,
   });
   const del = useMutation({ mutationFn: assessmentApi.deleteQuestion, onSuccess: refresh, onError: fail });
+  const isSiip = q.data?.type === "SIIP";
+  const siip = useQuery({ queryKey: SIIP_KEY, queryFn: siipTestApi.getAdmin, enabled: isSiip });
+  const videos = siip.data?.videos ?? [];
 
   return (
     <QueryState query={q}>
       {(a) => {
-        const locked = a._count.attempts > 0;
+        // The SIIP test stays editable; changes apply to new attempts only.
+        const locked = a._count.attempts > 0 && a.type !== "SIIP";
         return (
           <>
             <PageHeader
               breadcrumbs={[{ label: "Assessments", href: "/admin/assessments" }, { label: a.title }]}
               title={a.title}
-              description={`${a.type === "FINAL" ? "Final assessment" : "Screening test"}, ${a._count.attempts} attempts`}
+              description={
+                isSiip
+                  ? `Videos, then a workplace-conduct quiz. ${siip.data?.stats.attempts ?? 0} attempts, ${siip.data?.stats.passed ?? 0} passed.`
+                  : `${a.type === "FINAL" ? "Final assessment" : "Screening test"}, ${a._count.attempts} attempts`
+              }
               actions={
                 <label className="flex h-11 items-center gap-3 rounded-full border border-border px-4 text-[15px] font-semibold">
                   Published{" "}
@@ -76,11 +86,22 @@ export default function AssessmentBuilderPage() {
             />
             <Tabs defaultValue="questions">
               <TabsList>
+                {isSiip ? <TabsTrigger value="videos">Videos ({videos.length})</TabsTrigger> : null}
                 <TabsTrigger value="questions">Questions ({a.questions.length})</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
                 <TabsTrigger value="attempts">Attempts</TabsTrigger>
               </TabsList>
+              {isSiip ? (
+                <TabsContent value="videos">
+                  <VideosPanel videos={videos} />
+                </TabsContent>
+              ) : null}
               <TabsContent value="questions" className="grid gap-4">
+                {isSiip && a._count.attempts > 0 ? (
+                  <p className="rounded-lg bg-info-soft px-4 py-3 text-[15px] text-info">
+                    Changes apply to new attempts. Past attempts keep the questions they were given.
+                  </p>
+                ) : null}
                 {locked ? (
                   <p className="flex items-center gap-2 rounded-lg bg-info-soft px-4 py-3 text-[15px] text-info">
                     <Lock className="size-4" /> Questions are locked because graduates have already taken this
@@ -98,6 +119,9 @@ export default function AssessmentBuilderPage() {
                           <p className="font-semibold">{qq.prompt}</p>
                           <p className="text-sm text-muted-foreground">
                             {TYPE_LABEL[qq.type]}, {qq.points} point{qq.points > 1 ? "s" : ""}
+                            {isSiip
+                              ? `, ${videos.find((v) => v.id === qq.videoId)?.title ?? "not linked to a video"}`
+                              : ""}
                           </p>
                         </div>
                         {!locked ? (
@@ -105,7 +129,8 @@ export default function AssessmentBuilderPage() {
                             <QuestionEditor
                               assessmentId={id}
                               question={qq}
-                              onSaved={refresh}
+                              videos={isSiip ? videos : undefined}
+                              onSaved={() => (refresh(), qc.invalidateQueries({ queryKey: SIIP_KEY }))}
                               trigger={
                                 <Button variant="ghost" size="icon-sm" aria-label="Edit question">
                                   <Pencil />
@@ -147,7 +172,8 @@ export default function AssessmentBuilderPage() {
                 {!locked ? (
                   <QuestionEditor
                     assessmentId={id}
-                    onSaved={refresh}
+                    videos={isSiip ? videos : undefined}
+                    onSaved={() => (refresh(), qc.invalidateQueries({ queryKey: SIIP_KEY }))}
                     trigger={
                       <Button variant="outline" className="justify-self-start">
                         <Plus /> Add question
@@ -189,6 +215,10 @@ function SettingsForm({
     maxAttempts: number;
     shuffleQuestions: boolean;
     shuffleOptions: boolean;
+    type: string;
+    retakeAfterHours: number;
+    unlockAfterWeeks: number;
+    minCheckInRating: number;
   };
   locked: boolean;
   onSave: (v: Parameters<typeof assessmentApi.update>[1]) => void;
@@ -206,7 +236,13 @@ function SettingsForm({
               title: v.title,
               description: v.description || null,
               timeLimitMinutes: v.timeLimitMinutes,
-              maxAttempts: v.maxAttempts,
+              ...(v.type === "SIIP"
+                ? {
+                    retakeAfterHours: v.retakeAfterHours,
+                    unlockAfterWeeks: v.unlockAfterWeeks,
+                    minCheckInRating: v.minCheckInRating,
+                  }
+                : { maxAttempts: v.maxAttempts }),
               shuffleQuestions: v.shuffleQuestions,
               shuffleOptions: v.shuffleOptions,
               ...(locked ? {} : { passMark: v.passMark }),
@@ -242,16 +278,57 @@ function SettingsForm({
                 onChange={(e) => setV({ ...v, passMark: Number(e.target.value) })}
               />
             </Field>
-            <Field label="Attempts">
-              <Input
-                type="number"
-                min={1}
-                max={10}
-                value={v.maxAttempts}
-                onChange={(e) => setV({ ...v, maxAttempts: Number(e.target.value) })}
-              />
-            </Field>
+            {v.type === "SIIP" ? (
+              <Field label="Retake wait (hours)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={720}
+                  value={v.retakeAfterHours}
+                  onChange={(e) => setV({ ...v, retakeAfterHours: Number(e.target.value) })}
+                />
+              </Field>
+            ) : (
+              <Field label="Attempts">
+                <Input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={v.maxAttempts}
+                  onChange={(e) => setV({ ...v, maxAttempts: Number(e.target.value) })}
+                />
+              </Field>
+            )}
           </div>
+          {v.type === "SIIP" ? (
+            <div className="grid gap-3 rounded-lg border border-border p-4">
+              <p className="font-semibold">When the test opens</p>
+              <p className="text-sm text-muted-foreground">
+                After this many weeks of internship, and once the supervisor&apos;s latest monthly review is rated at
+                least this high.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Weeks of internship">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={52}
+                    value={v.unlockAfterWeeks}
+                    onChange={(e) => setV({ ...v, unlockAfterWeeks: Number(e.target.value) })}
+                  />
+                </Field>
+                <Field label="Minimum review rating (1 to 5)">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={5}
+                    value={v.minCheckInRating}
+                    onChange={(e) => setV({ ...v, minCheckInRating: Number(e.target.value) })}
+                  />
+                </Field>
+              </div>
+            </div>
+          ) : null}
           <label className="flex items-center justify-between gap-4">
             <span className="font-semibold">Shuffle question order</span>
             <Switch
@@ -275,14 +352,18 @@ function SettingsForm({
 function QuestionEditor({
   assessmentId,
   question,
+  videos,
   trigger,
   onSaved,
 }: {
   assessmentId: string;
   question?: AdminQuestion;
+  /** SIIP test: the videos a question can be linked to. */
+  videos?: Array<{ id: string; title: string }>;
   trigger: React.ReactNode;
   onSaved: () => void;
 }) {
+  const [videoId, setVideoId] = useState<string>(question?.videoId ?? "");
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<QuestionType>(question?.type ?? "SINGLE_CHOICE");
   const [prompt, setPrompt] = useState(question?.prompt ?? "");
@@ -306,6 +387,7 @@ function QuestionEditor({
             .map((s) => s.trim())
             .filter(Boolean)
         : [],
+    ...(videos ? { videoId: videoId || null } : {}),
   };
   const check = questionSchema.safeParse(body);
   const problem = check.success ? null : check.error.issues[0]?.message;
@@ -361,6 +443,18 @@ function QuestionEditor({
           <Field label="Question" required>
             <Textarea rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
           </Field>
+          {videos ? (
+            <Field label="Which video is this about?" optional>
+              <Select value={videoId} onChange={(e) => setVideoId(e.target.value)}>
+                <option value="">Not linked to a video</option>
+                {videos.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.title}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          ) : null}
           {type === "SHORT_TEXT" ? (
             <Field
               label="Accepted answers"
@@ -517,5 +611,167 @@ function Attempts({ id }: { id: string }) {
       exportName="attempts"
       empty={{ title: "No attempts yet" }}
     />
+  );
+}
+
+// ─── SIIP test videos ─────────────────────────────────────────────────────────
+
+function VideosPanel({ videos }: { videos: SiipTestAdmin["videos"] }) {
+  const qc = useQueryClient();
+  const refresh = () => qc.invalidateQueries({ queryKey: SIIP_KEY });
+  const fail = (e: unknown) => toast.error(errorMessage(e));
+  const reorder = useMutation({ mutationFn: siipTestApi.reorderVideos, onSuccess: refresh, onError: fail });
+  const remove = useMutation({
+    mutationFn: siipTestApi.deleteVideo,
+    onSuccess: () => (refresh(), toast.success("Video removed")),
+    onError: fail,
+  });
+  const move = (i: number, by: -1 | 1) => {
+    const ids = videos.map((v) => v.id);
+    [ids[i], ids[i + by]] = [ids[i + by], ids[i]];
+    reorder.mutate(ids);
+  };
+  return (
+    <div className="grid gap-4">
+      <p className="text-[15px] text-muted-foreground">
+        Interns watch these in order and mark each one watched before the quiz opens. Paste any YouTube link. Videos
+        without a link show as &ldquo;coming soon&rdquo;.
+      </p>
+      <ol className="grid gap-3">
+        {videos.map((v, i) => (
+          <li key={v.id}>
+            <Card>
+              <CardBody className="flex flex-wrap items-start gap-4">
+                <div className="aspect-video w-full shrink-0 overflow-hidden rounded-lg bg-night-2 sm:w-48">
+                  {v.youtubeId ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`https://i.ytimg.com/vi/${v.youtubeId}/mqdefault.jpg`}
+                      alt=""
+                      className="size-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <p className="grid size-full place-items-center text-sm text-white/70">No link yet</p>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-muted-foreground">Video {i + 1}</p>
+                  <p className="font-display text-lg font-semibold">{v.title}</p>
+                  {v.description ? <p className="text-[15px] text-muted-foreground">{v.description}</p> : null}
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {v.questionCount} {v.questionCount === 1 ? "question" : "questions"}, watched by {v.watchCount}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  <Button variant="ghost" size="sm" disabled={i === 0 || reorder.isPending} onClick={() => move(i, -1)}>
+                    Move up
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={i === videos.length - 1 || reorder.isPending}
+                    onClick={() => move(i, 1)}
+                  >
+                    Move down
+                  </Button>
+                  <VideoEditor
+                    video={v}
+                    onSaved={refresh}
+                    trigger={
+                      <Button variant="outline" size="sm">
+                        <Pencil /> Edit
+                      </Button>
+                    }
+                  />
+                  <ConfirmDialog
+                    trigger={
+                      <Button variant="ghost" size="sm" aria-label={`Remove ${v.title}`}>
+                        <Trash2 />
+                      </Button>
+                    }
+                    title={`Remove "${v.title}"?`}
+                    description="Questions about this video stay in the quiz, unlinked."
+                    confirmLabel="Remove video"
+                    onConfirm={() => remove.mutateAsync(v.id)}
+                  />
+                </div>
+              </CardBody>
+            </Card>
+          </li>
+        ))}
+      </ol>
+      <VideoEditor
+        onSaved={refresh}
+        trigger={
+          <Button variant="outline" className="justify-self-start">
+            <Plus /> Add video
+          </Button>
+        }
+      />
+    </div>
+  );
+}
+
+function VideoEditor({
+  video,
+  trigger,
+  onSaved,
+}: {
+  video?: SiipTestAdmin["videos"][number];
+  trigger: React.ReactNode;
+  onSaved: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(video?.title ?? "");
+  const [description, setDescription] = useState(video?.description ?? "");
+  const [link, setLink] = useState(video?.youtubeId ? `https://www.youtube.com/watch?v=${video.youtubeId}` : "");
+  const body = { title: title.trim(), description: description.trim() || null, youtubeUrl: link.trim() || null };
+  const check = testVideoSchema.safeParse(body);
+  const problem = check.success ? null : check.error.issues[0]?.message;
+  const save = useMutation({
+    mutationFn: () => (video ? siipTestApi.updateVideo(video.id, body) : siipTestApi.createVideo(body)),
+    onSuccess: () => {
+      onSaved();
+      setOpen(false);
+      if (!video) {
+        setTitle("");
+        setDescription("");
+        setLink("");
+      }
+      toast.success("Video saved");
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <SheetContent
+        title={video ? "Edit video" : "Add video"}
+        footer={
+          <>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button disabled={!check.success} loading={save.isPending} onClick={() => save.mutate()}>
+              Save video
+            </Button>
+          </>
+        }
+      >
+        <div className="grid gap-5">
+          <Field label="Title" required>
+            <Input value={title} maxLength={160} onChange={(e) => setTitle(e.target.value)} />
+          </Field>
+          <Field label="YouTube link" optional hint="Any YouTube link works: watch, youtu.be or shorts. Leave empty for now if you don't have it yet.">
+            <Input type="url" inputMode="url" placeholder="https://www.youtube.com/watch?v=..." value={link} onChange={(e) => setLink(e.target.value)} />
+          </Field>
+          <Field label="What it covers" optional>
+            <Textarea rows={3} maxLength={500} value={description} onChange={(e) => setDescription(e.target.value)} />
+          </Field>
+          {problem && (title || link) ? <p className="text-sm text-warning">{problem}</p> : null}
+        </div>
+      </SheetContent>
+    </Dialog>
   );
 }

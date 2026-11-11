@@ -225,6 +225,7 @@ model GraduateProfile {
   lessonProgress LessonProgress[]
   attempts       Attempt[]
   retakeGrants   RetakeGrant[]
+  videoWatches   VideoWatch[]
   matches        Match[]
   placements     Placement[]
   certificates   Certificate[]
@@ -467,6 +468,9 @@ model LessonProgress {
 enum AssessmentType {
   SCREENING
   FINAL
+  // The SIIP test: workplace-conduct videos, then a quiz. Taken after 2-3 months of
+  // internship with a satisfactory supervisor check-in; unlimited attempts with a wait.
+  SIIP
 }
 
 enum QuestionType {
@@ -494,11 +498,16 @@ model Assessment {
   shuffleQuestions Boolean        @default(true)
   shuffleOptions   Boolean        @default(true)
   published        Boolean        @default(false)
+  // SIIP test settings (admin-editable).
+  retakeAfterHours Int            @default(24)
+  unlockAfterWeeks Int            @default(8)
+  minCheckInRating Int            @default(3)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
   questions    Question[]
   attempts     Attempt[]
+  videos       TestVideo[]
   retakeGrants RetakeGrant[]
 
   @@index([cohortId, type])
@@ -514,6 +523,11 @@ model Question {
   order           Int          @default(0)
   // SHORT_TEXT only: accepted answers, compared case/whitespace-insensitively.
   acceptedAnswers String[]
+  // The video this question is about (SIIP test).
+  videoId         String?
+  video           TestVideo?   @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  // Retired versions stay for past attempts but are left out of new ones.
+  archivedAt      DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -577,6 +591,39 @@ model AttemptAnswer {
   updatedAt         DateTime @updatedAt
 
   @@unique([attemptId, questionId])
+}
+
+// A video interns watch before the SIIP quiz unlocks. youtubeId is null until the
+// real link is added (the intern sees a "not added yet" placeholder).
+model TestVideo {
+  id           String       @id @default(cuid())
+  assessmentId String
+  assessment   Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  youtubeId    String?
+  order        Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  questions Question[]
+  watches   VideoWatch[]
+
+  @@index([assessmentId, order])
+}
+
+model VideoWatch {
+  id         String          @id @default(cuid())
+  videoId    String
+  video      TestVideo       @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  graduateId String
+  graduate   GraduateProfile @relation(fields: [graduateId], references: [id], onDelete: Cascade)
+  watchedAt  DateTime        @default(now())
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([videoId, graduateId])
+  @@index([graduateId])
 }
 
 // Admin-granted extra attempts beyond Assessment.maxAttempts.

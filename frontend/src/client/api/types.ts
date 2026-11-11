@@ -349,6 +349,8 @@ export interface AdminQuestion {
   order: number;
   acceptedAnswers: string[];
   options: Array<{ id: string; text: string; isCorrect: boolean; order: number }>;
+  /** SIIP test: the video this question is about. */
+  videoId?: string | null;
 }
 
 export interface AdminAssessment {
@@ -363,6 +365,10 @@ export interface AdminAssessment {
   shuffleQuestions: boolean;
   shuffleOptions: boolean;
   published: boolean;
+  /** SIIP test settings. */
+  retakeAfterHours: number;
+  unlockAfterWeeks: number;
+  minCheckInRating: number;
   createdAt: ISODate;
   questions: AdminQuestion[];
   _count: { questions: number; attempts: number };
@@ -732,4 +738,67 @@ export interface ReviewDetail {
   user: { id: string; email: string; createdAt: ISODate };
   skills: GraduateSkill[];
   history: ReviewHistoryItem[];
+}
+
+// ─── The SIIP test ────────────────────────────────────────────────────────────
+
+export type SiipState =
+  | "PASSED"
+  | "LOCKED_INTERNSHIP"
+  | "LOCKED_REVIEW"
+  | "IN_PROGRESS"
+  | "COOLDOWN"
+  | "VIDEOS"
+  | "READY";
+
+export interface SiipVideo {
+  id: string;
+  title: string;
+  description: string | null;
+  /** Null while the real link hasn't been added (a placeholder). */
+  youtubeId: string | null;
+  order: number;
+}
+
+export interface MySiipTest {
+  test: {
+    id: string;
+    title: string;
+    description: string | null;
+    passMark: number;
+    timeLimitMinutes: number;
+    retakeAfterHours: number;
+    questionCount: number;
+  };
+  state: SiipState;
+  message: string;
+  videosLeft: number;
+  unlocksAt: ISODate | null;
+  nextAttemptAt: ISODate | null;
+  inProgressAttemptId: string | null;
+  videos: Array<SiipVideo & { watchedAt: ISODate | null }>;
+  attempts: Array<{
+    id: string;
+    attemptNumber: number;
+    status: AttemptStatus;
+    percentage: number | null;
+    passed: boolean | null;
+    startedAt: ISODate;
+    submittedAt: ISODate | null;
+  }>;
+}
+
+export interface SiipTestAdmin {
+  id: string;
+  title: string;
+  description: string | null;
+  passMark: number;
+  timeLimitMinutes: number;
+  retakeAfterHours: number;
+  unlockAfterWeeks: number;
+  minCheckInRating: number;
+  published: boolean;
+  videos: Array<SiipVideo & { watchCount: number; questionCount: number }>;
+  questions: AdminQuestion[];
+  stats: { attempts: number; passed: number };
 }

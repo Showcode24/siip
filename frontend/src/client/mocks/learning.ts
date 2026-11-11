@@ -1,10 +1,10 @@
 import type { z } from "zod";
 import type {
   createAssessmentSchema,
-  questionSchema,
   updateAssessmentSchema,
   AnswerInput,
 } from "@siip/shared/validators/assessment";
+import { questionSchema } from "@siip/shared/validators/assessment";
 import type {
   createCourseSchema,
   lessonSchema,
@@ -15,6 +15,7 @@ import type {
 import { ApiError } from "@/client/api/http";
 import type { AdminAssessment, AdminCourse, AttemptView, MyAssessment, MyTraining } from "@/client/api/types";
 import { audit, cohortById, db, newId, notify } from "./db";
+import { siipGate } from "./siip";
 import {
   badRequest,
   conflict,
@@ -229,6 +230,8 @@ export function deleteLesson(id: string) {
 const ELIGIBLE: Record<string, string[]> = {
   SCREENING: ["SUBMITTED", "SCREENING"],
   FINAL: ["FINAL_ASSESSMENT"],
+  // The SIIP test has its own gate (siip.ts).
+  SIIP: [],
 };
 const GRACE = 30_000;
 const overdue = (deadline: string) => Date.now() > new Date(deadline).getTime() + GRACE;
@@ -238,7 +241,7 @@ export function listMyAssessments(): MyAssessment[] {
   const app = currentApplication(graduate.id);
   if (!app) return [];
   return db.assessments
-    .filter((a) => a.published && (!a.cohortId || a.cohortId === app.cohortId))
+    .filter((a) => a.published && a.type !== "SIIP" && (!a.cohortId || a.cohortId === app.cohortId))
     .map((a) => {
       const attempts = db.attempts
         .filter((t) => t.assessmentId === a.id && t.graduateId === graduate.id)
@@ -276,6 +279,20 @@ const shuffle = <T>(xs: T[]) => [...xs].sort(() => Math.random() - 0.5);
 
 export function startAttempt(assessmentId: string): AttemptView {
   const { graduate } = requireGraduate();
+  const siip = db.assessments.find((x) => x.id === assessmentId && x.type === "SIIP" && x.published);
+  if (siip) {
+    // Close an attempt whose time ran out first, so the retake wait starts correctly.
+    const stale = db.attempts.find(
+      (t) => t.assessmentId === siip.id && t.graduateId === graduate.id && t.status === "IN_PROGRESS" && overdue(t.deadlineAt),
+    );
+    if (stale) finalize(stale.id, "EXPIRED");
+    const gate = siipGate(graduate, siip);
+    if (gate.state === "IN_PROGRESS") return getAttempt(gate.inProgressAttemptId!);
+    if (gate.state === "PASSED") throw conflict("You have already passed this assessment");
+    if (gate.state !== "READY") throw new ApiError("FORBIDDEN", gate.message, 403);
+    const used = db.attempts.filter((t) => t.assessmentId === siip.id && t.graduateId === graduate.id).length;
+    return createAttempt(siip, graduate.id, used + 1);
+  }
   const mine = listMyAssessments().find((a) => a.id === assessmentId);
   if (!mine) throw notFound("Assessment");
   if (mine.inProgressAttemptId) return getAttempt(mine.inProgressAttemptId);
@@ -287,13 +304,19 @@ export function startAttempt(assessmentId: string): AttemptView {
         : "This assessment is not available at your current stage",
     );
   const a = db.assessments.find((x) => x.id === assessmentId)!;
-  const qs = a.shuffleQuestions ? shuffle(a.questions) : a.questions;
+  return createAttempt(a, graduate.id, mine.attemptsUsed + 1);
+}
+
+/** A new attempt with this attempt's own shuffled order. Retired questions never enter it. */
+function createAttempt(a: (typeof db.assessments)[number], graduateId: string, attemptNumber: number): AttemptView {
+  const live = a.questions.filter((q) => !q.archivedAt);
+  const qs = a.shuffleQuestions ? shuffle(live) : live;
   const now = Date.now();
   const t = {
     id: newId("att"),
-    assessmentId,
-    graduateId: graduate.id,
-    attemptNumber: mine.attemptsUsed + 1,
+    assessmentId: a.id,
+    graduateId,
+    attemptNumber,
     status: "IN_PROGRESS" as const,
     startedAt: new Date(now).toISOString(),
     deadlineAt: new Date(now + a.timeLimitMinutes * 60_000).toISOString(),
@@ -427,8 +450,10 @@ export function submitAttempt(id: string, answers: AnswerInput[] = []) {
 
 const withCount = (a: (typeof db.assessments)[number]): AdminAssessment => ({
   ...a,
+  // Retired question versions stay for past attempts but aren't part of the test any more.
+  questions: a.questions.filter((q) => !q.archivedAt),
   _count: {
-    questions: a.questions.length,
+    questions: a.questions.filter((q) => !q.archivedAt).length,
     attempts: db.attempts.filter((t) => t.assessmentId === a.id).length,
   },
 });
@@ -441,6 +466,10 @@ const assertNoAttempts = (id: string) => {
   if (db.attempts.some((t) => t.assessmentId === id))
     throw conflict("This assessment already has attempts, so its questions can no longer change");
 };
+
+/** Someone has been given this question in an attempt, so it's kept for the record. */
+const questionUsed = (assessmentId: string, qid: string) =>
+  db.attempts.some((t) => t.assessmentId === assessmentId && t.layout.some((l) => l.questionId === qid));
 
 export function listAssessments() {
   requireAdmin();
@@ -464,6 +493,9 @@ export function createAssessment(input: z.input<typeof createAssessmentSchema>) 
     shuffleQuestions: input.shuffleQuestions ?? true,
     shuffleOptions: input.shuffleOptions ?? true,
     published: false,
+    retakeAfterHours: input.retakeAfterHours ?? 24,
+    unlockAfterWeeks: input.unlockAfterWeeks ?? 8,
+    minCheckInRating: input.minCheckInRating ?? 3,
     createdAt: isoNow(),
     questions: [],
   };
@@ -474,7 +506,8 @@ export function createAssessment(input: z.input<typeof createAssessmentSchema>) 
 export function updateAssessment(id: string, input: z.input<typeof updateAssessmentSchema>) {
   const admin = requireAdmin();
   const a = assessment(id);
-  if (input.passMark !== undefined && input.passMark !== a.passMark) assertNoAttempts(id);
+  // The SIIP pass mark can change any time; it applies to attempts finished from now on.
+  if (input.passMark !== undefined && input.passMark !== a.passMark && a.type !== "SIIP") assertNoAttempts(id);
   if (input.published && a.questions.length === 0)
     throw badRequest("Add at least one question before publishing");
   Object.assign(a, input);
@@ -495,6 +528,8 @@ function toQuestion(input: z.input<typeof questionSchema>, order: number) {
     points: input.points ?? 1,
     order: input.order ?? order,
     acceptedAnswers: input.acceptedAnswers ?? [],
+    videoId: input.videoId ?? null,
+    archivedAt: null as string | null,
     options: (input.options ?? []).map((o, i) => ({
       id: newId("opt"),
       text: o.text,
@@ -506,8 +541,8 @@ function toQuestion(input: z.input<typeof questionSchema>, order: number) {
 export function addQuestion(id: string, input: z.input<typeof questionSchema>) {
   requireAdmin();
   const a = assessment(id);
-  assertNoAttempts(id);
-  const q = toQuestion(input, a.questions.length);
+  if (a.type !== "SIIP") assertNoAttempts(id);
+  const q = toQuestion(questionSchema.parse(input), a.questions.length);
   a.questions.push(q);
   return q;
 }
@@ -515,16 +550,29 @@ export function replaceQuestion(qid: string, input: z.input<typeof questionSchem
   requireAdmin();
   const a = db.assessments.find((x) => x.questions.some((q) => q.id === qid));
   if (!a) throw notFound("Question");
-  assertNoAttempts(a.id);
+  const v = questionSchema.parse(input);
   const idx = a.questions.findIndex((q) => q.id === qid);
-  a.questions[idx] = { ...toQuestion(input, idx), id: qid };
+  if (a.type === "SIIP" && questionUsed(a.id, qid)) {
+    // Retire the old version (past attempts keep it) and add the new one in its place.
+    const old = a.questions[idx];
+    old.archivedAt = isoNow();
+    const next = toQuestion({ ...v, order: v.order ?? old.order }, idx);
+    a.questions.push(next);
+    return next;
+  }
+  if (a.type !== "SIIP") assertNoAttempts(a.id);
+  a.questions[idx] = { ...toQuestion(v, idx), id: qid };
   return a.questions[idx];
 }
 export function deleteQuestion(qid: string) {
   requireAdmin();
   const a = db.assessments.find((x) => x.questions.some((q) => q.id === qid));
   if (!a) throw notFound("Question");
-  assertNoAttempts(a.id);
+  if (a.type === "SIIP" && questionUsed(a.id, qid)) {
+    a.questions.find((q) => q.id === qid)!.archivedAt = isoNow();
+    return { id: qid };
+  }
+  if (a.type !== "SIIP") assertNoAttempts(a.id);
   a.questions = a.questions.filter((q) => q.id !== qid);
   return { id: qid };
 }

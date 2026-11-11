@@ -236,6 +236,11 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | GET | `/api/v1/admin/reviews/{id}` | Admin | Get review |
 | POST | `/api/v1/admin/reviews/{id}/decision` | Admin | Decide profile |
 | POST | `/api/v1/admin/reviews/{id}/skills/{skillId}` | Admin | Decide skill |
+| GET | `/api/v1/admin/siip-test` | Admin | Get siip test for admin |
+| POST | `/api/v1/admin/siip-test/videos` | Admin | Create video |
+| PATCH | `/api/v1/admin/siip-test/videos/{id}` | Admin | Update video |
+| DELETE | `/api/v1/admin/siip-test/videos/{id}` | Admin | Delete video |
+| POST | `/api/v1/admin/siip-test/videos/reorder` | Admin | Reorder videos |
 | GET | `/api/v1/admin/skill-documents/{id}/url` | Admin | Get skill document url for admin |
 | POST | `/api/v1/auth/forgot-password` | Public | Request password reset |
 | GET | `/api/v1/auth/me` | Any signed-in user | Get me |
@@ -294,6 +299,8 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | PATCH | `/api/v1/graduate/profile` | Graduate | Update profile |
 | GET | `/api/v1/graduate/profile/cv` | Graduate | Get cv download url |
 | POST | `/api/v1/graduate/profile/submit` | Graduate | Submit for review |
+| GET | `/api/v1/graduate/siip-test` | Graduate | Get my siip test |
+| POST | `/api/v1/graduate/siip-test/videos/{id}/watched` | Graduate | Mark video watched |
 | GET | `/api/v1/graduate/skill-documents/{id}/url` | Graduate | Get skill document url |
 | GET | `/api/v1/graduate/skills` | Graduate | List my skills |
 | POST | `/api/v1/graduate/skills` | Graduate | Add skill |

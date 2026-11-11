@@ -166,7 +166,18 @@ export interface DbCohort {
   status: CohortStatus;
   createdAt: string;
 }
-export type DbAssessment = Omit<AdminAssessment, "_count">;
+export type DbAssessment = Omit<AdminAssessment, "_count" | "questions"> & {
+  questions: Array<AdminAssessment["questions"][number] & { archivedAt?: string | null }>;
+};
+export interface DbTestVideo {
+  id: string;
+  assessmentId: string;
+  title: string;
+  description: string | null;
+  youtubeId: string | null;
+  order: number;
+  createdAt: string;
+}
 export interface DbAttempt {
   id: string;
   assessmentId: string;
@@ -320,6 +331,9 @@ export const db = {
   courses: [] as AdminCourse[],
   lessonProgress: new Map<string, string>(), // `${graduateId}:${lessonId}` → completedAt
   assessments: [] as DbAssessment[],
+  /** SIIP test videos, and who has marked each one watched (`${videoId}:${graduateId}` → when). */
+  videos: [] as DbTestVideo[],
+  videoWatches: new Map<string, string>(),
   attempts: [] as DbAttempt[],
   retakeGrants: new Map<string, number>(), // `${assessmentId}:${graduateId}` → extra attempts
   companies: [] as DbCompany[],
@@ -634,6 +648,65 @@ function seedCourses() {
   );
 }
 
+/** The SIIP test, as the siip_test_content migration creates it: placeholder videos, conduct questions. */
+function seedSiipTest() {
+  const videos: Array<[string, string]> = [
+    ["Welcome to SIIP", "A short welcome from our founder on what companies expect from SIIP interns."],
+    ["Behaviour and courtesy at work", "How to treat colleagues, customers and shared spaces with respect."],
+    ["Communicating at work", "Clear updates, asking for help, and writing messages your team can act on."],
+    ["Punctuality and meeting deadlines", "Arriving on time, planning your work, and what to do when you will miss a deadline."],
+  ];
+  videos.forEach(([title, description], i) =>
+    db.videos.push({
+      id: `siip_video_${i + 1}`,
+      assessmentId: "siip_test",
+      title,
+      description,
+      youtubeId: null,
+      order: i + 1,
+      createdAt: iso(-30),
+    }),
+  );
+  const q = (n: number, video: number, prompt: string, right: string, ...wrong: string[]) => ({
+    id: `siip_q${n}`,
+    type: "SINGLE_CHOICE" as const,
+    prompt,
+    points: 1,
+    order: n,
+    acceptedAnswers: [],
+    videoId: `siip_video_${video}`,
+    archivedAt: null,
+    options: [right, ...wrong].map((text, i) => ({ id: `siip_q${n}_${i}`, text, isCorrect: i === 0, order: i })),
+  });
+  db.assessments.push({
+    id: "siip_test",
+    cohortId: null,
+    type: "SIIP",
+    title: "The SIIP test",
+    description: "Watch the short videos on working well with others, then answer questions about them.",
+    timeLimitMinutes: 20,
+    passMark: 70,
+    maxAttempts: 100,
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    published: true,
+    retakeAfterHours: 24,
+    unlockAfterWeeks: 8,
+    minCheckInRating: 3,
+    createdAt: iso(-30),
+    questions: [
+      q(1, 2, "Your supervisor gives you feedback you disagree with. What is the best first step?", "Listen, ask questions to understand it, and agree on next steps", "Ignore it and carry on as before", "Complain about it to other interns", "Argue until your supervisor changes their mind"),
+      q(2, 2, "A customer is rude to you on the phone. What should you do?", "Stay calm and polite, and pass it to your supervisor if it continues", "Be rude back so they stop", "Hang up without saying anything", "Post about the call on social media"),
+      q(3, 3, "You are stuck on a task and the deadline is tomorrow. When should you tell your supervisor?", "As soon as you know you are stuck, with what you have tried", "After the deadline has passed", "Only if they ask you", "Never; it is better to hand in nothing"),
+      q(4, 3, "Which update is most useful to send your team at the end of the day?", "What you finished, what is next, and anything blocking you", '"Busy day, see you tomorrow"', "A list of everything that went wrong, without next steps", "No update; the team can ask if they need to know"),
+      q(5, 4, "You will be 20 minutes late for a 9am meeting. What should you do?", "Tell the organiser before 9am and say when you will arrive", "Arrive late and say nothing", "Skip the meeting without telling anyone", "Send a message after the meeting ends"),
+      q(6, 4, "You have three tasks due this week. What is the best way to plan them?", "List them by deadline and importance, and check the plan with your supervisor", "Start whichever looks most fun", "Wait until the day before and do them all at once", "Work on all three at the same time without a plan"),
+      q(7, 2, "A colleague shares a file with customer details by mistake. What should you do?", "Tell them privately so they can remove it, and do not share it further", "Download a copy in case it is useful later", "Forward it to your friends", "Ignore it"),
+      q(8, 1, "What do companies on SIIP most expect from an intern?", "Reliability, good communication and the skills you were verified for", "Knowing everything already, with no need for guidance", "Working alone without updating anyone", "Doing only the tasks you enjoy"),
+    ],
+  });
+}
+
 function seedAssessments() {
   const opt = (text: string, isCorrect = false, order = 0) => ({ id: newId("opt"), text, isCorrect, order });
   const q = (
@@ -663,7 +736,11 @@ function seedAssessments() {
       maxAttempts: 1,
       shuffleQuestions: true,
       shuffleOptions: true,
-      published: true,
+      // Retired: the SIIP test (workplace conduct) replaces subject tests.
+      published: false,
+      retakeAfterHours: 24,
+      unlockAfterWeeks: 8,
+      minCheckInRating: 3,
       createdAt: iso(-140),
       questions: [
         q(
@@ -719,7 +796,11 @@ function seedAssessments() {
       maxAttempts: 2,
       shuffleQuestions: true,
       shuffleOptions: true,
-      published: true,
+      // Retired: the SIIP test (workplace conduct) replaces subject tests.
+      published: false,
+      retakeAfterHours: 24,
+      unlockAfterWeeks: 8,
+      minCheckInRating: 3,
       createdAt: iso(-60),
       questions: [
         q("SINGLE_CHOICE", "What should the first line of a work email do?", [
@@ -1282,6 +1363,7 @@ function seed() {
   seedCohorts();
   seedCourses();
   seedAssessments();
+  seedSiipTest();
   seedCompanies(admin.id);
   seedOpenings();
   const firstOf = seedJourney(admin.id);

@@ -21,7 +21,7 @@ export function listAssessments(query: In<typeof assessmentListQuery>) {
       ...(query.cohortId ? { cohortId: query.cohortId } : {}),
       ...(query.type ? { type: query.type } : {}),
     },
-    include: { _count: { select: { questions: true, attempts: true } } },
+    include: { _count: { select: { questions: { where: { archivedAt: null } }, attempts: true } } },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
 }
@@ -32,6 +32,8 @@ export async function getAssessmentForAdmin(id: string) {
     where: { id },
     include: {
       questions: {
+        // Retired versions are kept for past attempts but aren't part of the test any more.
+        where: { archivedAt: null },
         orderBy: [{ order: "asc" }, { id: "asc" }],
         include: { options: { orderBy: [{ order: "asc" }, { id: "asc" }] } },
       },
@@ -40,6 +42,21 @@ export async function getAssessmentForAdmin(id: string) {
   });
   if (!assessment) throw errors.notFound("Assessment");
   return assessment;
+}
+
+/** The SIIP test stays editable after attempts: changes apply to new attempts only. */
+async function isSiip(tx: Tx, assessmentId: string) {
+  const a = await tx.assessment.findUnique({ where: { id: assessmentId }, select: { type: true } });
+  return a?.type === "SIIP";
+}
+
+/** A question someone has been given (in an attempt's layout or with an answer) is kept for the record. */
+async function questionInUse(tx: Tx, questionId: string, assessmentId: string) {
+  if (await tx.attemptAnswer.findFirst({ where: { questionId }, select: { id: true } })) return true;
+  const rows = await tx.$queryRaw<Array<{ n: number }>>`
+    SELECT count(*)::int AS n FROM "Attempt"
+    WHERE "assessmentId" = ${assessmentId} AND "layout"::text LIKE ${"%" + questionId + "%"}`;
+  return (rows[0]?.n ?? 0) > 0;
 }
 
 /** Once anyone has attempted, the answer key is frozen so scores stay comparable. */
@@ -79,7 +96,10 @@ export async function updateAssessment(
     const before = await tx.assessment.findUnique({ where: { id } });
     if (!before) throw errors.notFound("Assessment");
     // Scoring rules are part of the answer key; settings like the title can still change.
-    if (input.passMark !== undefined && input.passMark !== before.passMark) await assertNoAttempts(tx, id);
+    // The SIIP pass mark can change any time (it applies to attempts finished from now on).
+    if (input.passMark !== undefined && input.passMark !== before.passMark && before.type !== "SIIP") {
+      await assertNoAttempts(tx, id);
+    }
     if (input.type !== undefined && input.type !== before.type) await assertNoAttempts(tx, id);
     if (input.published) await assertPublishable(tx, id);
 
@@ -105,6 +125,11 @@ export async function deleteAssessment(actor: AuditActor, id: string) {
   });
 }
 
+async function assertVideoOf(tx: Tx, assessmentId: string, videoId: string) {
+  const video = await tx.testVideo.findFirst({ where: { id: videoId, assessmentId }, select: { id: true } });
+  if (!video) throw errors.badRequest("That video isn't part of this test");
+}
+
 function questionData(input: QuestionInput) {
   return {
     type: input.type,
@@ -112,6 +137,7 @@ function questionData(input: QuestionInput) {
     points: input.points,
     ...(input.order !== undefined ? { order: input.order } : {}),
     acceptedAnswers: input.acceptedAnswers,
+    ...(input.videoId !== undefined ? { videoId: input.videoId ?? null } : {}),
   };
 }
 
@@ -122,7 +148,8 @@ export async function addQuestion(actor: AuditActor, assessmentId: string, input
   return db.$transaction(async (tx) => {
     const exists = await tx.assessment.findUnique({ where: { id: assessmentId }, select: { id: true } });
     if (!exists) throw errors.notFound("Assessment");
-    await assertNoAttempts(tx, assessmentId);
+    if (!(await isSiip(tx, assessmentId))) await assertNoAttempts(tx, assessmentId);
+    if (input.videoId) await assertVideoOf(tx, assessmentId, input.videoId);
     const question = await tx.question.create({
       data: { ...questionData(input), assessmentId, options: { create: optionRows(input) } },
       include: { options: true },
@@ -145,7 +172,35 @@ export async function replaceQuestion(actor: AuditActor, questionId: string, inp
       select: { assessmentId: true },
     });
     if (!current) throw errors.notFound("Question");
-    await assertNoAttempts(tx, current.assessmentId);
+    if (input.videoId) await assertVideoOf(tx, current.assessmentId, input.videoId);
+    if (await isSiip(tx, current.assessmentId)) {
+      if (await questionInUse(tx, questionId, current.assessmentId)) {
+        // Retire the old version (past attempts keep it) and add the new one in its place.
+        const old = await tx.question.update({
+          where: { id: questionId },
+          data: { archivedAt: new Date() },
+          select: { order: true },
+        });
+        const replacement = await tx.question.create({
+          data: {
+            ...questionData({ ...input, order: input.order ?? old.order }),
+            assessmentId: current.assessmentId,
+            options: { create: optionRows(input) },
+          },
+          include: { options: true },
+        });
+        await recordAudit(tx, {
+          actor,
+          action: "question.replaced",
+          entityType: "Question",
+          entityId: replacement.id,
+          metadata: { replaces: questionId, assessmentId: current.assessmentId },
+        });
+        return replacement;
+      }
+    } else {
+      await assertNoAttempts(tx, current.assessmentId);
+    }
     await tx.option.deleteMany({ where: { questionId } });
     const question = await tx.question.update({
       where: { id: questionId },
@@ -169,7 +224,16 @@ export async function deleteQuestion(actor: AuditActor, questionId: string) {
       select: { assessmentId: true },
     });
     if (!current) throw errors.notFound("Question");
-    await assertNoAttempts(tx, current.assessmentId);
+    if (await isSiip(tx, current.assessmentId)) {
+      if (await questionInUse(tx, questionId, current.assessmentId)) {
+        // Kept for past attempts; left out of new ones.
+        await tx.question.update({ where: { id: questionId }, data: { archivedAt: new Date() } });
+        await recordAudit(tx, { actor, action: "question.retired", entityType: "Question", entityId: questionId });
+        return;
+      }
+    } else {
+      await assertNoAttempts(tx, current.assessmentId);
+    }
     await tx.question.delete({ where: { id: questionId } });
     await recordAudit(tx, {
       actor,

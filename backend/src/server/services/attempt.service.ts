@@ -7,6 +7,7 @@ import { errors } from "@/server/lib/errors";
 import type { AnswerInput } from "@/server/validators/assessment";
 import { sendApplicationEmail, transitionApplication, type ApplicationChange } from "./application.service";
 import { findCurrentApplication } from "./enrolment";
+import { siipGate } from "./siip-test.service";
 
 /** Allowance for network latency on the last save/submit. The deadline itself is not extended. */
 const GRACE_MS = 30_000;
@@ -15,6 +16,8 @@ const GRACE_MS = 30_000;
 const ELIGIBLE: Record<AssessmentType, ApplicationStatus[]> = {
   SCREENING: ["SUBMITTED", "SCREENING"],
   FINAL: ["FINAL_ASSESSMENT"],
+  // The SIIP test isn't tied to an application stage: see siipGate.
+  SIIP: [],
 };
 
 interface LayoutItem {
@@ -31,7 +34,8 @@ export async function listMyAssessments(graduateId: string) {
   const app = await findCurrentApplication(graduateId);
   if (!app) return [];
   const assessments = await db.assessment.findMany({
-    where: { published: true, OR: [{ cohortId: app.cohortId }, { cohortId: null }] },
+    // The SIIP test has its own page and rules (siip-test.service).
+    where: { published: true, type: { not: "SIIP" }, OR: [{ cohortId: app.cohortId }, { cohortId: null }] },
     select: {
       id: true,
       type: true,
@@ -79,16 +83,25 @@ export async function listMyAssessments(graduateId: string) {
 export async function startAttempt(graduateId: string, assessmentId: string) {
   const followUps: FinalizeOutcome[] = [];
   const attemptId = await db.$transaction(async (tx) => {
-    const app = await findCurrentApplication(graduateId, tx);
     const assessment = await tx.assessment.findFirst({
       where: { id: assessmentId, published: true },
-      include: { questions: { orderBy: [{ order: "asc" }, { id: "asc" }], include: { options: true } } },
+      include: {
+        // Retired question versions stay for past attempts but never enter new ones.
+        questions: {
+          where: { archivedAt: null },
+          orderBy: [{ order: "asc" }, { id: "asc" }],
+          include: { options: true },
+        },
+      },
     });
-    if (!assessment || !app || (assessment.cohortId && assessment.cohortId !== app.cohortId)) {
-      throw errors.notFound("Assessment");
-    }
-    if (!ELIGIBLE[assessment.type].includes(app.status)) {
-      throw errors.forbidden("This assessment is not available at your current stage");
+    if (!assessment) throw errors.notFound("Assessment");
+    const isSiip = assessment.type === "SIIP";
+    if (!isSiip) {
+      const app = await findCurrentApplication(graduateId, tx);
+      if (!app || (assessment.cohortId && assessment.cohortId !== app.cohortId)) throw errors.notFound("Assessment");
+      if (!ELIGIBLE[assessment.type].includes(app.status)) {
+        throw errors.forbidden("This assessment is not available at your current stage");
+      }
     }
 
     const open = await tx.attempt.findFirst({ where: { assessmentId, graduateId, status: "IN_PROGRESS" } });
@@ -98,12 +111,20 @@ export async function startAttempt(graduateId: string, assessmentId: string) {
       if (outcome) followUps.push(outcome);
     }
 
+    if (isSiip) {
+      // Internship time, supervisor review, videos watched and the retake wait.
+      const gate = await siipGate(tx, graduateId, assessment);
+      if (gate.state === "PASSED") throw errors.conflict("You have already passed this assessment");
+      if (gate.state !== "READY") throw errors.forbidden(gate.message);
+    }
+
     const [previous, grant] = await Promise.all([
       tx.attempt.findMany({ where: { assessmentId, graduateId }, select: { passed: true } }),
       tx.retakeGrant.findUnique({ where: { assessmentId_graduateId: { assessmentId, graduateId } } }),
     ]);
     if (previous.some((p) => p.passed)) throw errors.conflict("You have already passed this assessment");
-    if (previous.length >= assessment.maxAttempts + (grant?.extraAttempts ?? 0)) {
+    // The SIIP test has no attempt limit, only the wait between attempts.
+    if (!isSiip && previous.length >= assessment.maxAttempts + (grant?.extraAttempts ?? 0)) {
       throw errors.conflict("You have no attempts left for this assessment");
     }
     if (assessment.questions.length === 0) throw errors.badRequest("This assessment has no questions yet");

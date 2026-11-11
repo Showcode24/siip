@@ -3,7 +3,9 @@ import type { z } from "zod";
 import type {
   createAssessmentSchema,
   questionSchema,
+  testVideoSchema,
   updateAssessmentSchema,
+  updateTestVideoSchema,
   AnswerInput,
 } from "@siip/shared/validators/assessment";
 import type {
@@ -23,11 +25,15 @@ import type {
   AttemptView,
   Lesson,
   MyAssessment,
+  MySiipTest,
   MyTraining,
   Progress,
+  SiipTestAdmin,
+  SiipVideo,
 } from "./types";
 
 const m = () => import("../mocks/learning");
+const ms = () => import("../mocks/siip");
 
 export const trainingApi = {
   getMyTraining: () =>
@@ -197,5 +203,48 @@ export const assessmentApi = {
     call(
       () => post<{ extraAttempts: number }>(`/admin/assessments/${id}/retakes`, { graduateId, reason }),
       async () => (await m()).grantRetake(id, graduateId),
+    ),
+};
+
+/** The SIIP test: videos, then a workplace-conduct quiz. */
+export const siipTestApi = {
+  getMine: () =>
+    call(
+      () => get<MySiipTest | null>("/graduate/siip-test"),
+      async () => (await ms()).getMySiipTest(),
+      { read: true },
+    ),
+  markWatched: (videoId: string) =>
+    call(
+      () => post<MySiipTest>(`/graduate/siip-test/videos/${videoId}/watched`),
+      async () => (await ms()).markVideoWatched(videoId)!,
+    ),
+
+  // Admin
+  getAdmin: () =>
+    call(
+      () => get<SiipTestAdmin>("/admin/siip-test"),
+      async () => (await ms()).getSiipTestAdmin(),
+      { read: true },
+    ),
+  createVideo: (input: z.input<typeof testVideoSchema>) =>
+    call(
+      () => post<SiipVideo>("/admin/siip-test/videos", input),
+      async () => (await ms()).createVideo(input),
+    ),
+  updateVideo: (id: string, input: z.input<typeof updateTestVideoSchema>) =>
+    call(
+      () => patch<SiipVideo>(`/admin/siip-test/videos/${id}`, input),
+      async () => (await ms()).updateVideo(id, input),
+    ),
+  deleteVideo: (id: string) =>
+    call(
+      () => del<{ deleted: true }>(`/admin/siip-test/videos/${id}`),
+      async () => (await ms()).deleteVideo(id),
+    ),
+  reorderVideos: (ids: string[]) =>
+    call(
+      () => post<SiipVideo[]>("/admin/siip-test/videos/reorder", { ids }),
+      async () => (await ms()).reorderVideos(ids),
     ),
 };

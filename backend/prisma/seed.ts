@@ -173,7 +173,8 @@ async function seedAssessments(cohortId: string) {
       timeLimitMinutes: 15,
       passMark: 60,
       maxAttempts: 1,
-      published: true,
+      // Retired: the SIIP test (workplace conduct) replaces subject tests.
+      published: false,
       questions: {
         create: [
           {
@@ -234,7 +235,8 @@ async function seedAssessments(cohortId: string) {
       timeLimitMinutes: 30,
       passMark: 65,
       maxAttempts: 2,
-      published: true,
+      // Retired: the SIIP test (workplace conduct) replaces subject tests.
+      published: false,
       questions: {
         create: [
           {

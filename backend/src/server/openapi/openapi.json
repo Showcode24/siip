@@ -889,7 +889,8 @@
               "type": "string",
               "enum": [
                 "SCREENING",
-                "FINAL"
+                "FINAL",
+                "SIIP"
               ]
             }
           }
@@ -953,7 +954,8 @@
                     "type": "string",
                     "enum": [
                       "SCREENING",
-                      "FINAL"
+                      "FINAL",
+                      "SIIP"
                     ]
                   },
                   "title": {
@@ -995,6 +997,21 @@
                   },
                   "published": {
                     "type": "boolean"
+                  },
+                  "retakeAfterHours": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 720
+                  },
+                  "unlockAfterWeeks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 52
+                  },
+                  "minCheckInRating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
                   }
                 },
                 "required": [
@@ -1124,7 +1141,8 @@
                     "type": "string",
                     "enum": [
                       "SCREENING",
-                      "FINAL"
+                      "FINAL",
+                      "SIIP"
                     ]
                   },
                   "title": {
@@ -1166,6 +1184,21 @@
                   },
                   "published": {
                     "type": "boolean"
+                  },
+                  "retakeAfterHours": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 720
+                  },
+                  "unlockAfterWeeks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 52
+                  },
+                  "minCheckInRating": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
                   }
                 },
                 "additionalProperties": false
@@ -1418,6 +1451,18 @@
                       "minLength": 1,
                       "maxLength": 500
                     }
+                  },
+                  "videoId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 },
                 "required": [
@@ -4566,6 +4611,18 @@
                       "minLength": 1,
                       "maxLength": 500
                     }
+                  },
+                  "videoId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 },
                 "required": [
@@ -4986,6 +5043,310 @@
                     ],
                     "additionalProperties": false
                   }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/siip-test": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get siip test for admin",
+        "description": "Access: Admin.",
+        "x-roles": "ADMIN",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/siip-test/videos": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create video",
+        "description": "Access: Admin.",
+        "x-roles": "ADMIN",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "youtubeUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "title"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/siip-test/videos/{id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Update video",
+        "description": "Access: Admin.",
+        "x-roles": "ADMIN",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 160
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "maxLength": 500
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "youtubeUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Delete video",
+        "description": "Access: Admin.",
+        "x-roles": "ADMIN",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/siip-test/videos/reorder": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Reorder videos",
+        "description": "Access: Admin.",
+        "x-roles": "ADMIN",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "minItems": 1,
+                    "maxItems": 30,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    }
+                  }
+                },
+                "required": [
+                  "ids"
                 ]
               }
             }
@@ -10288,6 +10649,90 @@
         "security": [
           {
             "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/siip-test": {
+      "get": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Get my siip test",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/graduate/siip-test/videos/{id}/watched": {
+      "post": {
+        "tags": [
+          "graduate"
+        ],
+        "summary": "Mark video watched",
+        "description": "Access: Graduate.",
+        "x-roles": "GRADUATE",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {

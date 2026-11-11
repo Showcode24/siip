@@ -28,6 +28,9 @@ const openingSelect = {
   city: true,
   state: true,
   location: true,
+  durationWeeks: true,
+  startDate: true,
+  mayLeadToFullTime: true,
   workMode: true,
   schedule: true,
   openToNysc: true,
@@ -82,6 +85,7 @@ export async function createOpening(ctx: CompanyContext, input: CreateOpeningInp
     const opening = await tx.internshipOpening.create({
       data: {
         ...fields,
+        startDate: new Date(fields.startDate),
         companyId: ctx.companyId,
         createdById: ctx.user.id,
         status: "DRAFT",
@@ -117,6 +121,7 @@ export async function updateOpening(ctx: CompanyContext, openingId: string, inpu
       where: { id: openingId },
       data: {
         ...fields,
+        ...(fields.startDate ? { startDate: new Date(fields.startDate) } : {}),
         country: place.country,
         city: place.city,
         state: place.state,

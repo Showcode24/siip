@@ -126,12 +126,24 @@ const openingFields = z.object({
   workMode: z.enum(WorkMode),
   schedule: z.enum(WorkSchedule),
   openToNysc: z.boolean().default(true),
+  durationWeeks: z
+    .number({ message: "Enter the length in weeks" })
+    .int("Use whole weeks")
+    .min(1, "At least 1 week")
+    .max(52, "At most 52 weeks"),
+  startDate: z.iso.date({ message: "Choose a start date" }),
+  mayLeadToFullTime: z.boolean().default(false),
+  // Each skill has its own level ("Any level" = no minimum). Required skills are
+  // hard rules for matching; optional ones only help ranking.
   skills: z
     .array(openingSkill)
-    .min(1, "Add at least one required skill")
+    .min(1, "Add at least one skill")
     .max(15)
-    .refine((s) => new Set(s.map((x) => x.skillId)).size === s.length, "Each skill can only be listed once"),
+    .refine((s) => new Set(s.map((x) => x.skillId)).size === s.length, "Each skill can only be listed once")
+    .refine((s) => s.some((x) => x.required !== false), "Mark at least one skill as required"),
 });
+
+const today = () => new Date().toISOString().slice(0, 10);
 
 export interface OpeningPlace {
   workMode?: string | null;
@@ -160,9 +172,20 @@ export const createOpeningSchema = openingFields
   .strict()
   .superRefine((o, ctx) => {
     for (const p of openingPlaceProblems(o)) ctx.addIssue({ code: "custom", path: [p.path], message: p.message });
+    if (o.startDate < today()) {
+      ctx.addIssue({ code: "custom", path: ["startDate"], message: "The start date can't be in the past" });
+    }
   })
   .transform((o) => normaliseOpeningPlace(o));
 export type CreateOpeningInput = z.infer<typeof createOpeningSchema>;
+
+/** Editing a whole opening in a form: same rules as creating, except a start date that has passed. */
+export const editOpeningFormSchema = openingFields
+  .strict()
+  .superRefine((o, ctx) => {
+    for (const p of openingPlaceProblems(o)) ctx.addIssue({ code: "custom", path: [p.path], message: p.message });
+  })
+  .transform((o) => normaliseOpeningPlace(o));
 
 export const updateOpeningSchema = openingFields.partial().strict();
 export type UpdateOpeningInput = z.infer<typeof updateOpeningSchema>;

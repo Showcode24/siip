@@ -12,7 +12,7 @@ import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, PageHeader, StatusPill } from "@/components/ui/display";
 import { ConfirmDialog } from "@/components/ui/overlays";
-import { OPENING_STATUS } from "@/lib/labels";
+import { OPENING_STATUS, requestTiming } from "@/lib/labels";
 
 export default function OpeningDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +44,12 @@ export default function OpeningDetailPage() {
           <PageHeader
             breadcrumbs={[{ label: "Openings", href: "/company/openings" }, { label: o.title }]}
             title={o.title}
-            description={`${o._count.placements} of ${o.slots} filled, ${o._count.matches} candidates proposed so far`}
+            description={[
+              requestTiming(o),
+              `${o._count.placements} of ${o.slots} filled, ${o._count.matches} candidates proposed so far`,
+            ]
+              .filter(Boolean)
+              .join(". ")}
             actions={
               <>
                 <StatusPill map={OPENING_STATUS} value={o.status} />

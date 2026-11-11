@@ -10,7 +10,7 @@ import { POST as reject } from "../../app/api/v1/company/matches/[id]/reject/rou
 import { GET as getMatch } from "../../app/api/v1/company/matches/[id]/route";
 import { GET as listMatches } from "../../app/api/v1/company/matches/route";
 import { GET as myPlacement } from "../../app/api/v1/graduate/placement/route";
-import type { NyscStatus } from "@/generated/prisma/enums";
+import type { NyscStatus, SkillLevel } from "@/generated/prisma/enums";
 import { db } from "@/server/db";
 import { completeProfile, createOpenCohort, createUser, ensureSkill, type TestUser } from "./factories";
 import { call } from "./helpers";
@@ -45,7 +45,13 @@ async function verifiedCompany(user: TestUser, name: string) {
   });
 }
 
-async function qualifiedGraduate(key: string, state: string, nysc: NyscStatus, withSkill: boolean, approved = true) {
+async function qualifiedGraduate(
+  key: string,
+  state: string,
+  nysc: NyscStatus,
+  verifiedAt: SkillLevel,
+  approved = true,
+) {
   const user = await createUser("GRADUATE", key);
   const graduateId = await completeProfile(user, state);
   await db.graduateProfile.update({
@@ -53,9 +59,7 @@ async function qualifiedGraduate(key: string, state: string, nysc: NyscStatus, w
     data: {
       nyscStatus: nysc,
       reviewStatus: approved ? "APPROVED" : "SUBMITTED",
-      ...(withSkill
-        ? { skills: { create: { skillId, level: "ADVANCED", status: "VERIFIED", verifiedLevel: "ADVANCED" } } }
-        : {}),
+      skills: { create: { skillId, level: verifiedAt, status: "VERIFIED", verifiedLevel: verifiedAt } },
     },
   });
   const app = await db.application.create({ data: { graduateId, cohortId, status: "QUALIFIED" } });
@@ -79,8 +83,11 @@ beforeAll(async () => {
       title: "Content Intern",
       description: "Create content for our brands every week.",
       slots: 1,
+      country: "NG",
+      city: "Lagos",
       state: "Lagos",
-      workMode: "ONSITE",
+      // Hybrid: interns elsewhere in Nigeria can apply but rank lower.
+      workMode: "HYBRID",
       schedule: "FULL_TIME",
       openToNysc: false,
       status: "OPEN",
@@ -89,12 +96,14 @@ beforeAll(async () => {
     },
   });
   openingId = opening.id;
-  await qualifiedGraduate("best", "Lagos", "COMPLETED", true);
-  await qualifiedGraduate("weak", "Kano", "COMPLETED", false);
-  await qualifiedGraduate("spare", "Lagos", "EXEMPTED", false);
-  await qualifiedGraduate("corper", "Lagos", "SERVING", true);
+  await qualifiedGraduate("best", "Lagos", "COMPLETED", "ADVANCED");
+  await qualifiedGraduate("weak", "Kano", "COMPLETED", "INTERMEDIATE");
+  await qualifiedGraduate("spare", "Lagos", "EXEMPTED", "INTERMEDIATE");
+  await qualifiedGraduate("corper", "Lagos", "SERVING", "ADVANCED");
+  // Verified, but below the Intermediate the company asked for.
+  await qualifiedGraduate("beginner", "Lagos", "COMPLETED", "BEGINNER");
   // Verified skill, but SIIP hasn't approved the profile yet.
-  await qualifiedGraduate("unreviewed", "Lagos", "COMPLETED", true, false);
+  await qualifiedGraduate("unreviewed", "Lagos", "COMPLETED", "ADVANCED", false);
 });
 
 describe("matching", () => {
@@ -111,6 +120,8 @@ describe("matching", () => {
     expect(ranked).not.toContain(apps.corper.applicationId);
     // Interns SIIP hasn't approved never reach companies.
     expect(ranked).not.toContain(apps.unreviewed.applicationId);
+    // A lower verified level than the company asked for is never sent.
+    expect(ranked).not.toContain(apps.beginner.applicationId);
     expect(json.data.suggestions[0].breakdown.skills).toMatchObject({ weight: 40, fit: 1 });
     expect(JSON.stringify(json)).not.toContain("+234");
 
@@ -142,6 +153,12 @@ describe("matching", () => {
       body: { openingId, applicationId: apps.unreviewed.applicationId },
     });
     expect(unapproved.res.status).toBe(409);
+    const belowLevel = await call(propose, {
+      cookie: admin.cookie,
+      body: { openingId, applicationId: apps.beginner.applicationId },
+    });
+    expect(belowLevel.res.status).toBe(400);
+    expect(belowLevel.json.error.message).toContain("needs Intermediate or above");
     const ineligible = await call(propose, {
       cookie: admin.cookie,
       body: { openingId, applicationId: apps.corper.applicationId },

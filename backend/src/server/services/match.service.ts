@@ -92,13 +92,14 @@ async function loadOpeningForMatching(client: Tx | typeof db, openingId: string)
   const opening = await client.internshipOpening.findUnique({
     where: { id: openingId },
     include: {
-      skills: { select: { skillId: true, minLevel: true, required: true } },
+      skills: { select: { skillId: true, minLevel: true, required: true, skill: { select: { name: true } } } },
       company: { select: { id: true, name: true, verificationStatus: true } },
       _count: { select: { placements: { where: FILLS_SLOT } } },
     },
   });
   if (!opening) throw errors.notFound("Opening");
-  return opening;
+  // Skill names let the hard rules say which skill an intern is missing.
+  return { ...opening, skills: opening.skills.map(({ skill, ...s }) => ({ ...s, name: skill.name })) };
 }
 
 function assertOpeningAcceptsMatches(opening: Awaited<ReturnType<typeof loadOpeningForMatching>>) {
@@ -139,6 +140,14 @@ export async function getSuggestions(openingId: string, limit: number) {
       slots: opening.slots,
       filled: opening._count.placements,
       status: opening.status,
+      workMode: opening.workMode,
+      country: opening.country,
+      city: opening.city,
+      state: opening.state,
+      durationWeeks: opening.durationWeeks,
+      startDate: opening.startDate,
+      mayLeadToFullTime: opening.mayLeadToFullTime,
+      skills: opening.skills.map((s) => ({ name: s.name, minLevel: s.minLevel, required: s.required })),
     },
     suggestions: ranked.map(({ app, score }) => ({
       applicationId: app.id,
@@ -388,7 +397,7 @@ const startOfToday = () => {
   return d;
 };
 
-/** Accepting creates the placement (3 months by default) in the same transaction. */
+/** Accepting creates the placement (for the requested duration) in the same transaction. */
 export async function acceptMatch(
   ctx: CompanyContext,
   matchId: string,
@@ -428,9 +437,10 @@ export async function acceptMatch(
     });
     if (!supervisor) throw errors.badRequest("The supervisor must be a member of your company");
 
-    const cohortStart = match.opening.cohort?.internshipStartsAt;
+    // The company's requested start date (or the cohort's), unless it has passed.
+    const requestedStart = opening.startDate ?? match.opening.cohort?.internshipStartsAt;
     const startDate =
-      input.startDate ?? (cohortStart && cohortStart > new Date() ? cohortStart : startOfToday());
+      input.startDate ?? (requestedStart && requestedStart > new Date() ? requestedStart : startOfToday());
     if (startDate < startOfToday()) throw errors.badRequest("The start date cannot be in the past");
 
     const { count } = await tx.match.updateMany({
@@ -448,7 +458,10 @@ export async function acceptMatch(
         companyId: ctx.companyId,
         supervisorId: supervisor.id,
         startDate,
-        endDate: addMonths(startDate, 3),
+        // As long as the company asked for; three months for older openings without a duration.
+        endDate: opening.durationWeeks
+          ? new Date(startDate.getTime() + opening.durationWeeks * 7 * 24 * 60 * 60 * 1000)
+          : addMonths(startDate, 3),
       },
     });
     const changes = [

@@ -714,6 +714,10 @@ model InternshipOpening {
   workMode             WorkMode
   schedule             WorkSchedule
   openToNysc           Boolean       @default(true)
+  // From the company's request: how long, from when, and whether it could become a job.
+  durationWeeks        Int?
+  startDate            DateTime?
+  mayLeadToFullTime    Boolean       @default(false)
   status               OpeningStatus @default(DRAFT)
   createdById          String
   createdAt            DateTime      @default(now())

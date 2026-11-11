@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SkillLevel, WorkSchedule } from "@siip/shared/enums";
 import { countryOptions } from "@siip/shared/countries";
 import { NIGERIAN_STATES } from "@siip/shared/nigeria";
-import { createOpeningSchema } from "@siip/shared/validators/company";
+import { createOpeningSchema, editOpeningFormSchema } from "@siip/shared/validators/company";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Star, X } from "lucide-react";
 import { useEffect } from "react";
@@ -218,6 +218,17 @@ const WORK_MODE_HINT = {
   HYBRID: "Some days at your office",
 } as const;
 
+/** Catalogue skills not yet chosen, grouped by area for the request form. */
+function groupByArea(all: Array<{ id: string; name: string; category: string | null }>, chosen: Set<string>) {
+  const map = new Map<string, Array<{ id: string; name: string }>>();
+  for (const s of all) {
+    if (chosen.has(s.id)) continue;
+    const area = s.category ?? "More skills";
+    map.set(area, [...(map.get(area) ?? []), s]);
+  }
+  return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
+}
+
 export type OpeningValues = z.input<typeof createOpeningSchema>;
 
 export function openingDefaults(o?: Opening): OpeningValues {
@@ -235,6 +246,9 @@ export function openingDefaults(o?: Opening): OpeningValues {
         workMode: o.workMode,
         schedule: o.schedule,
         openToNysc: o.openToNysc,
+        durationWeeks: o.durationWeeks ?? 12,
+        startDate: o.startDate ? o.startDate.slice(0, 10) : "",
+        mayLeadToFullTime: o.mayLeadToFullTime,
         skills: o.skills.map((s) => ({ skillId: s.skill.id, minLevel: s.minLevel, required: s.required })),
       }
     : {
@@ -250,6 +264,10 @@ export function openingDefaults(o?: Opening): OpeningValues {
         workMode: "ONSITE",
         schedule: "FULL_TIME",
         openToNysc: true,
+        durationWeeks: 12,
+        // Two weeks out gives time to match and accept.
+        startDate: new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10),
+        mayLeadToFullTime: false,
         skills: [],
       };
 }
@@ -274,7 +292,8 @@ export function OpeningForm({
     setValue,
     formState: { errors },
   } = useForm<OpeningValues>({
-    resolver: zodResolver(createOpeningSchema),
+    // Editing keeps a start date that has already passed; new requests must start today or later.
+    resolver: zodResolver(initial ? editOpeningFormSchema : createOpeningSchema),
     mode: "onTouched",
     defaultValues: openingDefaults(initial),
   });
@@ -308,14 +327,14 @@ export function OpeningForm({
           </Field>
         </div>
         <Field
-          label="Description"
-          hint="What will the intern do and learn? At least 20 characters."
+          label="Tasks the intern will do"
+          hint="A short description of the work. At least 20 characters."
           error={errors.description?.message}
           required
         >
           <Textarea rows={5} {...register("description")} />
         </Field>
-        <Field label="Number of interns" error={errors.slots?.message} required>
+        <Field label="Number of interns needed" error={errors.slots?.message} required>
           <Input
             type="number"
             min={1}
@@ -325,10 +344,27 @@ export function OpeningForm({
             {...register("slots", { valueAsNumber: true })}
           />
         </Field>
+        <label className="flex items-start gap-3 rounded-lg border border-border p-4">
+          <Checkbox
+            className="mt-0.5"
+            checked={watch("mayLeadToFullTime") ?? false}
+            onCheckedChange={(v) => setValue("mayLeadToFullTime", v === true, { shouldDirty: true })}
+          />
+          <span>
+            <span className="block font-semibold">This could lead to full-time employment</span>
+            <span className="block text-sm text-muted-foreground">Interns see this on the role.</span>
+          </span>
+        </label>
       </section>
 
       <section className="grid gap-4 border-t border-border pt-6">
-        <h2 className="text-lg">Skills needed</h2>
+        <div>
+          <h2 className="text-lg">Skills needed</h2>
+          <p className="mt-1 text-[15px] text-muted-foreground">
+            Pick the skills and the level you need for each. SIIP only matches interns whose skill is verified at
+            that level or above. Mark the ones you can&apos;t do without as required.
+          </p>
+        </div>
         {errors.skills?.message || errors.skills?.root?.message ? (
           <p role="alert" className="text-sm font-medium text-danger">
             {errors.skills.message ?? errors.skills.root?.message}
@@ -351,7 +387,7 @@ export function OpeningForm({
                 <option value="">Any level</option>
                 {Object.values(SkillLevel).map((l) => (
                   <option key={l} value={l}>
-                    {SKILL_LEVEL[l]} or above
+                    {l === "EXPERT" ? "Expert only" : `${SKILL_LEVEL[l]} or above`}
                   </option>
                 ))}
               </Select>
@@ -374,24 +410,49 @@ export function OpeningForm({
             </li>
           ))}
         </ul>
-        <div className="flex flex-wrap gap-2">
-          {skills.data
-            ?.filter((s) => !chosen.has(s.id))
-            .map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => append({ skillId: s.id, minLevel: null, required: true })}
-                className="flex h-10 items-center gap-1.5 rounded-full border border-border-strong px-4 text-sm font-medium hover:border-foreground"
-              >
-                <Plus className="size-4" /> {s.name}
-              </button>
-            ))}
+        <div className="grid gap-4">
+          {groupByArea(skills.data ?? [], chosen).map(([area, list]) => (
+            <div key={area}>
+              <p className="mb-2 text-sm font-semibold text-muted-foreground">{area}</p>
+              <div className="flex flex-wrap gap-2">
+                {list.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => append({ skillId: s.id, minLevel: null, required: true })}
+                    className="flex h-10 items-center gap-1.5 rounded-full border border-border-strong px-4 text-sm font-medium transition-colors duration-150 hover:border-foreground active:scale-[0.97]"
+                  >
+                    <Plus className="size-4" /> {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="grid gap-5 border-t border-border pt-6">
         <h2 className="text-lg">Where and when</h2>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Start date" error={errors.startDate?.message} required>
+            <Input type="date" min={initial ? undefined : new Date().toISOString().slice(0, 10)} {...register("startDate")} />
+          </Field>
+          <Field
+            label="Duration (weeks)"
+            hint="e.g. 12 weeks is about three months."
+            error={errors.durationWeeks?.message}
+            required
+          >
+            <Input
+              type="number"
+              min={1}
+              max={52}
+              inputMode="numeric"
+              className="max-w-40"
+              {...register("durationWeeks", { valueAsNumber: true })}
+            />
+          </Field>
+        </div>
         <fieldset className="grid gap-3">
           <legend className="mb-3 text-[15px] font-semibold">
             Where will the intern work? <span className="text-brand-text">*</span>

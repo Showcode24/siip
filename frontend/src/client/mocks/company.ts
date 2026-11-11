@@ -247,6 +247,9 @@ export function createOpening(input: z.input<typeof createOpeningSchema>) {
     workMode: v.workMode,
     schedule: v.schedule,
     openToNysc: v.openToNysc ?? true,
+    durationWeeks: v.durationWeeks,
+    startDate: new Date(v.startDate).toISOString(),
+    mayLeadToFullTime: v.mayLeadToFullTime ?? false,
     status: "DRAFT" as const,
     createdAt: isoNow(),
     updatedAt: isoNow(),
@@ -268,7 +271,13 @@ export function updateOpening(id: string, input: z.input<typeof updateOpeningSch
   const place = normaliseOpeningPlace({ ...o, ...rest });
   const problems = openingPlaceProblems(place);
   if (problems.length) throw new ApiError("VALIDATION_ERROR", problems[0].message, 422, problems);
-  Object.assign(o, rest, { country: place.country, city: place.city, state: place.state, updatedAt: isoNow() });
+  Object.assign(o, rest, {
+    ...(rest.startDate ? { startDate: new Date(rest.startDate).toISOString() } : {}),
+    country: place.country,
+    city: place.city,
+    state: place.state,
+    updatedAt: isoNow(),
+  });
   if (skills)
     o.skills = skills.map((s) => ({
       skillId: s.skillId,
@@ -341,9 +350,16 @@ export function acceptMatch(id: string, input: { startDate?: string; supervisorI
   const o = openingById(mt.openingId)!;
   const filled = db.placements.filter((p) => p.openingId === o.id && p.status !== "TERMINATED").length;
   if (filled >= o.slots) throw conflict("All slots for this opening are filled");
-  const start = input.startDate ? new Date(input.startDate) : new Date();
+  // The requested start date (if still ahead), for the requested number of weeks.
+  const requested = o.startDate ? new Date(o.startDate) : null;
+  const start = input.startDate
+    ? new Date(input.startDate)
+    : requested && requested > new Date()
+      ? requested
+      : new Date();
   const end = new Date(start);
-  end.setUTCMonth(end.getUTCMonth() + 3);
+  if (o.durationWeeks) end.setUTCDate(end.getUTCDate() + o.durationWeeks * 7);
+  else end.setUTCMonth(end.getUTCMonth() + 3);
   mt.status = "COMPANY_ACCEPTED";
   mt.decidedAt = isoNow();
   const app = db.applications.find((a) => a.id === mt.applicationId)!;

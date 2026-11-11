@@ -441,6 +441,9 @@ export interface Opening {
   workMode: WorkMode;
   schedule: WorkSchedule;
   openToNysc: boolean;
+  durationWeeks: number | null;
+  startDate: ISODate | null;
+  mayLeadToFullTime: boolean;
   status: OpeningStatus;
   createdAt: ISODate;
   updatedAt: ISODate;
@@ -495,6 +498,14 @@ export interface Suggestions {
     slots: number;
     filled: number;
     status: OpeningStatus;
+    workMode: WorkMode;
+    country: string | null;
+    city: string | null;
+    state: string | null;
+    durationWeeks: number | null;
+    startDate: ISODate | null;
+    mayLeadToFullTime: boolean;
+    skills: Array<{ name: string; minLevel: SkillLevel | null; required: boolean }>;
   };
   suggestions: Suggestion[];
 }

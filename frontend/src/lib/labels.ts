@@ -143,6 +143,24 @@ export const INTERN_TYPE: Record<InternType, { label: string; hint: string }> = 
   GRADUATE: { label: "Graduate", hint: "Finished your studies" },
 };
 
+/** "Any level", "Intermediate or above", "Expert only". */
+export function levelWanted(l: SkillLevel | null): string {
+  if (!l) return "Any level";
+  return l === "EXPERT" ? "Expert only" : `${SKILL_LEVEL[l]} or above`;
+}
+
+/** "12 weeks from 3 Dec 2026, could lead to full-time". */
+export function requestTiming(o: { durationWeeks: number | null; startDate: string | null; mayLeadToFullTime: boolean }): string {
+  const parts = [
+    o.durationWeeks ? `${o.durationWeeks} ${o.durationWeeks === 1 ? "week" : "weeks"}` : null,
+    o.startDate
+      ? `from ${new Date(o.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}`
+      : null,
+  ].filter(Boolean);
+  const when = parts.join(" ");
+  return o.mayLeadToFullTime ? [when, "could lead to full-time"].filter(Boolean).join(", ") : when;
+}
+
 /** "CAC RC1234567" for Nigerian companies, "Reg. no. 12345678" elsewhere. */
 export function companyRegistration(c: { rcNumber?: string | null; businessRegNumber?: string | null }): string {
   if (c.rcNumber) return `CAC ${c.rcNumber}`;

@@ -31,11 +31,27 @@ describe("scoreMatch", () => {
     expect(scoreMatch(ideal, opening).total).toBe(100);
   });
 
-  it("gives half credit for a skill below the requested level", () => {
+  it("never suggests an intern whose required skill is below the requested level", () => {
     const r = scoreMatch({ ...ideal, skills: [{ skillId: "social", level: "BEGINNER" }] }, opening);
-    // required: 0.5 of 1, optional missing: 0 of 0.5 => 0.5 / 1.5
-    expect(r.breakdown.skills.fit).toBeCloseTo(1 / 3);
-    expect(r.breakdown.skills.detail).toBe("1 of 2 skills");
+    expect(r.eligible).toBe(false);
+    expect(r.ineligibleReason).toContain("needs Intermediate or above");
+  });
+
+  it("gives no credit for an optional skill below the requested level", () => {
+    const withOptionalLevel: MatchOpening = {
+      ...opening,
+      skills: [
+        { skillId: "social", minLevel: "INTERMEDIATE", required: true },
+        { skillId: "video", minLevel: "ADVANCED", required: false },
+      ],
+    };
+    const r = scoreMatch(
+      { ...ideal, skills: [{ skillId: "social", level: "EXPERT" }, { skillId: "video", level: "BEGINNER" }] },
+      withOptionalLevel,
+    );
+    expect(r.eligible).toBe(true);
+    // required met: 1 of 1, optional below level: 0 of 0.5 => 1 / 1.5
+    expect(r.breakdown.skills.fit).toBeCloseTo(2 / 3);
   });
 
   it("scores location, schedule and discipline mismatches", () => {
@@ -94,5 +110,59 @@ describe("location across countries", () => {
 
   it("still matches Nigerian interns by state", () => {
     expect(loc({ country: "NG", city: "Ikeja", stateOfResidence: "Lagos" }, { ...opening, country: "NG", city: "Lagos" }).fit).toBe(1);
+  });
+});
+
+describe("strict levels (the company's requested level is a floor)", () => {
+  const wants = (minLevel: MatchOpening["skills"][number]["minLevel"]): MatchOpening => ({
+    ...opening,
+    workMode: "REMOTE",
+    skills: [{ skillId: "design", minLevel, required: true, name: "Graphic Design" }],
+  });
+  const has = (level: MatchCandidate["skills"][number]["level"]) => ({ ...ideal, skills: [{ skillId: "design", level }] });
+
+  it("sends only verified Experts to an Expert request", () => {
+    expect(scoreMatch(has("EXPERT"), wants("EXPERT")).eligible).toBe(true);
+    expect(scoreMatch(has("ADVANCED"), wants("EXPERT")).eligible).toBe(false);
+  });
+
+  it("sends Intermediate and above to an Intermediate request", () => {
+    expect(scoreMatch(has("BEGINNER"), wants("INTERMEDIATE")).eligible).toBe(false);
+    for (const l of ["INTERMEDIATE", "ADVANCED", "EXPERT"] as const) {
+      expect(scoreMatch(has(l), wants("INTERMEDIATE")).eligible).toBe(true);
+    }
+  });
+
+  it("takes any verified level for Beginner or Any level", () => {
+    expect(scoreMatch(has("BEGINNER"), wants("BEGINNER")).eligible).toBe(true);
+    expect(scoreMatch(has("BEGINNER"), wants(null)).eligible).toBe(true);
+  });
+
+  it("never sends someone without the skill verified", () => {
+    const r = scoreMatch({ ...ideal, skills: [] }, wants(null));
+    expect(r.eligible).toBe(false);
+    expect(r.ineligibleReason).toBe("No verified Graphic Design");
+  });
+});
+
+describe("location rules by work mode", () => {
+  const remote: MatchOpening = { ...opening, workMode: "REMOTE", country: "GB", city: "London", state: null };
+  const lagosIntern = { ...ideal, country: "NG", city: "Lagos", stateOfResidence: "Lagos" };
+
+  it("ignores location for remote roles", () => {
+    expect(scoreMatch(lagosIntern, remote).eligible).toBe(true);
+  });
+
+  it("requires on-site interns to live in the role's city", () => {
+    const onsite = { ...remote, workMode: "ONSITE" as const };
+    expect(scoreMatch(lagosIntern, onsite).ineligibleReason).toBe("Lives in another country");
+    expect(scoreMatch({ ...ideal, country: "GB", city: "Leeds", stateOfResidence: null }, onsite).eligible).toBe(false);
+    expect(scoreMatch({ ...ideal, country: "GB", city: "London", stateOfResidence: null }, onsite).eligible).toBe(true);
+  });
+
+  it("requires hybrid interns to be in the same country", () => {
+    const hybrid = { ...remote, workMode: "HYBRID" as const };
+    expect(scoreMatch(lagosIntern, hybrid).eligible).toBe(false);
+    expect(scoreMatch({ ...ideal, country: "GB", city: "Leeds", stateOfResidence: null }, hybrid).eligible).toBe(true);
   });
 });

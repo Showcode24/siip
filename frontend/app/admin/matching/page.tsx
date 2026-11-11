@@ -13,7 +13,7 @@ import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardBody, EmptyState, PageHeader, Skeleton } from "@/components/ui/display";
 import { Input, Select } from "@/components/ui/form-controls";
-import { AVAILABILITY, formatLocation, formatPlace } from "@/lib/labels";
+import { AVAILABILITY, formatLocation, formatPlace, levelWanted, requestTiming } from "@/lib/labels";
 import { SPRING } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
@@ -132,6 +132,20 @@ function Suggestions({ openingId }: { openingId: string }) {
               <div>
                 <p className="text-sm text-[var(--grey-200)]">{opening.company.name}</p>
                 <h2 className="text-2xl">{opening.title}</h2>
+                <p className="mt-1 text-sm text-[var(--grey-200)]">
+                  {[formatPlace(opening), requestTiming(opening)].filter(Boolean).join(", ")}
+                </p>
+                <ul className="mt-3 flex flex-wrap gap-2" aria-label="Skills asked for">
+                  {opening.skills.map((s) => (
+                    <li key={s.name} className="rounded-full bg-white/10 px-3 py-1 text-sm">
+                      {s.name}: {levelWanted(s.minLevel)}
+                      {s.required ? "" : " (nice to have)"}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-sm text-[var(--grey-200)]">
+                  Only approved interns with every required skill verified at that level are listed.
+                </p>
               </div>
               <p className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">
                 {opening.filled} of {opening.slots} slots filled

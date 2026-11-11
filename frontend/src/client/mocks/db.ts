@@ -237,6 +237,9 @@ export interface DbOpening {
   workMode: WorkMode;
   schedule: WorkSchedule;
   openToNysc: boolean;
+  durationWeeks: number | null;
+  startDate: string | null;
+  mayLeadToFullTime: boolean;
   status: OpeningStatus;
   createdAt: string;
   updatedAt: string;
@@ -412,7 +415,9 @@ export function candidateOf(g: DbGraduate): MatchCandidate {
 }
 
 export function scoreFor(g: DbGraduate, o: DbOpening) {
-  return scoreMatch(candidateOf(g), o as MatchOpening);
+  // Skill names let the hard rules say which skill is missing.
+  const opening: MatchOpening = { ...o, skills: o.skills.map((s) => ({ ...s, name: skillName(s.skillId) })) };
+  return scoreMatch(candidateOf(g), opening);
 }
 
 // ─── Seed ─────────────────────────────────────────────────────────────────────
@@ -756,9 +761,10 @@ function seedAssessments() {
 
 const STAGES: Array<[ApplicationStatus, number, string]> = [
   // status, count, cohort
-  ["IN_TRAINING", 6, "coh_2"],
+  ["IN_TRAINING", 3, "coh_2"],
   ["FINAL_ASSESSMENT", 4, "coh_2"],
-  ["QUALIFIED", 5, "coh_2"],
+  // Waiting to be matched: enough for every open role to show real suggestions.
+  ["QUALIFIED", 8, "coh_2"],
   ["MATCHED", 4, "coh_2"],
   ["PLACED", 6, "coh_2"],
   ["COMPLETED", 4, "coh_2"],
@@ -1002,6 +1008,9 @@ function seedOpenings() {
       ...placeFor(company, (["ONSITE", "HYBRID", "REMOTE", "ONSITE"] as const)[i % 4]),
       schedule: i % 5 === 4 ? "PART_TIME" : "FULL_TIME",
       openToNysc: i % 3 !== 2,
+      durationWeeks: [12, 8, 12, 16][i % 4],
+      startDate: iso(10 + (i % 5) * 7),
+      mayLeadToFullTime: i % 2 === 0,
       status,
       createdAt: iso(-70 + i),
       updatedAt: iso(-20 + i),
@@ -1031,6 +1040,12 @@ function seedJourney(adminId: string) {
         });
         g.reviewStatus = "APPROVED";
         g.reviewedAt = iso(-40);
+        // Interns waiting to be matched live where a role needing their skills is,
+        // so on-site and hybrid roles have real candidates in the demo.
+        if (status === "QUALIFIED") {
+          const role = db.openings.find((o) => o.title === t.title && o.status === "OPEN" && o.workMode !== "REMOTE");
+          if (role) Object.assign(g, { country: role.country, city: role.city, stateOfResidence: role.state, lga: null });
+        }
         if (t.disciplines[0]) g.courseOfStudy = t.disciplines[0];
         g.availability = "FULL_TIME";
         g.internType = "GRADUATE";

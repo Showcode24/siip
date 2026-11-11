@@ -354,6 +354,8 @@ async function seedCompanies(skillIds: Map<string, string>, cohortId: string) {
         workMode: c.opening.workMode,
         schedule: c.opening.schedule,
         openToNysc: true,
+        durationWeeks: 12,
+        mayLeadToFullTime: c.opening.workMode !== "REMOTE",
         status: "OPEN",
         createdById: owner.id,
         skills: {

@@ -52,6 +52,9 @@ const openingBody = () => ({
   state: "Lagos",
   workMode: "HYBRID",
   schedule: "FULL_TIME",
+  durationWeeks: 12,
+  startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+  mayLeadToFullTime: true,
   skills: [{ skillId, minLevel: "BEGINNER" }],
 });
 
@@ -132,6 +135,33 @@ describe("company registration and verification", () => {
     });
     expect(noCac.res.status).toBe(422);
     expect(JSON.stringify(noCac.json.error.details)).toContain("rcNumber");
+  });
+
+  it("takes a full request: duration, start date, full-time potential, levels per skill", async () => {
+    const past = await call(createOpening, {
+      cookie: ownerB.cookie,
+      body: { ...openingBody(), startDate: "2020-01-01" },
+    });
+    expect(past.res.status).toBe(422);
+    expect(JSON.stringify(past.json.error.details)).toContain("startDate");
+
+    const tooLong = await call(createOpening, { cookie: ownerB.cookie, body: { ...openingBody(), durationWeeks: 60 } });
+    expect(tooLong.res.status).toBe(422);
+
+    const noRequired = await call(createOpening, {
+      cookie: ownerB.cookie,
+      body: { ...openingBody(), skills: [{ skillId, minLevel: null, required: false }] },
+    });
+    expect(noRequired.res.status).toBe(422);
+
+    const ok = await call(createOpening, {
+      cookie: ownerB.cookie,
+      body: { ...openingBody(), skills: [{ skillId, minLevel: "EXPERT", required: true }] },
+    });
+    expect(ok.res.status).toBe(201);
+    expect(ok.json.data).toMatchObject({ durationWeeks: 12, mayLeadToFullTime: true });
+    expect(ok.json.data.startDate).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(ok.json.data.skills[0]).toMatchObject({ minLevel: "EXPERT", required: true });
   });
 
   it("needs a place for on-site and hybrid openings but not for remote ones", async () => {

@@ -135,7 +135,7 @@ describe("company registration and verification", () => {
   });
 
   it("needs a place for on-site and hybrid openings but not for remote ones", async () => {
-    const { state: _s, city: _c, country: _n, ...placeless } = openingBody();
+    const placeless = { ...openingBody(), state: undefined, city: undefined, country: undefined };
     const onsite = await call(createOpening, { cookie: ownerB.cookie, body: { ...placeless, workMode: "ONSITE" } });
     expect(onsite.res.status).toBe(422);
     expect(JSON.stringify(onsite.json.error.details)).toContain("city");

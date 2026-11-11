@@ -25,6 +25,14 @@ import {
 } from "./matching";
 import { CertificateIssuedEmail, type CertificateIssuedProps } from "./certificate";
 import {
+  ChangesRequestedEmail,
+  ProfileApprovedEmail,
+  ProfileRemovedEmail,
+  type ChangesRequestedProps,
+  type ProfileApprovedProps,
+  type ProfileRemovedProps,
+} from "./review";
+import {
   CheckInReminderEmail,
   EvaluationRequestEmail,
   MatchReminderEmail,
@@ -123,6 +131,17 @@ export const templates = {
   "evaluation-request": define<EvaluationRequestProps>({
     subject: (p) => `Please evaluate ${p.internName}`,
     render: (p) => EvaluationRequestEmail(p),
+  }),  "profile-approved": define<ProfileApprovedProps>({
+    subject: () => "Your SIIP profile is approved",
+    render: (p) => ProfileApprovedEmail(p),
+  }),
+  "profile-changes-requested": define<ChangesRequestedProps>({
+    subject: () => "SIIP needs more documents from you",
+    render: (p) => ChangesRequestedEmail(p),
+  }),
+  "profile-removed": define<ProfileRemovedProps>({
+    subject: () => "Your SIIP profile has been removed",
+    render: (p) => ProfileRemovedEmail(p),
   }),
 };
 

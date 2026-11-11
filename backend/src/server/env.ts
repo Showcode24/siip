@@ -11,6 +11,8 @@ const envSchema = z.object({
   // When unset, emails are logged (not sent). Required in production.
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("SIIP <no-reply@siip.ng>"),
+  // Where interns can write to (e.g. to appeal a removed profile). Optional.
+  SUPPORT_EMAIL: z.email().optional(),
 
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),

@@ -655,10 +655,70 @@ export interface AuditEntry {
   entityId: string;
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
+  /** Context such as the reason given for a decision. */
+  metadata?: Record<string, unknown> | null;
   createdAt: ISODate;
 }
 
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;
+}
+
+// ─── SIIP's review of intern skills ───────────────────────────────────────────
+
+export interface ReviewQueueRow {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  internType: InternType;
+  country: string | null;
+  city: string | null;
+  reviewStatus: ProfileReviewStatus;
+  submittedAt: ISODate | null;
+  reviewedAt: ISODate | null;
+  removedAt: ISODate | null;
+  skills: { total: number; pending: number; verified: number; rejected: number; documents: number };
+}
+
+export interface ReviewHistoryItem {
+  id: string;
+  action: string;
+  actorName: string | null;
+  skillName: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: ISODate;
+}
+
+export interface ReviewDetail {
+  id: string;
+  firstName: string;
+  lastName: string;
+  otherNames: string | null;
+  phone: string | null;
+  internType: InternType;
+  country: string | null;
+  city: string | null;
+  stateOfResidence: string | null;
+  workPreference: WorkMode | null;
+  availability: Availability | null;
+  institution: string | null;
+  courseOfStudy: string | null;
+  degreeClass: DegreeClass | null;
+  graduationYear: number | null;
+  nyscStateCode: string | null;
+  nyscBatch: string | null;
+  bio: string | null;
+  hasCv: boolean;
+  reviewStatus: ProfileReviewStatus;
+  submittedAt: ISODate | null;
+  reviewedAt: ISODate | null;
+  reviewNote: string | null;
+  removedAt: ISODate | null;
+  removalReason: string | null;
+  deleteAfter: ISODate | null;
+  user: { id: string; email: string; createdAt: ISODate };
+  skills: GraduateSkill[];
+  history: ReviewHistoryItem[];
 }

@@ -118,7 +118,8 @@ export async function getSuggestions(openingId: string, limit: number) {
     where: {
       status: "QUALIFIED",
       ...(opening.cohortId ? { cohortId: opening.cohortId } : {}),
-      graduate: { user: { deletedAt: null } },
+      // Only interns SIIP has approved (and not removed) are ever put in front of companies.
+      graduate: { reviewStatus: "APPROVED", removedAt: null, user: { deletedAt: null } },
       // Don't suggest someone this opening has already declined.
       matches: { none: { openingId, status: "COMPANY_REJECTED" } },
     },
@@ -168,9 +169,20 @@ export async function createMatch(tx: Tx, input: CreateMatchInput) {
 
   const app = await tx.application.findUnique({
     where: { id: input.applicationId },
-    select: { id: true, cohortId: true, graduateId: true, graduate: { select: limitedGraduateSelect } },
+    select: {
+      id: true,
+      cohortId: true,
+      graduateId: true,
+      graduate: {
+        select: { ...limitedGraduateSelect, reviewStatus: true, removedAt: true, user: { select: { deletedAt: true } } },
+      },
+    },
   });
   if (!app) throw errors.notFound("Application");
+  const g = app.graduate;
+  if (g.reviewStatus !== "APPROVED" || g.removedAt || g.user.deletedAt) {
+    throw errors.conflict("Only interns whose skills SIIP has approved can be matched");
+  }
   if (opening.cohortId && opening.cohortId !== app.cohortId) {
     throw errors.badRequest("This opening is for a different cohort");
   }

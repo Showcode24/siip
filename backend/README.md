@@ -232,6 +232,10 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | POST | `/api/v1/admin/placements/{id}/terminate` | Admin | Terminate placement |
 | PUT | `/api/v1/admin/questions/{id}` | Admin | Replace question |
 | DELETE | `/api/v1/admin/questions/{id}` | Admin | Delete question |
+| GET | `/api/v1/admin/reviews` | Admin | List review queue |
+| GET | `/api/v1/admin/reviews/{id}` | Admin | Get review |
+| POST | `/api/v1/admin/reviews/{id}/decision` | Admin | Decide profile |
+| POST | `/api/v1/admin/reviews/{id}/skills/{skillId}` | Admin | Decide skill |
 | GET | `/api/v1/admin/skill-documents/{id}/url` | Admin | Get skill document url for admin |
 | POST | `/api/v1/auth/forgot-password` | Public | Request password reset |
 | GET | `/api/v1/auth/me` | Any signed-in user | Get me |

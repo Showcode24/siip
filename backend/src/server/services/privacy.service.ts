@@ -1,5 +1,6 @@
 // NDPA 2023: right of access (data export) and right to erasure
 // (soft delete now, anonymise after a grace period).
+import { REMOVAL_GRACE_DAYS } from "@/server/validators/review";
 import { verifyPassword } from "better-auth/crypto";
 import type { CurrentUser } from "@/server/auth/session";
 import { toAuditActor } from "@/server/auth/session";
@@ -11,7 +12,7 @@ import { UPLOAD_KINDS, deleteAsset } from "@/server/storage/cloudinary";
 import { sendApplicationEmail, transitionApplication, type ApplicationChange } from "./application.service";
 
 /** Days between a deletion request and anonymisation (time to reverse mistakes or fraud). */
-export const DELETION_GRACE_DAYS = 30;
+export const DELETION_GRACE_DAYS = REMOVAL_GRACE_DAYS; // same window for self-deleted and SIIP-removed accounts
 const DAY = 24 * 60 * 60 * 1000;
 
 /** Everything SIIP holds about the user, as JSON. Answer keys and internal admin notes are excluded. */
@@ -240,6 +241,58 @@ export async function anonymiseUser(userId: string) {
       UPLOAD_KINDS.photo.deliveryType,
     );
   }
+}
+
+/**
+ * Permanently deletes a profile SIIP removed, once its grace period has passed:
+ * files first (skill documents, CV, photo), then the account and everything that
+ * cascades from it. Interns with a placement or certificate are anonymised
+ * instead, so the company's and the certificate's records stay valid.
+ */
+export async function purgeRemovedProfile(userId: string) {
+  const profile = await db.graduateProfile.findUnique({
+    where: { userId },
+    select: {
+      id: true,
+      cvPublicId: true,
+      photoPublicId: true,
+      skills: { select: { documents: { where: { kind: "FILE" }, select: { publicId: true } } } },
+      _count: { select: { placements: true, certificates: true } },
+    },
+  });
+  if (!profile) return anonymiseUser(userId);
+  const docKind = UPLOAD_KINDS.skillDoc;
+  for (const d of profile.skills.flatMap((s) => s.documents)) {
+    if (d.publicId) await deleteAsset(d.publicId, docKind.resourceType, docKind.deliveryType);
+  }
+  if (profile._count.placements || profile._count.certificates) {
+    await db.skillDocument.deleteMany({ where: { graduateSkill: { graduateId: profile.id } } });
+    return anonymiseUser(userId);
+  }
+  if (profile.cvPublicId) await deleteAsset(profile.cvPublicId, UPLOAD_KINDS.cv.resourceType, UPLOAD_KINDS.cv.deliveryType);
+  if (profile.photoPublicId) {
+    await deleteAsset(profile.photoPublicId, UPLOAD_KINDS.photo.resourceType, UPLOAD_KINDS.photo.deliveryType);
+  }
+  await db.$transaction(async (tx) => {
+    // Audit rows keep ids only (no personal data), so the record of SIIP's decision survives.
+    await recordAudit(tx, {
+      actor: null,
+      action: "profile.purged",
+      entityType: "GraduateProfile",
+      entityId: profile.id,
+      metadata: { userId },
+    });
+    await tx.user.delete({ where: { id: userId } });
+  });
+}
+
+/** Removed-by-SIIP accounts are purged; self-deleted ones are anonymised. Used by the daily cron. */
+export async function finishDeletion(userId: string) {
+  const removed = await db.graduateProfile.findFirst({
+    where: { userId, removedAt: { not: null } },
+    select: { id: true },
+  });
+  return removed ? purgeRemovedProfile(userId) : anonymiseUser(userId);
 }
 
 /** Users whose grace period has passed. Used by the daily cron. */

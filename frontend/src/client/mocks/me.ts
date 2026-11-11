@@ -10,7 +10,8 @@ export function currentUserId(persona: string | null): string | null {
 export function mockMe(persona: string | null): Me | null {
   const userId = currentUserId(persona);
   const user = userId ? userById(userId) : undefined;
-  if (!user) return null;
+  // Locked accounts (e.g. a profile SIIP removed) can't sign in, as on the server.
+  if (!user || user.deletedAt) return null;
   const grad = db.graduates.find((g) => g.userId === user.id);
   const member = db.members.find((m) => m.userId === user.id);
   const company = member ? companyById(member.companyId) : undefined;

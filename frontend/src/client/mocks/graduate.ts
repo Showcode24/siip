@@ -14,7 +14,7 @@ import { missingForApplication } from "@siip/shared/profile-completeness";
 import { normaliseProfileUpdate } from "@siip/shared/profile-rules";
 import { ApiError } from "@/client/api/http";
 import type { Certificate, MyApplication, MyPlacement } from "@/client/api/types";
-import { cohortById, companyById, db, iso, newId, notify, openingById } from "./db";
+import { audit, cohortById, companyById, db, iso, newId, notify, openingById } from "./db";
 import {
   badRequest,
   canMove,
@@ -191,6 +191,7 @@ export function submitForReview() {
   }
   const now = new Date().toISOString();
   Object.assign(graduate, { reviewStatus: "SUBMITTED", submittedAt: now, reviewNote: null });
+  audit(graduate.userId, "profile.submitted_for_review", "GraduateProfile", graduate.id, null, { reviewStatus: "SUBMITTED" });
   return { reviewStatus: "SUBMITTED" as const, submittedAt: now };
 }
 

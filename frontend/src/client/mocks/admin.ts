@@ -345,6 +345,9 @@ export function getSuggestions(openingId: string, limit: number) {
     .filter(
       (a) =>
         a.status === "QUALIFIED" &&
+        // Only interns SIIP has approved (and not removed) reach companies.
+        graduateById(a.graduateId)?.reviewStatus === "APPROVED" &&
+        !graduateById(a.graduateId)?.removedAt &&
         (!o.cohortId || a.cohortId === o.cohortId) &&
         !db.matches.some(
           (mt) => mt.openingId === o.id && mt.graduateId === a.graduateId && mt.status === "COMPANY_REJECTED",
@@ -403,6 +406,9 @@ export function proposeMatch(openingId: string, applicationId: string) {
   if (!o || !a) throw notFound(!o ? "Opening" : "Application");
   if (o.status !== "OPEN") throw conflict("This opening is not open");
   const g = graduateById(a.graduateId)!;
+  if (g.reviewStatus !== "APPROVED" || g.removedAt) {
+    throw conflict("Only interns whose skills SIIP has approved can be matched");
+  }
   const s = scoreFor(g, o);
   if (!s.eligible) throw badRequest(s.ineligibleReason ?? "Graduate is not eligible");
   transition(a, "MATCHED", "SYSTEM", admin.id);
@@ -704,3 +710,5 @@ export function verifyCertificate(raw: string) {
     serialNumber: c.serialNumber,
   };
 }
+
+export * from "./review";

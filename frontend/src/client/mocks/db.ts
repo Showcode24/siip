@@ -76,6 +76,8 @@ export interface DbUser {
   emailVerified: boolean;
   consentAt: string;
   createdAt: string;
+  /** Set when the account is locked (e.g. profile removed by SIIP). */
+  deletedAt?: string | null;
 }
 export interface DbGraduate {
   id: string;
@@ -109,6 +111,8 @@ export interface DbGraduate {
   submittedAt: string | null;
   reviewedAt: string | null;
   reviewNote: string | null;
+  removedAt: string | null;
+  removalReason: string | null;
   updatedAt: string;
 }
 export interface DbSkillDocument {
@@ -370,6 +374,7 @@ export function audit(
   entityId: string,
   before: Record<string, unknown> | null = null,
   after: Record<string, unknown> | null = null,
+  metadata: Record<string, unknown> | null = null,
 ) {
   const actor = actorId ? userById(actorId) : undefined;
   db.audit.unshift({
@@ -382,6 +387,7 @@ export function audit(
     entityId,
     before,
     after,
+    metadata,
     createdAt: new Date().toISOString(),
   });
 }
@@ -878,6 +884,8 @@ function makeGraduate(i: number, complete = true): DbGraduate {
     submittedAt: complete ? iso(-30 + (i % 10)) : null,
     reviewedAt: null,
     reviewNote: null,
+    removedAt: null,
+    removalReason: null,
     updatedAt: iso(-5),
   };
   db.graduates.push(g);

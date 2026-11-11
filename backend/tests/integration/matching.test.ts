@@ -45,13 +45,14 @@ async function verifiedCompany(user: TestUser, name: string) {
   });
 }
 
-async function qualifiedGraduate(key: string, state: string, nysc: NyscStatus, withSkill: boolean) {
+async function qualifiedGraduate(key: string, state: string, nysc: NyscStatus, withSkill: boolean, approved = true) {
   const user = await createUser("GRADUATE", key);
   const graduateId = await completeProfile(user, state);
   await db.graduateProfile.update({
     where: { id: graduateId },
     data: {
       nyscStatus: nysc,
+      reviewStatus: approved ? "APPROVED" : "SUBMITTED",
       ...(withSkill
         ? { skills: { create: { skillId, level: "ADVANCED", status: "VERIFIED", verifiedLevel: "ADVANCED" } } }
         : {}),
@@ -92,6 +93,8 @@ beforeAll(async () => {
   await qualifiedGraduate("weak", "Kano", "COMPLETED", false);
   await qualifiedGraduate("spare", "Lagos", "EXEMPTED", false);
   await qualifiedGraduate("corper", "Lagos", "SERVING", true);
+  // Verified skill, but SIIP hasn't approved the profile yet.
+  await qualifiedGraduate("unreviewed", "Lagos", "COMPLETED", true, false);
 });
 
 describe("matching", () => {
@@ -106,6 +109,8 @@ describe("matching", () => {
     expect(ranked.indexOf(apps.best.applicationId)).toBeLessThan(ranked.indexOf(apps.weak.applicationId));
     // Serving corps member is excluded: the opening is not open to NYSC.
     expect(ranked).not.toContain(apps.corper.applicationId);
+    // Interns SIIP hasn't approved never reach companies.
+    expect(ranked).not.toContain(apps.unreviewed.applicationId);
     expect(json.data.suggestions[0].breakdown.skills).toMatchObject({ weight: 40, fit: 1 });
     expect(JSON.stringify(json)).not.toContain("+234");
 
@@ -132,6 +137,11 @@ describe("matching", () => {
       body: { openingId, applicationId: apps.best.applicationId },
     });
     expect(again.res.status).toBe(409);
+    const unapproved = await call(propose, {
+      cookie: admin.cookie,
+      body: { openingId, applicationId: apps.unreviewed.applicationId },
+    });
+    expect(unapproved.res.status).toBe(409);
     const ineligible = await call(propose, {
       cookie: admin.cookie,
       body: { openingId, applicationId: apps.corper.applicationId },

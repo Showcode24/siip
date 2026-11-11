@@ -19,7 +19,9 @@ const change = (e: AuditEntry) => {
         .map(([k, v]) => `${k}: ${String(v)}`)
         .join(", ")
     : "";
-  return before && after ? `${before} → ${after}` : after || before || "No change recorded";
+  const why = e.metadata?.reason ?? e.metadata?.note;
+  const what = before && after ? `${before} → ${after}` : after || before || "No change recorded";
+  return why ? `${what}. Reason: ${String(why)}` : what;
 };
 
 const columns: ColumnDef<AuditEntry, unknown>[] = [

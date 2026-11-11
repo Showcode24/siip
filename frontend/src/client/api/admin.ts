@@ -20,14 +20,46 @@ import type {
   Company,
   Opening,
   Placement,
+  ReviewDetail,
+  ReviewQueueRow,
+  GraduateSkill,
   Suggestions,
 } from "./types";
+import type { ReviewQueue, profileDecisionSchema, skillDecisionSchema } from "@siip/shared/validators/review";
 
 const m = () => import("../mocks/admin");
 type AppQuery = Partial<z.input<typeof adminApplicationListQuery>>;
 type StatusInput = z.input<typeof changeStatusSchema>;
 
 export const adminApi = {
+  // Skill reviews
+  listReviews: (queue: ReviewQueue, q?: string) =>
+    callPage(
+      () => get<ReviewQueueRow[]>("/admin/reviews", { queue, q: q && q.length >= 2 ? q : undefined, limit: 100 }),
+      async () => (await m()).listReviews(queue, q),
+    ),
+  getReview: (graduateId: string) =>
+    call(
+      () => get<ReviewDetail>(`/admin/reviews/${graduateId}`),
+      async () => (await m()).getReview(graduateId),
+      { read: true },
+    ),
+  decideSkill: (graduateId: string, skillId: string, input: z.input<typeof skillDecisionSchema>) =>
+    call(
+      () => post<GraduateSkill>(`/admin/reviews/${graduateId}/skills/${skillId}`, input),
+      async () => (await m()).decideSkill(graduateId, skillId, input),
+    ),
+  decideProfile: (graduateId: string, input: z.input<typeof profileDecisionSchema>) =>
+    call(
+      () => post<ReviewDetail>(`/admin/reviews/${graduateId}/decision`, input),
+      async () => (await m()).decideProfile(graduateId, input),
+    ),
+  getSkillDocumentUrl: (documentId: string) =>
+    call(
+      () => get<{ url: string; kind: "FILE" | "LINK" }>(`/admin/skill-documents/${documentId}/url`),
+      async () => (await m()).getSkillDocumentUrl(documentId),
+    ),
+
   // Cohorts
   listCohorts: () =>
     call(

@@ -11,6 +11,7 @@ import {
   GitMerge,
   History,
   LayoutDashboard,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -21,6 +22,7 @@ const SECTIONS: NavSection[] = [
   {
     title: "Programme",
     items: [
+      { href: "/admin/reviews", label: "Skill reviews", icon: ShieldCheck },
       { href: "/admin/cohorts", label: "Cohorts", icon: Users },
       { href: "/admin/applications", label: "Applications", icon: ClipboardList },
       { href: "/admin/training", label: "Training content", icon: BookOpen },

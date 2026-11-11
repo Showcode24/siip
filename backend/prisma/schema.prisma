@@ -205,6 +205,11 @@ model GraduateProfile {
   reviewedAt   DateTime?
   // Shown to the intern when more documents are requested.
   reviewNote   String?
+  // Removed by SIIP because the documents didn't support the claims. The account
+  // is locked at once and purged by the daily cron after the grace period.
+  removedAt     DateTime?
+  removalReason String?
+  removedById   String?
 
   // Phase 2 prep: graduate opts in to company search.
   searchable   Boolean                  @default(false)
@@ -228,6 +233,7 @@ model GraduateProfile {
   @@index([country, city])
   @@index([internType])
   @@index([reviewStatus, submittedAt])
+  @@index([removedAt])
   @@index([institution])
   @@index([searchable, visibility])
   @@index([searchVector], type: Gin)

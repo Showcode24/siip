@@ -9,7 +9,7 @@ import { expireOverdueAttempts } from "./attempt.service";
 import { changeCohortStatus } from "./cohort.service";
 import { internshipMonth } from "./internship.service";
 import { createNotification } from "./notification.service";
-import { anonymiseUser, findUsersDueForAnonymisation } from "./privacy.service";
+import { finishDeletion, findUsersDueForAnonymisation } from "./privacy.service";
 
 const DAY = 24 * 60 * 60 * 1000;
 /** Days into an internship month before its check-in reminder goes out. */
@@ -254,7 +254,7 @@ export async function requestEvaluations(now: Date) {
 
 export async function anonymiseDeletedUsers(now: Date) {
   const due = await findUsersDueForAnonymisation(now);
-  for (const u of due) await anonymiseUser(u.id);
+  for (const u of due) await finishDeletion(u.id);
   return due.length;
 }
 

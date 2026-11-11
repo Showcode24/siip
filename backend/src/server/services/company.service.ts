@@ -7,7 +7,8 @@ import { db } from "@/server/db";
 import { sendEmail } from "@/server/email/send";
 import { env } from "@/server/env";
 import { recordAudit, type AuditActor } from "@/server/lib/audit";
-import { errors } from "@/server/lib/errors";
+import { AppError, errors } from "@/server/lib/errors";
+import { companyIdentityProblems, normaliseCompanyIdentity } from "@/server/validators/company";
 import { cursorArgs, toPage } from "@/server/lib/pagination";
 import { companyMachine } from "@/server/lib/state-machine";
 import { UPLOAD_KINDS, confirmUpload, createSignedUpload, deleteAsset } from "@/server/storage/cloudinary";
@@ -27,6 +28,10 @@ const companySelect = {
   id: true,
   name: true,
   rcNumber: true,
+  businessRegNumber: true,
+  country: true,
+  city: true,
+  timeZone: true,
   industry: true,
   description: true,
   address: true,
@@ -72,19 +77,32 @@ export async function getMyCompany(ctx: CompanyContext) {
   return { ...company, myRole: ctx.memberRole };
 }
 
-/** Name and RC number are what we verified, so they are locked once verified. */
+/**
+ * Name, country and registration numbers are what we verified, so they are
+ * locked once verified. The registration details required depend on the
+ * country (CAC number + state in Nigeria, a registration number elsewhere).
+ */
 export async function updateMyCompany(ctx: CompanyContext, input: UpdateCompanyInput) {
   return db.$transaction(async (tx) => {
     const current = await tx.company.findUniqueOrThrow({ where: { id: ctx.companyId } });
-    const identityChanged =
-      (input.name !== undefined && input.name !== current.name) ||
-      (input.rcNumber !== undefined && input.rcNumber !== current.rcNumber);
+    const changed = (k: "name" | "country" | "rcNumber" | "businessRegNumber") =>
+      input[k] !== undefined && input[k] !== current[k];
+    const identityChanged = changed("name") || changed("country") || changed("rcNumber") || changed("businessRegNumber");
     if (identityChanged && ["VERIFIED", "SUSPENDED"].includes(current.verificationStatus)) {
-      throw errors.conflict("Contact SIIP to change the name or RC number of a verified company");
+      throw errors.conflict("Contact SIIP to change the name, country or registration number of a verified company");
     }
+    const merged = normaliseCompanyIdentity({ ...current, ...input });
+    const problems = companyIdentityProblems(merged);
+    if (problems.length) throw new AppError("VALIDATION_ERROR", problems[0].message, problems);
+    const data = {
+      ...input,
+      rcNumber: merged.rcNumber,
+      businessRegNumber: merged.businessRegNumber,
+      state: merged.state,
+    };
     const updated = await tx.company.update({
       where: { id: ctx.companyId },
-      data: input,
+      data,
       select: companySelect,
     });
     await recordAudit(tx, {
@@ -277,12 +295,15 @@ export async function acceptInvitation(user: CurrentUser, token: string) {
 export async function listCompaniesForAdmin(query: z.infer<typeof adminCompanyListQuery>) {
   const where: Prisma.CompanyWhereInput = {
     ...(query.status ? { verificationStatus: query.status } : {}),
+    ...(query.country ? { country: query.country } : {}),
     ...(query.state ? { state: query.state } : {}),
     ...(query.q
       ? {
           OR: [
             { name: { contains: query.q, mode: "insensitive" } },
             { rcNumber: { contains: query.q, mode: "insensitive" } },
+            { businessRegNumber: { contains: query.q, mode: "insensitive" } },
+            { city: { contains: query.q, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -309,7 +330,9 @@ export async function getCompanyForAdmin(companyId: string) {
           user: { select: { id: true, name: true, email: true } },
         },
       },
-      openings: { select: { id: true, title: true, status: true, slots: true, state: true } },
+      openings: {
+        select: { id: true, title: true, status: true, slots: true, country: true, city: true, state: true },
+      },
     },
   });
   if (!company) throw errors.notFound("Company");

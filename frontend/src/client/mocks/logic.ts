@@ -292,12 +292,22 @@ export function presentPlacement(
     offeredPermanentRole: p.offeredPermanentRole,
     permanentOfferDate: p.permanentOfferDate,
     createdAt: p.createdAt,
-    opening: { id: o.id, title: o.title, workMode: o.workMode, state: o.state, location: o.location },
+    opening: {
+      id: o.id,
+      title: o.title,
+      workMode: o.workMode,
+      country: o.country,
+      city: o.city,
+      state: o.state,
+      location: o.location,
+    },
     company: opts.companyDetails
       ? {
           id: c.id,
           name: c.name,
           address: c.address,
+          country: c.country,
+          city: c.city,
           state: c.state,
           website: c.website,
           logoUrl: c.logoUrl,

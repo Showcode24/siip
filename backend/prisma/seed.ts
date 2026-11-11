@@ -317,6 +317,9 @@ async function seedCompanies(skillIds: Map<string, string>, cohortId: string) {
         name: c.name,
         rcNumber: c.rcNumber,
         industry: c.industry,
+        country: "NG",
+        city: c.state === "FCT" ? "Abuja" : c.state,
+        timeZone: "Africa/Lagos",
         state: c.state,
         address: c.address,
         verificationStatus: "VERIFIED",
@@ -340,7 +343,9 @@ async function seedCompanies(skillIds: Map<string, string>, cohortId: string) {
         description: `Join ${c.name} for a 3-month internship in ${c.opening.department}.`,
         slots: 3,
         preferredDisciplines: c.opening.disciplines,
-        state: c.state,
+        ...(c.opening.workMode === "REMOTE"
+          ? {}
+          : { country: "NG", city: c.state === "FCT" ? "Abuja" : c.state, state: c.state }),
         workMode: c.opening.workMode,
         schedule: c.opening.schedule,
         openToNysc: true,

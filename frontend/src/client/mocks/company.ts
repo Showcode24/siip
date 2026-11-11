@@ -6,7 +6,16 @@ import type {
   updateCompanySchema,
   updateOpeningSchema,
 } from "@siip/shared/validators/company";
-import { rcNumber } from "@siip/shared/validators/company";
+import {
+  companyIdentityProblems,
+  createOpeningSchema as openingCreate,
+  normaliseCompanyIdentity,
+  normaliseOpeningPlace,
+  openingPlaceProblems,
+  registerCompanySchema as companyRegister,
+  updateCompanySchema as companyUpdate,
+  updateOpeningSchema as openingUpdate,
+} from "@siip/shared/validators/company";
 import type { checkInSchema, evaluationSchema } from "@siip/shared/validators/internship";
 import { ApiError } from "@/client/api/http";
 import type { Company, CompanyMatch } from "@/client/api/types";
@@ -33,18 +42,28 @@ const present = (c: DbCompany, myRole?: Company["myRole"]): Company => ({
 export function register(input: z.input<typeof registerCompanySchema>) {
   const user = requireUser();
   if (db.members.some((m) => m.userId === user.id)) throw conflict("You already belong to a company");
-  const rc = rcNumber.parse(input.rcNumber);
-  if (db.companies.some((c) => c.rcNumber === rc))
+  const v = companyRegister.parse(input);
+  if (
+    db.companies.some(
+      (c) =>
+        (v.rcNumber && c.rcNumber === v.rcNumber) ||
+        (v.businessRegNumber && c.country === v.country && c.businessRegNumber === v.businessRegNumber),
+    )
+  )
     throw conflict("A record with these details already exists");
   const c: DbCompany = {
     id: newId("cmp"),
-    name: input.name,
-    rcNumber: rc,
-    industry: input.industry,
-    description: input.description ?? null,
-    address: input.address,
-    state: input.state,
-    website: input.website ?? null,
+    name: v.name,
+    rcNumber: v.rcNumber ?? null,
+    businessRegNumber: v.businessRegNumber ?? null,
+    country: v.country,
+    city: v.city,
+    timeZone: v.timeZone,
+    industry: v.industry,
+    description: v.description ?? null,
+    address: v.address,
+    state: v.state ?? null,
+    website: v.website ?? null,
     logoUrl: null,
     verificationStatus: "PENDING",
     verifiedAt: null,
@@ -57,7 +76,7 @@ export function register(input: z.input<typeof registerCompanySchema>) {
     companyId: c.id,
     userId: user.id,
     role: "OWNER",
-    jobTitle: input.jobTitle ?? null,
+    jobTitle: v.jobTitle ?? null,
     createdAt: isoNow(),
   });
   audit(user.id, "company.registered", "Company", c.id);
@@ -71,14 +90,23 @@ export function getProfile() {
 
 export function updateProfile(input: z.input<typeof updateCompanySchema>) {
   const { company, user } = requireMember({ ownerOnly: true });
-  const rc = input.rcNumber ? rcNumber.parse(input.rcNumber) : undefined;
+  const v = companyUpdate.parse(input);
+  const changed = (k: "name" | "country" | "rcNumber" | "businessRegNumber") =>
+    v[k] !== undefined && v[k] !== company[k];
   if (
-    ((input.name && input.name !== company.name) || (rc && rc !== company.rcNumber)) &&
+    (changed("name") || changed("country") || changed("rcNumber") || changed("businessRegNumber")) &&
     ["VERIFIED", "SUSPENDED"].includes(company.verificationStatus)
   ) {
-    throw conflict("Contact SIIP to change the name or RC number of a verified company");
+    throw conflict("Contact SIIP to change the name, country or registration number of a verified company");
   }
-  Object.assign(company, input, rc ? { rcNumber: rc } : {});
+  const merged = normaliseCompanyIdentity({ ...company, ...v });
+  const problems = companyIdentityProblems(merged);
+  if (problems.length) throw new ApiError("VALIDATION_ERROR", problems[0].message, 422, problems);
+  Object.assign(company, v, {
+    rcNumber: merged.rcNumber,
+    businessRegNumber: merged.businessRegNumber,
+    state: merged.state,
+  });
   audit(user.id, "company.updated", "Company", company.id);
   return present(company, "OWNER");
 }
@@ -202,24 +230,27 @@ export const getOpening = (id: string) => presentOpening(myOpening(id));
 
 export function createOpening(input: z.input<typeof createOpeningSchema>) {
   const { company, user } = requireMember({ ownerOnly: true });
+  const v = openingCreate.parse(input);
   const o = {
     id: newId("opn"),
     companyId: company.id,
-    cohortId: input.cohortId ?? null,
-    title: input.title,
-    department: input.department ?? null,
-    description: input.description,
-    slots: input.slots,
-    preferredDisciplines: input.preferredDisciplines ?? [],
-    state: input.state,
-    location: input.location ?? null,
-    workMode: input.workMode,
-    schedule: input.schedule,
-    openToNysc: input.openToNysc ?? true,
+    cohortId: v.cohortId ?? null,
+    title: v.title,
+    department: v.department ?? null,
+    description: v.description,
+    slots: v.slots,
+    preferredDisciplines: v.preferredDisciplines ?? [],
+    country: v.country ?? null,
+    city: v.city ?? null,
+    state: v.state ?? null,
+    location: v.location ?? null,
+    workMode: v.workMode,
+    schedule: v.schedule,
+    openToNysc: v.openToNysc ?? true,
     status: "DRAFT" as const,
     createdAt: isoNow(),
     updatedAt: isoNow(),
-    skills: input.skills.map((s) => ({
+    skills: v.skills.map((s) => ({
       skillId: s.skillId,
       minLevel: s.minLevel ?? null,
       required: s.required ?? true,
@@ -233,8 +264,11 @@ export function createOpening(input: z.input<typeof createOpeningSchema>) {
 export function updateOpening(id: string, input: z.input<typeof updateOpeningSchema>) {
   requireMember({ ownerOnly: true });
   const o = myOpening(id);
-  const { skills, ...rest } = input;
-  Object.assign(o, rest, { updatedAt: isoNow() });
+  const { skills, ...rest } = openingUpdate.parse(input);
+  const place = normaliseOpeningPlace({ ...o, ...rest });
+  const problems = openingPlaceProblems(place);
+  if (problems.length) throw new ApiError("VALIDATION_ERROR", problems[0].message, 422, problems);
+  Object.assign(o, rest, { country: place.country, city: place.city, state: place.state, updatedAt: isoNow() });
   if (skills)
     o.skills = skills.map((s) => ({
       skillId: s.skillId,

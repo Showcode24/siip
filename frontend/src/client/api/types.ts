@@ -344,11 +344,17 @@ export interface AttemptRow {
 export interface Company {
   id: string;
   name: string;
-  rcNumber: string;
+  /** Nigeria only (CAC). */
+  rcNumber: string | null;
+  businessRegNumber: string | null;
+  country: string | null;
+  city: string | null;
+  timeZone: string | null;
   industry: string;
   description: string | null;
   address: string;
-  state: string;
+  /** Nigeria only. */
+  state: string | null;
   website: string | null;
   logoUrl: string | null;
   verificationStatus: CompanyVerificationStatus;
@@ -385,7 +391,9 @@ export interface Opening {
   description: string;
   slots: number;
   preferredDisciplines: string[];
-  state: string;
+  country: string | null;
+  city: string | null;
+  state: string | null;
   location: string | null;
   workMode: WorkMode;
   schedule: WorkSchedule;
@@ -470,12 +478,22 @@ export interface Placement {
   offeredPermanentRole: boolean;
   permanentOfferDate: ISODate | null;
   createdAt: ISODate;
-  opening: { id: string; title: string; workMode: WorkMode; state: string; location: string | null };
+  opening: {
+    id: string;
+    title: string;
+    workMode: WorkMode;
+    country: string | null;
+    city: string | null;
+    state: string | null;
+    location: string | null;
+  };
   company: {
     id: string;
     name: string;
     address?: string;
-    state?: string;
+    country?: string | null;
+    city?: string | null;
+    state?: string | null;
     website?: string | null;
     logoUrl?: string | null;
     industry?: string;

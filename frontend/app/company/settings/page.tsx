@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { NIGERIAN_STATES } from "@siip/shared/nigeria";
+import { guessTimeZone } from "@siip/shared/timezones";
 import { updateCompanySchema } from "@siip/shared/validators/company";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -15,9 +15,10 @@ import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, PageHeader, StatusPill } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
-import { Input, Select, Textarea } from "@/components/ui/form-controls";
+import { Input, Textarea } from "@/components/ui/form-controls";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/overlays";
-import { COMPANY_STATUS } from "@/lib/labels";
+import { COMPANY_STATUS, companyRegistration } from "@/lib/labels";
+import { CompanyPlaceFields } from "@/components/company/company-fields";
 import { handleFormError } from "@/lib/forms";
 
 export default function CompanySettingsPage() {
@@ -60,6 +61,8 @@ function CompanyForm({ company }: { company: Company }) {
   const locked = company.verificationStatus === "VERIFIED" || company.verificationStatus === "SUSPENDED";
   const {
     register,
+    control,
+    watch,
     handleSubmit,
     setError,
     formState: { errors },
@@ -67,11 +70,15 @@ function CompanyForm({ company }: { company: Company }) {
     resolver: zodResolver(updateCompanySchema),
     defaultValues: {
       name: company.name,
+      country: (company.country ?? undefined) as never,
+      city: company.city ?? "",
+      timeZone: company.timeZone ?? guessTimeZone() ?? undefined,
       rcNumber: company.rcNumber,
+      businessRegNumber: company.businessRegNumber,
       industry: company.industry,
       description: company.description ?? "",
       address: company.address,
-      state: company.state as never,
+      state: (company.state ?? null) as never,
       website: company.website ?? "",
     },
   });
@@ -86,7 +93,7 @@ function CompanyForm({ company }: { company: Company }) {
     <Card>
       <CardHeader
         title={company.name}
-        description={`Registered ${company.rcNumber}`}
+        description={companyRegistration(company)}
         action={<StatusPill map={COMPANY_STATUS} value={company.verificationStatus} />}
       />
       <CardBody>
@@ -111,31 +118,21 @@ function CompanyForm({ company }: { company: Company }) {
               >
                 <Input disabled={locked} {...register("name")} />
               </Field>
-              <Field
-                label="CAC number"
-                hint={locked ? "Locked after verification." : undefined}
-                error={errors.rcNumber?.message}
-                required
-              >
-                <Input disabled={locked} className="uppercase" {...register("rcNumber")} />
+              <Field label="Industry" error={errors.industry?.message} required>
+                <Input {...register("industry")} />
               </Field>
             </div>
-            <Field label="Industry" error={errors.industry?.message} required>
-              <Input {...register("industry")} />
-            </Field>
+            <CompanyPlaceFields
+              control={control as never}
+              register={register as never}
+              errors={errors}
+              country={watch("country")}
+              locked={locked}
+            />
             <Field label="Office address" error={errors.address?.message} required>
               <Input {...register("address")} />
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="State" required>
-                <Select {...register("state")}>
-                  {NIGERIAN_STATES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
               <Field label="Website" optional error={errors.website?.message}>
                 <Input type="url" {...register("website")} />
               </Field>

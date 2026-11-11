@@ -4,7 +4,8 @@ import type { OpeningStatus } from "@/generated/prisma/enums";
 import { toAuditActor, type CompanyContext } from "@/server/auth/session";
 import { db, type Tx } from "@/server/db";
 import { recordAudit, type AuditActor } from "@/server/lib/audit";
-import { errors } from "@/server/lib/errors";
+import { AppError, errors } from "@/server/lib/errors";
+import { normaliseOpeningPlace, openingPlaceProblems } from "@/server/validators/company";
 import { cursorArgs, toPage } from "@/server/lib/pagination";
 import { openingMachine, type Actor } from "@/server/lib/state-machine";
 import type {
@@ -23,6 +24,8 @@ const openingSelect = {
   description: true,
   slots: true,
   preferredDisciplines: true,
+  country: true,
+  city: true,
   state: true,
   location: true,
   workMode: true,
@@ -104,11 +107,21 @@ export async function updateOpening(ctx: CompanyContext, openingId: string, inpu
       where: { id: openingId, companyId: ctx.companyId },
     });
     if (!current) throw errors.notFound("Opening");
+    // Check where the role is against the opening as it will be after this change.
+    const place = normaliseOpeningPlace({ ...current, ...fields });
+    const problems = openingPlaceProblems(place);
+    if (problems.length) throw new AppError("VALIDATION_ERROR", problems[0].message, problems);
     await assertReferences(tx, input);
     if (skills) await tx.openingSkill.deleteMany({ where: { openingId } });
     const opening = await tx.internshipOpening.update({
       where: { id: openingId },
-      data: { ...fields, ...(skills ? { skills: { create: skillRows(skills) } } : {}) },
+      data: {
+        ...fields,
+        country: place.country,
+        city: place.city,
+        state: place.state,
+        ...(skills ? { skills: { create: skillRows(skills) } } : {}),
+      },
       select: openingSelect,
     });
     await recordAudit(tx, {
@@ -169,6 +182,7 @@ export async function listOpeningsForAdmin(query: z.infer<typeof adminOpeningLis
     ...(query.status ? { status: query.status } : {}),
     ...(query.companyId ? { companyId: query.companyId } : {}),
     ...(query.cohortId ? { cohortId: query.cohortId } : {}),
+    ...(query.country ? { country: query.country } : {}),
     ...(query.state ? { state: query.state } : {}),
   };
   const rows = await db.internshipOpening.findMany({

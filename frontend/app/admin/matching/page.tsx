@@ -13,7 +13,7 @@ import { QueryState } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardBody, EmptyState, PageHeader, Skeleton } from "@/components/ui/display";
 import { Input, Select } from "@/components/ui/form-controls";
-import { AVAILABILITY, WORK_MODE, formatLocation } from "@/lib/labels";
+import { AVAILABILITY, formatLocation, formatPlace } from "@/lib/labels";
 import { SPRING } from "@/components/motion";
 import { cn } from "@/lib/utils";
 
@@ -80,7 +80,7 @@ export default function MatchingPage() {
                     <p className="mt-2 flex items-center justify-between text-sm">
                       <span className="flex items-center gap-1 text-muted-foreground">
                         <MapPin className="size-3.5" />
-                        {o.state}, {WORK_MODE[o.workMode]}
+                        {formatPlace(o)}
                       </span>
                       <span className="tabular-nums">
                         {o._count.placements}/{o.slots} filled

@@ -10,7 +10,7 @@ import type { Opening } from "@/client/api/types";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { PageHeader, StatusPill } from "@/components/ui/display";
-import { OPENING_STATUS, WORK_MODE } from "@/lib/labels";
+import { OPENING_STATUS, formatPlace } from "@/lib/labels";
 import { formatDate } from "@/lib/utils";
 
 const columns: ColumnDef<Opening, unknown>[] = [
@@ -39,7 +39,7 @@ const columns: ColumnDef<Opening, unknown>[] = [
       </span>
     ),
   },
-  { id: "mode", header: "Work mode", accessorFn: (o) => WORK_MODE[o.workMode] },
+  { id: "mode", header: "Where", accessorFn: (o) => formatPlace(o) },
   { accessorKey: "state", header: "State" },
   {
     accessorKey: "createdAt",

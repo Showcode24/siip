@@ -69,3 +69,30 @@ describe("scoreMatch", () => {
     );
   });
 });
+
+describe("location across countries", () => {
+  const london: MatchOpening = { ...opening, country: "GB", city: "London", state: null, workMode: "ONSITE" };
+  const loc = (c: Partial<MatchCandidate>, o: MatchOpening) => scoreMatch({ ...ideal, ...c }, o).breakdown.location;
+
+  it("fits interns in the same city, whatever the case", () => {
+    expect(loc({ country: "GB", city: "london", stateOfResidence: null }, london).fit).toBe(1);
+  });
+
+  it("gives no location credit for on-site or hybrid roles in another country", () => {
+    expect(loc({ country: "NG", city: "Lagos" }, london).fit).toBe(0);
+    expect(loc({ country: "NG", city: "Lagos" }, { ...london, workMode: "HYBRID" }).fit).toBe(0);
+  });
+
+  it("gives partial credit in the same country for hybrid roles only", () => {
+    expect(loc({ country: "GB", city: "Leeds", stateOfResidence: null }, { ...london, workMode: "HYBRID" }).fit).toBe(0.3);
+    expect(loc({ country: "GB", city: "Leeds", stateOfResidence: null }, london).fit).toBe(0);
+  });
+
+  it("ignores location for remote roles", () => {
+    expect(loc({ country: "KE", city: "Nairobi" }, { ...london, workMode: "REMOTE" }).fit).toBe(1);
+  });
+
+  it("still matches Nigerian interns by state", () => {
+    expect(loc({ country: "NG", city: "Ikeja", stateOfResidence: "Lagos" }, { ...opening, country: "NG", city: "Lagos" }).fit).toBe(1);
+  });
+});

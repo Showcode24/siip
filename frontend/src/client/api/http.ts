@@ -76,7 +76,21 @@ export async function mock<T>(fn: () => T | Promise<T>, opts: { read?: boolean }
   if (opts.read && !capturing && Math.random() < ERROR_RATE) {
     throw new ApiError("INTERNAL_ERROR", "Something went wrong. Please try again.", 500);
   }
-  return structuredClone(await fn());
+  try {
+    return structuredClone(await fn());
+  } catch (err) {
+    // Zod errors from the shared schemas: same shape as the backend's 422.
+    if (err && typeof err === "object" && "issues" in err && Array.isArray((err as { issues: unknown }).issues)) {
+      const issues = (err as { issues: Array<{ path: PropertyKey[]; message: string }> }).issues;
+      throw new ApiError(
+        "VALIDATION_ERROR",
+        issues[0]?.message ?? "Check the highlighted fields",
+        422,
+        issues.map((i) => ({ path: i.path.join("."), message: i.message })),
+      );
+    }
+    throw err;
+  }
 }
 
 /** Helper for endpoints that return a plain value: real `data`, or the mock. */

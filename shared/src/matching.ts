@@ -28,13 +28,15 @@ const AVAILABILITY_FIT: Record<Availability, Record<WorkSchedule, number>> = {
   WEEKENDS: { FULL_TIME: 0, PART_TIME: 0.25, WEEKENDS: 1 },
 };
 
-/** Graduates elsewhere in the country can still take hybrid roles if they relocate. */
+/** Interns elsewhere in the same country can still take hybrid roles if they relocate. */
 const OTHER_STATE_FIT: Record<WorkMode, number> = { REMOTE: 1, HYBRID: 0.3, ONSITE: 0 };
 
 /** Full availability for the 3 months scores highest; NOT_YET may be mobilised for NYSC mid-internship. */
 const NYSC_FIT: Record<NyscStatus, number> = { COMPLETED: 1, EXEMPTED: 1, SERVING: 0.75, NOT_YET: 0.5 };
 
 export interface MatchCandidate {
+  country?: string | null;
+  city?: string | null;
   stateOfResidence: string | null;
   courseOfStudy: string | null;
   availability: Availability | null;
@@ -45,7 +47,9 @@ export interface MatchCandidate {
 }
 
 export interface MatchOpening {
-  state: string;
+  country?: string | null;
+  city?: string | null;
+  state: string | null;
   workMode: WorkMode;
   schedule: WorkSchedule;
   openToNysc: boolean;
@@ -111,10 +115,19 @@ function disciplineFit(c: MatchCandidate, o: MatchOpening) {
   return hit ? { fit: 1, detail: `Matches "${hit}"` } : { fit: 0, detail: "Different discipline" };
 }
 
+const same = (a?: string | null, b?: string | null) =>
+  Boolean(a && b && a.trim().toLowerCase() === b.trim().toLowerCase());
+
 function locationFit(c: MatchCandidate, o: MatchOpening) {
   if (o.workMode === "REMOTE") return { fit: 1, detail: "Remote role" };
-  if (c.stateOfResidence === o.state) return { fit: 1, detail: `Lives in ${o.state}` };
-  return { fit: OTHER_STATE_FIT[o.workMode], detail: `Lives outside ${o.state}` };
+  const place = o.city ?? o.state ?? "the role's city";
+  // Openings and interns from before country/city existed are all in Nigeria.
+  const oCountry = o.country ?? "NG";
+  const cCountry = c.country ?? "NG";
+  if (cCountry !== oCountry) return { fit: 0, detail: "Lives in another country" };
+  if (same(c.city, o.city)) return { fit: 1, detail: `Lives in ${o.city}` };
+  if (oCountry === "NG" && o.state && c.stateOfResidence === o.state) return { fit: 1, detail: `Lives in ${o.state}` };
+  return { fit: OTHER_STATE_FIT[o.workMode], detail: `Lives outside ${place}` };
 }
 
 function availabilityFit(c: MatchCandidate, o: MatchOpening) {

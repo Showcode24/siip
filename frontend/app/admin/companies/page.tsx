@@ -16,7 +16,7 @@ import { Badge, PageHeader, StatusPill } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/form-controls";
 import { Dialog, DialogClose, DialogContent, SheetContent } from "@/components/ui/overlays";
-import { COMPANY_STATUS, OPENING_STATUS } from "@/lib/labels";
+import { COMPANY_STATUS, OPENING_STATUS, companyRegistration, formatLocation } from "@/lib/labels";
 import { COMPANY_NEXT } from "@/lib/flows";
 import { formatDate } from "@/lib/utils";
 
@@ -27,11 +27,12 @@ const columns: ColumnDef<Company, unknown>[] = [
     cell: ({ row }) => (
       <div>
         <p className="font-semibold">{row.original.name}</p>
-        <p className="text-sm text-muted-foreground">{row.original.rcNumber}</p>
+        <p className="text-sm text-muted-foreground">{companyRegistration(row.original)}</p>
       </div>
     ),
   },
   { accessorKey: "industry", header: "Industry" },
+  { id: "location", header: "Location", accessorFn: (c) => formatLocation(c) },
   { accessorKey: "state", header: "State" },
   {
     accessorKey: "verificationStatus",
@@ -112,7 +113,7 @@ function CompanyPanel({ id }: { id: string }) {
   return (
     <SheetContent
       title={q.data?.name ?? "Company"}
-      description={q.data ? `${q.data.rcNumber}, ${q.data.industry}` : undefined}
+      description={q.data ? `${companyRegistration(q.data)}, ${q.data.industry}` : undefined}
     >
       <QueryState query={q}>
         {(c) => (
@@ -126,7 +127,8 @@ function CompanyPanel({ id }: { id: string }) {
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
               {[
                 ["Address", c.address],
-                ["State", c.state],
+                ["Location", [formatLocation(c), c.state].filter(Boolean).join(", ") || "Not given"],
+                ["Time zone", c.timeZone ?? "Not given"],
                 ["Website", c.website ?? "Not given"],
                 ["Registered", formatDate(c.createdAt)],
               ].map(([k, v]) => (

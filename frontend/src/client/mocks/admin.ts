@@ -271,7 +271,7 @@ export function getCompany(id: string) {
       }),
     openings: db.openings
       .filter((o) => o.companyId === id)
-      .map((o) => ({ id: o.id, title: o.title, status: o.status, slots: o.slots, state: o.state })),
+      .map((o) => ({ id: o.id, title: o.title, status: o.status, slots: o.slots, country: o.country, city: o.city, state: o.state })),
   };
 }
 

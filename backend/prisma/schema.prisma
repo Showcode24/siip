@@ -546,11 +546,18 @@ enum CompanyMemberRole {
 model Company {
   id                 String                    @id @default(cuid())
   name               String
-  rcNumber           String                    @unique
+  // Nigeria only: CAC number (RC/BN/IT). Companies elsewhere give businessRegNumber.
+  rcNumber           String?                   @unique
+  businessRegNumber  String?
   industry           String
   description        String?
   address            String
-  state              String
+  // ISO 3166-1 alpha-2 and an IANA time zone, e.g. "GB" + "Europe/London".
+  country            String?
+  city               String?
+  timeZone           String?
+  // Nigeria only.
+  state              String?
   website            String?
   logoUrl            String?
   logoPublicId       String?
@@ -565,7 +572,9 @@ model Company {
   openings    InternshipOpening[]
   placements  Placement[]
 
+  @@unique([country, businessRegNumber])
   @@index([verificationStatus])
+  @@index([country])
 }
 
 model CompanyMember {
@@ -631,7 +640,10 @@ model InternshipOpening {
   description          String
   slots                Int
   preferredDisciplines String[]
-  state                String
+  // Where on-site and hybrid interns work. Nigerian state only when country = "NG".
+  country              String?
+  city                 String?
+  state                String?
   location             String?
   workMode             WorkMode
   schedule             WorkSchedule

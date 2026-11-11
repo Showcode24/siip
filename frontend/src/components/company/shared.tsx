@@ -1,19 +1,23 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SkillLevel, WorkMode, WorkSchedule } from "@siip/shared/enums";
+import { SkillLevel, WorkSchedule } from "@siip/shared/enums";
+import { countryOptions } from "@siip/shared/countries";
 import { NIGERIAN_STATES } from "@siip/shared/nigeria";
 import { createOpeningSchema } from "@siip/shared/validators/company";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Star, X } from "lucide-react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import type { z } from "zod";
+import { companyApi } from "@/client/api/company";
 import { graduateApi } from "@/client/api/graduate";
 import type { CheckIn, LimitedGraduate, Opening, ScoreBreakdown } from "@/client/api/types";
 import { Button } from "@/components/ui/button";
 import { Avatar, Badge } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
-import { Checkbox, Input, Select, Switch, Textarea } from "@/components/ui/form-controls";
+import { Combobox } from "@/components/ui/combobox";
+import { Checkbox, Input, RadioCard, RadioGroup, Select, Switch, Textarea } from "@/components/ui/form-controls";
 import {
   AVAILABILITY,
   DEGREE_CLASS,
@@ -207,6 +211,13 @@ export function CheckInList({ items }: { items: CheckIn[] }) {
 
 // ─── Opening form (create + edit) ─────────────────────────────────────────────
 
+const COUNTRY_OPTIONS = countryOptions().map((c) => ({ value: c.code, label: c.name }));
+const WORK_MODE_HINT = {
+  REMOTE: "From anywhere",
+  ONSITE: "At your office",
+  HYBRID: "Some days at your office",
+} as const;
+
 export type OpeningValues = z.input<typeof createOpeningSchema>;
 
 export function openingDefaults(o?: Opening): OpeningValues {
@@ -217,7 +228,9 @@ export function openingDefaults(o?: Opening): OpeningValues {
         description: o.description,
         slots: o.slots,
         preferredDisciplines: o.preferredDisciplines,
-        state: o.state as OpeningValues["state"],
+        country: (o.country ?? null) as OpeningValues["country"],
+        city: o.city ?? "",
+        state: (o.state ?? null) as OpeningValues["state"],
         location: o.location ?? "",
         workMode: o.workMode,
         schedule: o.schedule,
@@ -230,7 +243,9 @@ export function openingDefaults(o?: Opening): OpeningValues {
         description: "",
         slots: 1,
         preferredDisciplines: [],
-        state: "Lagos",
+        country: null,
+        city: "",
+        state: null,
         location: "",
         workMode: "ONSITE",
         schedule: "FULL_TIME",
@@ -264,6 +279,19 @@ export function OpeningForm({
     defaultValues: openingDefaults(initial),
   });
   const { fields, append, remove } = useFieldArray({ control, name: "skills" });
+  // New openings start where the company is.
+  const company = useQuery({ queryKey: ["company", "profile"], queryFn: companyApi.getProfile, enabled: !initial });
+  useEffect(() => {
+    const c = company.data;
+    if (initial || !c) return;
+    if (!watch("country") && c.country) setValue("country", c.country as never);
+    if (!watch("city") && c.city) setValue("city", c.city);
+    if (!watch("state") && c.state) setValue("state", c.state as never);
+    if (!watch("location") && c.address) setValue("location", c.address);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [company.data, initial]);
+  const workMode = watch("workMode");
+  const placeCountry = watch("country");
   const chosen = new Set(watch("skills").map((s) => s.skillId));
   const disciplines = watch("preferredDisciplines") ?? [];
 
@@ -364,28 +392,64 @@ export function OpeningForm({
 
       <section className="grid gap-5 border-t border-border pt-6">
         <h2 className="text-lg">Where and when</h2>
+        <fieldset className="grid gap-3">
+          <legend className="mb-3 text-[15px] font-semibold">
+            Where will the intern work? <span className="text-brand-text">*</span>
+          </legend>
+          <Controller
+            control={control}
+            name="workMode"
+            render={({ field }) => (
+              <RadioGroup value={field.value} onValueChange={field.onChange} className="sm:grid-cols-3">
+                {(["REMOTE", "ONSITE", "HYBRID"] as const).map((m) => (
+                  <RadioCard key={m} value={m}>
+                    <span className="block font-semibold">{WORK_MODE[m]}</span>
+                    <span className="block text-sm text-muted-foreground">{WORK_MODE_HINT[m]}</span>
+                  </RadioCard>
+                ))}
+              </RadioGroup>
+            )}
+          />
+        </fieldset>
+        {workMode !== "REMOTE" ? (
+          <div className="grid gap-5 rounded-lg border border-border bg-surface-muted/50 p-4 sm:grid-cols-2 sm:p-5">
+            <Field label="Country" error={errors.country?.message} required>
+              <Controller
+                control={control}
+                name="country"
+                render={({ field }) => (
+                  <Combobox
+                    options={COUNTRY_OPTIONS}
+                    value={field.value as string | null}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="Search countries"
+                    emptyText="No country by that name"
+                  />
+                )}
+              />
+            </Field>
+            <Field label="City" error={errors.city?.message} required>
+              <Input {...register("city")} />
+            </Field>
+            {placeCountry === "NG" ? (
+              <Field label="State" error={errors.state?.message} required>
+                <Select {...register("state", { setValueAs: (v) => (v === "" ? null : v) })}>
+                  <option value="">Choose a state</option>
+                  {NIGERIAN_STATES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            ) : null}
+            <Field label="Office address" optional>
+              <Input {...register("location")} />
+            </Field>
+          </div>
+        ) : null}
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="State" required>
-            <Select {...register("state")}>
-              {NIGERIAN_STATES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Office address" optional>
-            <Input {...register("location")} />
-          </Field>
-          <Field label="Work mode" required>
-            <Select {...register("workMode")}>
-              {Object.values(WorkMode).map((m) => (
-                <option key={m} value={m}>
-                  {WORK_MODE[m]}
-                </option>
-              ))}
-            </Select>
-          </Field>
           <Field label="Schedule" required>
             <Select {...register("schedule")}>
               {Object.values(WorkSchedule).map((m) => (

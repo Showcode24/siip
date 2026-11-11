@@ -8,6 +8,8 @@ import {
 import { cohortDateProblem } from "@/server/validators/cohort";
 import { updateProfileSchema } from "@/server/validators/graduate";
 import { normalisePhone } from "@siip/shared/phone";
+import { isTimeZone } from "@siip/shared/timezones";
+import { companyIdentityProblems, normaliseCompanyIdentity } from "@siip/shared/validators/company";
 import { normaliseProfileUpdate } from "@/server/lib/profile-rules";
 
 const empty: ProfileForScoring = {
@@ -200,5 +202,28 @@ describe("normaliseProfileUpdate", () => {
     expect(out.nyscStateCode).toBeNull();
     expect(out.currentPpa).toBeNull();
     expect(out.nyscStatus).toBe("COMPLETED");
+  });
+});
+
+describe("company registration by country", () => {
+  it("asks Nigerian companies for a CAC number and state", () => {
+    expect(companyIdentityProblems({ country: "NG" }).map((p) => p.path)).toEqual(["rcNumber", "state"]);
+    expect(companyIdentityProblems({ country: "NG", rcNumber: "RC1", state: "Lagos" })).toEqual([]);
+  });
+
+  it("asks other companies for a registration number instead", () => {
+    expect(companyIdentityProblems({ country: "GB" }).map((p) => p.path)).toEqual(["businessRegNumber"]);
+    expect(companyIdentityProblems({ country: "GB", businessRegNumber: "12345678" })).toEqual([]);
+  });
+
+  it("drops details that don't apply to the country", () => {
+    expect(normaliseCompanyIdentity({ country: "GB", rcNumber: "RC1", state: "Lagos", businessRegNumber: "1" }))
+      .toEqual({ country: "GB", rcNumber: null, state: null, businessRegNumber: "1" });
+  });
+
+  it("knows real time zones", () => {
+    expect(isTimeZone("Europe/London")).toBe(true);
+    expect(isTimeZone("Africa/Lagos")).toBe(true);
+    expect(isTimeZone("Mars/Olympus")).toBe(false);
   });
 });

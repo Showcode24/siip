@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Select, Textarea } from "@/components/ui/form-controls";
-import { PLACEMENT_STATUS, WORK_MODE } from "@/lib/labels";
+import { PLACEMENT_STATUS, WORK_MODE, formatLocation } from "@/lib/labels";
 import { handleFormError } from "@/lib/forms";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -110,7 +110,9 @@ function PlacementView({ p }: { p: Placement }) {
               [
                 MapPin,
                 "Location",
-                `${p.opening.location ?? p.company.address ?? ""}${p.opening.state ? `, ${p.opening.state}` : ""}`,
+                p.opening.workMode === "REMOTE"
+                  ? "Remote"
+                  : [p.opening.location ?? p.company.address, formatLocation(p.opening)].filter(Boolean).join(", "),
               ],
               [Building2, "Work mode", WORK_MODE[p.opening.workMode]],
               [Globe, "Website", p.company.website ?? "Not provided"],

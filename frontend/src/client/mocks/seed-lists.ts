@@ -137,9 +137,12 @@ export const COURSES = [
 export const COMPANIES: Array<{
   name: string;
   industry: string;
-  state: string;
+  /** Nigerian state; omitted for companies elsewhere. */
+  state?: string;
   address: string;
   website: string;
+  /** Companies outside Nigeria (default: Nigeria, Africa/Lagos). */
+  abroad?: { country: string; city: string; timeZone: string; regNumber: string };
 }> = [
   {
     name: "Lagos Media Hub",
@@ -196,6 +199,21 @@ export const COMPANIES: Array<{
     state: "Rivers",
     address: "40 Trans-Amadi Road, Port Harcourt",
     website: "https://gardencityretail.ng",
+  },
+  // Companies outside Nigeria (registration is open to any country).
+  {
+    name: "Thames Studio",
+    industry: "Design and advertising",
+    address: "10 Shoreditch High Street",
+    website: "https://thamesstudio.co.uk",
+    abroad: { country: "GB", city: "London", timeZone: "Europe/London", regNumber: "12345678" },
+  },
+  {
+    name: "Savanna Digital",
+    industry: "Digital marketing",
+    address: "Westlands Business Park, Waiyaki Way",
+    website: "https://savannadigital.co.ke",
+    abroad: { country: "KE", city: "Nairobi", timeZone: "Africa/Nairobi", regNumber: "PVT-AB12CD3" },
   },
 ];
 

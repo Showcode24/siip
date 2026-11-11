@@ -120,6 +120,20 @@ export const INTERN_TYPE: Record<InternType, { label: string; hint: string }> = 
   GRADUATE: { label: "Graduate", hint: "Finished your studies" },
 };
 
+/** "CAC RC1234567" for Nigerian companies, "Reg. no. 12345678" elsewhere. */
+export function companyRegistration(c: { rcNumber?: string | null; businessRegNumber?: string | null }): string {
+  if (c.rcNumber) return `CAC ${c.rcNumber}`;
+  if (c.businessRegNumber) return `Reg. no. ${c.businessRegNumber}`;
+  return "No registration number";
+}
+
+/** Where an opening's interns work: "Remote", or "London, United Kingdom (Hybrid)". */
+export function formatPlace(o: { workMode: WorkMode; city?: string | null; country?: string | null; state?: string | null }): string {
+  if (o.workMode === "REMOTE") return "Remote";
+  const where = formatLocation(o) || o.state || "Location not given";
+  return `${where} (${WORK_MODE[o.workMode]})`;
+}
+
 /** "Nairobi, Kenya". Either part may be missing. */
 export function formatLocation(p: { city?: string | null; country?: string | null }): string {
   return [p.city, p.country ? countryName(p.country) : null].filter(Boolean).join(", ");

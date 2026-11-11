@@ -151,11 +151,15 @@ export interface DbAttempt {
 export interface DbCompany {
   id: string;
   name: string;
-  rcNumber: string;
+  rcNumber: string | null;
+  businessRegNumber: string | null;
+  country: string | null;
+  city: string | null;
+  timeZone: string | null;
   industry: string;
   description: string | null;
   address: string;
-  state: string;
+  state: string | null;
   website: string | null;
   logoUrl: string | null;
   verificationStatus: CompanyVerificationStatus;
@@ -191,7 +195,9 @@ export interface DbOpening {
   description: string;
   slots: number;
   preferredDisciplines: string[];
-  state: string;
+  country: string | null;
+  city: string | null;
+  state: string | null;
   location: string | null;
   workMode: WorkMode;
   schedule: WorkSchedule;
@@ -813,11 +819,15 @@ function seedCompanies(adminId: string) {
     const company: DbCompany = {
       id: newId("cmp"),
       name: c.name,
-      rcNumber: `RC${1200000 + i * 4111}`,
+      rcNumber: c.abroad ? null : `RC${1200000 + i * 4111}`,
+      businessRegNumber: c.abroad?.regNumber ?? null,
+      country: c.abroad?.country ?? "NG",
+      city: c.abroad?.city ?? NG_CITY[c.state ?? ""] ?? c.state ?? null,
+      timeZone: c.abroad?.timeZone ?? "Africa/Lagos",
       industry: c.industry,
       description: `${c.name} is a growing ${c.industry.toLowerCase()} business.`,
       address: c.address,
-      state: c.state,
+      state: c.state ?? null,
       website: c.website,
       logoUrl: null,
       verificationStatus: status,
@@ -838,7 +848,7 @@ function seedCompanies(adminId: string) {
         "Bayo Ojo",
         "Ese Ighodaro",
       ]),
-      `owner@${slug}.ng`,
+      `owner@${slug}.${c.abroad ? "example" : "ng"}`,
       "COMPANY_MEMBER",
       160 - i,
     );
@@ -889,6 +899,12 @@ function seedCompanies(adminId: string) {
   });
 }
 
+function placeFor(company: DbCompany, workMode: WorkMode) {
+  return workMode === "REMOTE"
+    ? { workMode, country: null, city: null, state: null, location: null }
+    : { workMode, country: company.country, city: company.city, state: company.state, location: company.address };
+}
+
 function seedOpenings() {
   const verified = db.companies.filter((c) => c.verificationStatus === "VERIFIED");
   for (let i = 0; i < 15; i++) {
@@ -904,9 +920,7 @@ function seedOpenings() {
       description: `Join ${company.name}'s ${t.department.toLowerCase()} team for three months. You'll work on real projects with a dedicated supervisor and get hands-on experience in ${t.skills[0].toLowerCase()}.`,
       slots: 1 + (i % 3),
       preferredDisciplines: t.disciplines,
-      state: company.state,
-      location: company.address,
-      workMode: (["ONSITE", "HYBRID", "REMOTE", "ONSITE"] as const)[i % 4],
+      ...placeFor(company, (["ONSITE", "HYBRID", "REMOTE", "ONSITE"] as const)[i % 4]),
       schedule: i % 5 === 4 ? "PART_TIME" : "FULL_TIME",
       openToNysc: i % 3 !== 2,
       status,

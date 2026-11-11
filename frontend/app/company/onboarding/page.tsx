@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { NIGERIAN_STATES } from "@siip/shared/nigeria";
+import { guessTimeZone } from "@siip/shared/timezones";
 import { registerCompanySchema } from "@siip/shared/validators/company";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Clock, FileSearch, XCircle } from "lucide-react";
@@ -15,8 +15,10 @@ import { sessionKey, useSession } from "@/client/session";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, PageHeader, Skeleton } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
-import { Input, Select, Textarea } from "@/components/ui/form-controls";
+import { CompanyPlaceFields } from "@/components/company/company-fields";
+import { Input, Textarea } from "@/components/ui/form-controls";
 import { handleFormError } from "@/lib/forms";
+import { companyRegistration } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 export default function CompanyOnboardingPage() {
@@ -29,13 +31,16 @@ function RegisterCompany() {
   const qc = useQueryClient();
   const {
     register,
+    control,
+    watch,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<z.input<typeof registerCompanySchema>>({
     resolver: zodResolver(registerCompanySchema),
     mode: "onTouched",
-    defaultValues: { state: "Lagos" },
+    // Pre-fill the visitor's own time zone; they choose the country themselves.
+    defaultValues: { timeZone: guessTimeZone() ?? undefined },
   });
   return (
     <div className="mx-auto max-w-2xl">
@@ -61,32 +66,19 @@ function RegisterCompany() {
             <Field label="Company name" error={errors.name?.message} required>
               <Input autoComplete="organization" {...register("name")} />
             </Field>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field
-                label="CAC registration number"
-                hint="e.g. RC1234567 or BN1234567"
-                error={errors.rcNumber?.message}
-                required
-              >
-                <Input className="uppercase" {...register("rcNumber")} />
-              </Field>
-              <Field label="Industry" error={errors.industry?.message} required>
-                <Input placeholder="e.g. Media, Fintech, FMCG" {...register("industry")} />
-              </Field>
-            </div>
+            <Field label="Industry" error={errors.industry?.message} required>
+              <Input placeholder="e.g. Design, Fintech, Retail" {...register("industry")} />
+            </Field>
+            <CompanyPlaceFields
+              control={control as never}
+              register={register as never}
+              errors={errors}
+              country={watch("country")}
+            />
             <Field label="Office address" error={errors.address?.message} required>
               <Input autoComplete="street-address" {...register("address")} />
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="State" required>
-                <Select {...register("state")}>
-                  {NIGERIAN_STATES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
               <Field label="Website" optional error={errors.website?.message}>
                 <Input
                   type="url"
@@ -130,7 +122,7 @@ function VerificationStatus() {
     { icon: CheckCircle2, title: "Company registered", done: true },
     {
       icon: FileSearch,
-      title: "SIIP checks your CAC details",
+      title: "SIIP checks your registration details",
       done: status === "VERIFIED" || status === "SUSPENDED",
     },
     {
@@ -141,7 +133,7 @@ function VerificationStatus() {
   ];
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader title={c.name} description={`${c.rcNumber}, ${c.industry}`} />
+      <PageHeader title={c.name} description={`${companyRegistration(c)}, ${c.industry}`} />
       <Card>
         <CardBody className="grid gap-6">
           <div

@@ -122,7 +122,9 @@ export const adminApi = {
               title: string;
               status: OpeningStatus;
               slots: number;
-              state: string;
+              country: string | null;
+              city: string | null;
+              state: string | null;
             }>;
           }
         >(`/admin/companies/${id}`),

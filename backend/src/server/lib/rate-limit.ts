@@ -16,6 +16,8 @@ export const LIMITS = {
   examStart: { requests: 10, window: "10 m" },
   certificateVerify: { requests: 30, window: "1 m" },
   dataExport: { requests: 5, window: "1 d" },
+  passwordChange: { requests: 5, window: "1 h" },
+  contact: { requests: 5, window: "1 h" },
 } as const satisfies Record<string, { requests: number; window: Duration }>;
 
 export type LimitName = keyof typeof LIMITS;

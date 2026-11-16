@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { authApi } from "@/client/api/auth";
+import { errorMessage } from "@/client/api/http";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 
-/**
- * Backend gap: the API has no change-password route yet (Better Auth supports it,
- * but it isn't exposed under /api/v1). Until then this validates and simulates.
- */
+/** Changing the password also signs out every other device. */
 export function ChangePasswordCard() {
   const [show, setShow] = useState(false);
   const [current, setCurrent] = useState("");
@@ -27,11 +26,16 @@ export function ChangePasswordCard() {
             e.preventDefault();
             if (weak || !current) return;
             setBusy(true);
-            await new Promise((r) => setTimeout(r, 600));
-            setBusy(false);
-            setCurrent("");
-            setNext("");
-            toast("Password not changed yet", { description: "This form isn't connected to sign-in yet, so your password is the same." });
+            try {
+              const { message } = await authApi.changePassword(current, next);
+              setCurrent("");
+              setNext("");
+              toast.success(message);
+            } catch (err) {
+              toast.error(errorMessage(err));
+            } finally {
+              setBusy(false);
+            }
           }}
         >
           <Field label="Current password" required>

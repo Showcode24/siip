@@ -195,6 +195,7 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | GET | `/api/v1/admin/assessments/{id}/attempts` | Admin | List attempts |
 | POST | `/api/v1/admin/assessments/{id}/questions` | Admin | Add question |
 | POST | `/api/v1/admin/assessments/{id}/retakes` | Admin | Grant retake |
+| GET | `/api/v1/admin/audit` | Admin | List audit log |
 | GET | `/api/v1/admin/cohorts` | Admin | List cohorts for admin |
 | POST | `/api/v1/admin/cohorts` | Admin | Create cohort |
 | GET | `/api/v1/admin/cohorts/{id}` | Admin | Get cohort for admin |
@@ -242,6 +243,7 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | DELETE | `/api/v1/admin/siip-test/videos/{id}` | Admin | Delete video |
 | POST | `/api/v1/admin/siip-test/videos/reorder` | Admin | Reorder videos |
 | GET | `/api/v1/admin/skill-documents/{id}/url` | Admin | Get skill document url for admin |
+| POST | `/api/v1/auth/change-password` | Any signed-in user | Change password |
 | POST | `/api/v1/auth/forgot-password` | Public | Request password reset |
 | GET | `/api/v1/auth/me` | Any signed-in user | Get me |
 | POST | `/api/v1/auth/resend-verification` | Public | Resend verification |
@@ -255,6 +257,7 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | GET | `/api/v1/company/interns/{id}` | Company member | Get my intern |
 | GET | `/api/v1/company/interns/{id}/check-ins` | Company member | List intern check ins |
 | POST | `/api/v1/company/interns/{id}/check-ins` | Company member | Submit supervisor check in |
+| GET | `/api/v1/company/interns/{id}/evaluation` | Company member | Get evaluation |
 | POST | `/api/v1/company/interns/{id}/evaluation` | Company member | Submit evaluation |
 | POST | `/api/v1/company/interns/{id}/permanent-offer` | Company owner | Record permanent offer |
 | POST | `/api/v1/company/interns/{id}/supervisor` | Company owner | Assign supervisor |
@@ -280,6 +283,7 @@ Generated from the route handlers by `pnpm openapi`. "Company owner" routes requ
 | PATCH | `/api/v1/company/profile` | Company owner | Update my company |
 | POST | `/api/v1/company/register` | Company member | Register company |
 | POST | `/api/v1/company/resubmit` | Company owner | Resubmit company |
+| POST | `/api/v1/contact` | Public | Send contact message |
 | GET | `/api/v1/cron/daily` | Cron (secret) | Run daily jobs |
 | GET | `/api/v1/graduate/applications` | Graduate | List my applications |
 | POST | `/api/v1/graduate/applications` | Graduate | Apply to cohort |

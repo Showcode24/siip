@@ -24,6 +24,8 @@ function mapAuthError(err: unknown): never {
       throw errors.badRequest("This link is invalid or has expired");
     case "FAILED_TO_CREATE_USER":
       throw errors.badRequest("We could not create your account");
+    case "INVALID_PASSWORD":
+      throw errors.badRequest("Your current password is incorrect");
     case "FAILED_TO_CREATE_SESSION":
       throw new AppError("UNAUTHENTICATED", "Incorrect email or password");
   }
@@ -118,6 +120,24 @@ export async function requestPasswordReset(email: string) {
 export async function resetPassword(token: string, newPassword: string) {
   try {
     await getAuth().api.resetPassword({ body: { token, newPassword } });
+  } catch (err) {
+    mapAuthError(err);
+  }
+}
+
+/** Signs out every other device, so a stolen session stops working. */
+export async function changePassword(
+  input: { currentPassword: string; newPassword: string },
+  requestHeaders: Headers,
+) {
+  try {
+    // Revoking other sessions issues this device a fresh session cookie.
+    const { headers } = await getAuth().api.changePassword({
+      body: { ...input, revokeOtherSessions: true },
+      headers: requestHeaders,
+      returnHeaders: true,
+    });
+    return { headers };
   } catch (err) {
     mapAuthError(err);
   }

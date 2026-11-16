@@ -20,6 +20,33 @@ export function WelcomeVerifyEmail({ firstName, verifyUrl }: VerifyEmailProps) {
   );
 }
 
+const TOPIC: Record<ContactMessageProps["topic"], string> = {
+  graduate: "Interns and skills",
+  company: "Companies",
+  certificate: "Certificates",
+  other: "Something else",
+};
+
+export interface ContactMessageProps {
+  name: string;
+  email: string;
+  topic: "graduate" | "company" | "certificate" | "other";
+  message: string;
+}
+
+/** Sent to SUPPORT_EMAIL; replying goes straight to the sender. */
+export function ContactMessageEmail({ name, email, topic, message }: ContactMessageProps) {
+  return (
+    <Layout preview={`New message from ${name}`} heading="New message from the website">
+      <P>
+        From {name} ({email}), about: {TOPIC[topic]}.
+      </P>
+      <P>{message}</P>
+      <Small>Reply to this email to answer them directly.</Small>
+    </Layout>
+  );
+}
+
 export interface PasswordResetProps {
   firstName: string;
   resetUrl: string;

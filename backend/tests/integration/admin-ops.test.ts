@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { GET as analytics } from "../../app/api/v1/admin/analytics/route";
+import { GET as audit } from "../../app/api/v1/admin/audit/route";
 import { GET as exportApps } from "../../app/api/v1/admin/exports/applications/route";
 import { GET as me } from "../../app/api/v1/auth/me/route";
 import { GET as daily } from "../../app/api/v1/cron/daily/route";
@@ -61,6 +62,18 @@ describe("analytics and exports", () => {
     expect(text.split("\r\n")[0]).toContain("application_id");
     expect(text).toContain("'=HYPERLINK(1)");
     expect(await db.auditLog.count({ where: { action: "export.applications", actorId: admin.id } })).toBe(1);
+  });
+
+  it("lists the audit log, newest first, to admins only", async () => {
+    const { json } = await call(audit, {
+      method: "GET",
+      cookie: admin.cookie,
+      path: "/?action=export.applications&limit=5",
+    });
+    expect(json.data[0]).toMatchObject({ action: "export.applications", actorId: admin.id });
+    expect(json.data[0].actorName).toBeTruthy();
+    expect(json.meta).toHaveProperty("nextCursor");
+    expect((await call(audit, { method: "GET", cookie: grad.cookie })).res.status).toBe(403);
   });
 });
 

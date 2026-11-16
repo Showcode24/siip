@@ -74,6 +74,7 @@ export async function getPlacementForAdmin(placementId: string) {
       checkIns: { orderBy: [{ month: "asc" }, { authorType: "asc" }] },
       evaluation: true,
       programmeEvaluation: true,
+      certificate: { select: { id: true, serialNumber: true, verificationCode: true, issuedAt: true } },
     },
   });
   if (!placement) throw errors.notFound("Placement");

@@ -1,34 +1,11 @@
 "use client";
 
-// Who is signed in. Mock mode: a demo persona chosen with the dev role switcher
-// (stored in localStorage). Real mode: GET /api/v1/auth/me via Better Auth cookies.
+// Who is signed in: GET /api/v1/auth/me, using Better Auth's cookies.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Me } from "./api/types";
-import { ApiError, USE_MOCKS, get } from "./api/http";
-
-const KEY = "siip-mock-persona";
-export const DEFAULT_PERSONA = "graduate-approved";
-
-/** Dev/capture only: `?as=<persona>` opens a page as that demo account (mock mode). */
-export const isCaptureMode = () => typeof window !== "undefined" && new URLSearchParams(location.search).has("capture");
-
-export function currentPersona(): string | null {
-  if (typeof window === "undefined") return DEFAULT_PERSONA;
-  const asParam = new URLSearchParams(location.search).get("as");
-  if (asParam) localStorage.setItem(KEY, asParam);
-  const v = localStorage.getItem(KEY);
-  return v === "signed-out" ? null : (v ?? DEFAULT_PERSONA);
-}
-
-export function setPersona(persona: string | null) {
-  localStorage.setItem(KEY, persona ?? "signed-out");
-}
+import { ApiError, get } from "./api/http";
 
 async function loadMe(): Promise<Me | null> {
-  if (USE_MOCKS) {
-    const { mockMe } = await import("./mocks/me");
-    return mockMe(currentPersona());
-  }
   try {
     return (await get<Me>("/auth/me")).data;
   } catch (err) {
@@ -44,7 +21,7 @@ export function useSession() {
   return { me: q.data ?? null, isLoading: q.isLoading, refetch: q.refetch };
 }
 
-/** Use after sign-in/out or a persona switch: drops every cached query. */
+/** Use after sign-in or sign-out: drops every cached query. */
 export function useResetSession() {
   const qc = useQueryClient();
   return () => qc.resetQueries();

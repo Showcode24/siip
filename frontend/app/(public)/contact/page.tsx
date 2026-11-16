@@ -4,18 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2, Mail, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from "zod";
+import { contactSchema } from "@siip/shared/validators/auth";
+import { authApi } from "@/client/api/auth";
+import { errorMessage } from "@/client/api/http";
+import { toast } from "sonner";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/form-controls";
 
-const schema = z.object({
-  name: z.string().trim().min(2, "Tell us your name"),
-  email: z.email("Enter a valid email address"),
-  topic: z.enum(["graduate", "company", "certificate", "other"]),
-  message: z.string().trim().min(10, "Add a few more details").max(2000),
-});
+const schema = contactSchema;
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
@@ -28,10 +27,13 @@ export default function ContactPage() {
     mode: "onTouched",
     defaultValues: { topic: "graduate" },
   });
-  // Backend gap: there's no contact endpoint yet; this simulates a successful send.
-  const onSubmit = handleSubmit(async () => {
-    await new Promise((r) => setTimeout(r, 600));
-    setSent(true);
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      await authApi.sendContactMessage(values);
+      setSent(true);
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
   });
 
   return (
@@ -48,9 +50,9 @@ export default function ContactPage() {
             role="status"
           >
             <CheckCircle2 className="size-10 text-muted-foreground" />
-            <h2 className="mt-4 text-2xl">Your message is ready</h2>
+            <h2 className="mt-4 text-2xl">Message sent</h2>
             <p className="mt-2 text-muted-foreground">
-              This form isn&apos;t connected yet, so nothing was sent. Once it is, we&apos;ll reply to your email.
+              Thanks for getting in touch. We&apos;ll reply to your email within two working days.
             </p>
             <Button variant="outline" className="mt-6" onClick={() => setSent(false)}>
               Send another message

@@ -747,13 +747,7 @@ export interface ReviewDetail {
 // ─── The SIIP test ────────────────────────────────────────────────────────────
 
 export type SiipState =
-  | "PASSED"
-  | "LOCKED_INTERNSHIP"
-  | "LOCKED_REVIEW"
-  | "IN_PROGRESS"
-  | "COOLDOWN"
-  | "VIDEOS"
-  | "READY";
+  "PASSED" | "LOCKED_INTERNSHIP" | "LOCKED_REVIEW" | "IN_PROGRESS" | "COOLDOWN" | "VIDEOS" | "READY";
 
 export interface SiipVideo {
   id: string;

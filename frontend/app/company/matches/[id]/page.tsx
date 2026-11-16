@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { companyApi } from "@/client/api/company";
-import { USE_MOCKS, errorMessage } from "@/client/api/http";
+import { errorMessage } from "@/client/api/http";
 import { useSession } from "@/client/session";
 import { GraduateSummary, ScoreBreakdownList, ScoreRing } from "@/components/company/shared";
 import { QueryState } from "@/components/query-state";
@@ -112,8 +112,7 @@ export default function MatchDetailPage() {
                             onClick={async () => {
                               try {
                                 const { url } = await companyApi.getMatchCv(id);
-                                if (USE_MOCKS) toast.info("In demo mode there's no CV file.");
-                                else window.open(url, "_blank", "noopener");
+                                window.open(url, "_blank", "noopener");
                               } catch (e) {
                                 toast.error(errorMessage(e));
                               }

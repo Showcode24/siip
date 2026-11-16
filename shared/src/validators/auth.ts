@@ -39,6 +39,21 @@ export const resetPasswordSchema = z.object({
   newPassword: password,
 });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Enter your current password").max(128),
+  newPassword: password,
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/** The public contact form. */
+export const contactSchema = z.object({
+  name: z.string().trim().min(2, "Tell us your name").max(120),
+  email,
+  topic: z.enum(["graduate", "company", "certificate", "other"]),
+  message: z.string().trim().min(10, "Add a few more details").max(2000),
+});
+export type ContactInput = z.infer<typeof contactSchema>;
+
 export const resendVerificationSchema = z.object({ email });
 
 export const verifyEmailQuery = z.object({ token: z.string().min(1).max(2048) });

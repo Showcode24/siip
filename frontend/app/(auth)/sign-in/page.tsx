@@ -9,7 +9,6 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { authApi } from "@/client/api/auth";
-import { USE_MOCKS } from "@/client/api/http";
 import { homeFor, sessionKey } from "@/client/session";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
@@ -62,12 +61,6 @@ function SignInForm() {
           role="alert"
         >
           That verification link is invalid or has expired. Sign in and we&apos;ll send a new one.
-        </p>
-      ) : null}
-      {USE_MOCKS ? (
-        <p className="mt-6 rounded-lg bg-info-soft px-4 py-3 text-sm text-info">
-          Demo mode: use any demo email (e.g. <b>admin@siip.ng</b>) with any password, or the &quot;Switch
-          role&quot; button.
         </p>
       ) : null}
       <form onSubmit={onSubmit} noValidate className="mt-8 grid gap-5">

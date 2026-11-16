@@ -20,6 +20,8 @@ export interface SendEmailInput<N extends TemplateName> {
   props: TemplateProps<N>;
   to: string;
   toUserId?: string;
+  /** Where replies go, e.g. the sender of a contact-form message. */
+  replyTo?: string;
   /**
    * One key per logical event, e.g. `application-received:${applicationId}`.
    * A key that was already sent (or is in flight) is skipped.
@@ -57,7 +59,14 @@ export async function sendEmail<N extends TemplateName>(input: SendEmailInput<N>
     }
 
     const { data, error } = await resend.emails.send(
-      { from: env().EMAIL_FROM, to: input.to, subject: claimed.subject, html, text },
+      {
+        from: env().EMAIL_FROM,
+        to: input.to,
+        subject: claimed.subject,
+        html,
+        text,
+        ...(input.replyTo ? { replyTo: input.replyTo } : {}),
+      },
       { idempotencyKey: input.idempotencyKey },
     );
     if (error) throw new Error(`Resend error: ${error.name}`);

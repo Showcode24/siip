@@ -43,8 +43,10 @@ import {
   type ProgressReminderProps,
 } from "./reminders";
 import {
+  ContactMessageEmail,
   PasswordResetEmail,
   WelcomeVerifyEmail,
+  type ContactMessageProps,
   type PasswordResetProps,
   type VerifyEmailProps,
 } from "./auth";
@@ -63,6 +65,10 @@ export const templates = {
   "welcome-verify": define<VerifyEmailProps>({
     subject: () => "Welcome to SIIP: please verify your email",
     render: (p) => WelcomeVerifyEmail(p),
+  }),
+  "contact-message": define<ContactMessageProps>({
+    subject: (p) => `SIIP contact form: ${p.name}`,
+    render: (p) => ContactMessageEmail(p),
   }),
   "password-reset": define<PasswordResetProps>({
     subject: () => "Reset your SIIP password",

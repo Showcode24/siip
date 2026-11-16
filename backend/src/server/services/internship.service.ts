@@ -124,6 +124,16 @@ export async function submitSupervisorCheckIn(ctx: CompanyContext, placementId: 
   return createCheckIn(placement.id, "SUPERVISOR", ctx.user.id, input);
 }
 
+/** The end-of-internship evaluation for one of this company's interns, or null before it's written. */
+export async function getEvaluation(ctx: CompanyContext, placementId: string) {
+  const placement = await db.placement.findFirst({
+    where: { id: placementId, companyId: ctx.companyId },
+    select: { id: true },
+  });
+  if (!placement) throw errors.notFound("Intern");
+  return db.evaluation.findUnique({ where: { placementId } });
+}
+
 export async function submitEvaluation(ctx: CompanyContext, placementId: string, input: EvaluationInput) {
   const placement = await findSupervisedPlacement(ctx, placementId);
   const windowOpens = new Date(placement.endDate.getTime() - EVALUATION_WINDOW_DAYS * DAY);

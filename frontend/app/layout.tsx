@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Lexend, Source_Sans_3 } from "next/font/google";
 import type { ReactNode } from "react";
 import { Providers, themeScript } from "@/components/providers";
-import { DevRoleSwitcher } from "@/components/dev/role-switcher";
 import "./globals.css";
 
 const lexend = Lexend({
@@ -53,8 +52,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </a>
         <Providers>
           {children}
-          {/* Shows only while the site runs on demo data (NEXT_PUBLIC_USE_MOCKS). */}
-          <DevRoleSwitcher />
         </Providers>
       </body>
     </html>

@@ -4,7 +4,7 @@ import { POST as issue } from "../../app/api/v1/admin/placements/[id]/certificat
 import { POST as complete } from "../../app/api/v1/admin/placements/[id]/complete/route";
 import { POST as review } from "../../app/api/v1/admin/placements/[id]/review/route";
 import { POST as supervisorCheckIn } from "../../app/api/v1/company/interns/[id]/check-ins/route";
-import { POST as evaluate } from "../../app/api/v1/company/interns/[id]/evaluation/route";
+import { GET as getEvaluation, POST as evaluate } from "../../app/api/v1/company/interns/[id]/evaluation/route";
 import { POST as offer } from "../../app/api/v1/company/interns/[id]/permanent-offer/route";
 import { GET as download } from "../../app/api/v1/graduate/certificates/[id]/download/route";
 import { GET as myCertificates } from "../../app/api/v1/graduate/certificates/route";
@@ -174,7 +174,11 @@ describe("evaluation, offer and certificate", () => {
         .status,
     ).toBe(409);
 
+    const before = await call(getEvaluation, { method: "GET", cookie: owner.cookie, params });
+    expect(before.json.data).toBeNull();
     const evaluation = await call(evaluate, { cookie: owner.cookie, params, body: scores });
+    const after = await call(getEvaluation, { method: "GET", cookie: owner.cookie, params });
+    expect(after.json.data.overallScore).toBe(4.4);
     expect(evaluation.json.data.overallScore).toBe(4.4);
     expect((await call(evaluate, { cookie: owner.cookie, params, body: scores })).res.status).toBe(409);
 

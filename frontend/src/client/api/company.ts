@@ -19,159 +19,51 @@ import type {
   Placement,
 } from "./types";
 
-const m = () => import("../mocks/company");
-
 export const companyApi = {
   register: (input: z.input<typeof registerCompanySchema>) =>
-    call(
-      () => post<Company>("/company/register", input),
-      async () => (await m()).register(input),
-    ),
-  getProfile: () =>
-    call(
-      () => get<Company>("/company/profile"),
-      async () => (await m()).getProfile(),
-      { read: true },
-    ),
+    call(() => post<Company>("/company/register", input)),
+  getProfile: () => call(() => get<Company>("/company/profile")),
   updateProfile: (input: z.input<typeof updateCompanySchema>) =>
-    call(
-      () => patch<Company>("/company/profile", input),
-      async () => (await m()).updateProfile(input),
-    ),
-  resubmit: () =>
-    call(
-      () => post<Company>("/company/resubmit"),
-      async () => (await m()).resubmit(),
-    ),
+    call(() => patch<Company>("/company/profile", input)),
+  resubmit: () => call(() => post<Company>("/company/resubmit")),
 
-  listMembers: () =>
-    call(
-      () => get<CompanyMember[]>("/company/members"),
-      async () => (await m()).listMembers(),
-      { read: true },
-    ),
-  removeMember: (id: string) =>
-    call(
-      () => del<{ id: string }>(`/company/members/${id}`),
-      async () => (await m()).removeMember(id),
-    ),
-  listInvitations: () =>
-    call(
-      () => get<Invitation[]>("/company/invitations"),
-      async () => (await m()).listInvitations(),
-      { read: true },
-    ),
-  invite: (email: string) =>
-    call(
-      () => post<Invitation>("/company/invitations", { email }),
-      async () => (await m()).invite(email),
-    ),
-  revokeInvitation: (id: string) =>
-    call(
-      () => del<{ id: string }>(`/company/invitations/${id}`),
-      async () => (await m()).revokeInvitation(id),
-    ),
+  listMembers: () => call(() => get<CompanyMember[]>("/company/members")),
+  removeMember: (id: string) => call(() => del<{ id: string }>(`/company/members/${id}`)),
+  listInvitations: () => call(() => get<Invitation[]>("/company/invitations")),
+  invite: (email: string) => call(() => post<Invitation>("/company/invitations", { email })),
+  revokeInvitation: (id: string) => call(() => del<{ id: string }>(`/company/invitations/${id}`)),
   acceptInvitation: (token: string) =>
-    call(
-      () => post<{ id: string }>("/company/invitations/accept", { token }),
-      async () => (await m()).acceptInvitation(token),
-    ),
+    call(() => post<{ id: string }>("/company/invitations/accept", { token })),
 
   listOpenings: (status?: OpeningStatus) =>
-    callPage(
-      () => get<Opening[]>("/company/openings", { status, limit: 100 }),
-      async () => (await m()).listOpenings(status),
-    ),
-  getOpening: (id: string) =>
-    call(
-      () => get<Opening>(`/company/openings/${id}`),
-      async () => (await m()).getOpening(id),
-      { read: true },
-    ),
+    callPage(() => get<Opening[]>("/company/openings", { status, limit: 100 })),
+  getOpening: (id: string) => call(() => get<Opening>(`/company/openings/${id}`)),
   createOpening: (input: z.input<typeof createOpeningSchema>) =>
-    call(
-      () => post<Opening>("/company/openings", input),
-      async () => (await m()).createOpening(input),
-    ),
+    call(() => post<Opening>("/company/openings", input)),
   updateOpening: (id: string, input: z.input<typeof updateOpeningSchema>) =>
-    call(
-      () => patch<Opening>(`/company/openings/${id}`, input),
-      async () => (await m()).updateOpening(id, input),
-    ),
+    call(() => patch<Opening>(`/company/openings/${id}`, input)),
   setOpeningStatus: (id: string, status: OpeningStatus) =>
-    call(
-      () => post<Opening>(`/company/openings/${id}/status`, { status }),
-      async () => (await m()).setOpeningStatus(id, status),
-    ),
+    call(() => post<Opening>(`/company/openings/${id}/status`, { status })),
 
-  listMatches: () =>
-    callPage(
-      () => get<CompanyMatch[]>("/company/matches", { limit: 100 }),
-      async () => (await m()).listMatches(),
-    ),
-  getMatch: (id: string) =>
-    call(
-      () => get<CompanyMatch>(`/company/matches/${id}`),
-      async () => (await m()).getMatch(id),
-      { read: true },
-    ),
+  listMatches: () => callPage(() => get<CompanyMatch[]>("/company/matches", { limit: 100 })),
+  getMatch: (id: string) => call(() => get<CompanyMatch>(`/company/matches/${id}`)),
   acceptMatch: (id: string, input: { startDate?: string; supervisorId?: string } = {}) =>
-    call(
-      () => post<Placement>(`/company/matches/${id}/accept`, input),
-      async () => (await m()).acceptMatch(id, input),
-    ),
+    call(() => post<Placement>(`/company/matches/${id}/accept`, input)),
   rejectMatch: (id: string, reason: string) =>
-    call(
-      () => post<{ id: string }>(`/company/matches/${id}/reject`, { reason }),
-      async () => (await m()).rejectMatch(id, reason),
-    ),
+    call(() => post<{ id: string }>(`/company/matches/${id}/reject`, { reason })),
   getMatchCv: (id: string) =>
-    call(
-      () => get<{ url: string; expiresAt: string }>(`/company/matches/${id}/cv`),
-      () => ({ url: "#", expiresAt: new Date().toISOString() }),
-    ),
+    call(() => get<{ url: string; expiresAt: string }>(`/company/matches/${id}/cv`)),
 
-  listInterns: () =>
-    callPage(
-      () => get<Placement[]>("/company/interns", { limit: 100 }),
-      async () => (await m()).listInterns(),
-    ),
-  getIntern: (id: string) =>
-    call(
-      () => get<Placement>(`/company/interns/${id}`),
-      async () => (await m()).getIntern(id),
-      { read: true },
-    ),
+  listInterns: () => callPage(() => get<Placement[]>("/company/interns", { limit: 100 })),
+  getIntern: (id: string) => call(() => get<Placement>(`/company/interns/${id}`)),
   assignSupervisor: (id: string, supervisorId: string) =>
-    call(
-      () => post<Placement>(`/company/interns/${id}/supervisor`, { supervisorId }),
-      async () => (await m()).assignSupervisor(id, supervisorId),
-    ),
-  listInternCheckIns: (id: string) =>
-    call(
-      () => get<CheckIn[]>(`/company/interns/${id}/check-ins`),
-      async () => (await m()).listInternCheckIns(id),
-      { read: true },
-    ),
+    call(() => post<Placement>(`/company/interns/${id}/supervisor`, { supervisorId })),
+  listInternCheckIns: (id: string) => call(() => get<CheckIn[]>(`/company/interns/${id}/check-ins`)),
   submitCheckIn: (id: string, input: z.input<typeof checkInSchema>) =>
-    call(
-      () => post<CheckIn>(`/company/interns/${id}/check-ins`, input),
-      async () => (await m()).submitCheckIn(id, input),
-    ),
-  getEvaluation: (id: string) =>
-    call(
-      () => get<Evaluation | null>(`/company/interns/${id}/evaluation`),
-      async () => (await m()).getEvaluation(id),
-      { read: true },
-    ),
+    call(() => post<CheckIn>(`/company/interns/${id}/check-ins`, input)),
+  getEvaluation: (id: string) => call(() => get<Evaluation | null>(`/company/interns/${id}/evaluation`)),
   submitEvaluation: (id: string, input: z.input<typeof evaluationSchema>) =>
-    call(
-      () => post<Evaluation>(`/company/interns/${id}/evaluation`, input),
-      async () => (await m()).submitEvaluation(id, input),
-    ),
+    call(() => post<Evaluation>(`/company/interns/${id}/evaluation`, input)),
   recordOffer: (id: string, notes?: string) =>
-    call(
-      () => post<Placement>(`/company/interns/${id}/permanent-offer`, { notes }),
-      async () => (await m()).recordOffer(id, notes),
-    ),
+    call(() => post<Placement>(`/company/interns/${id}/permanent-offer`, { notes })),
 };

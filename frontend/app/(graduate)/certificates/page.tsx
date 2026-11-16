@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Copy, Download, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { graduateApi } from "@/client/api/graduate";
-import { USE_MOCKS, errorMessage } from "@/client/api/http";
+import { errorMessage } from "@/client/api/http";
 import type { Certificate } from "@/client/api/types";
 import { useSession } from "@/client/session";
 import { QueryState } from "@/components/query-state";
@@ -45,9 +45,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
   const download = useMutation({
     mutationFn: () => graduateApi.downloadCertificate(cert.id),
     onSuccess: ({ url }) =>
-      USE_MOCKS
-        ? toast.info("In demo mode there's no PDF to download.")
-        : window.open(url, "_blank", "noopener"),
+      window.open(url, "_blank", "noopener"),
     onError: (err) => toast.error(errorMessage(err)),
   });
   const link =

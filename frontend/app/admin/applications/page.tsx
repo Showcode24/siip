@@ -11,7 +11,7 @@ import { Suspense, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { adminApi } from "@/client/api/admin";
 import { graduateApi } from "@/client/api/graduate";
-import { USE_MOCKS, errorMessage } from "@/client/api/http";
+import { errorMessage } from "@/client/api/http";
 import type { AdminApplicationRow } from "@/client/api/types";
 import { JourneyTracker } from "@/components/graduate/journey";
 import { QueryState } from "@/components/query-state";
@@ -313,8 +313,7 @@ function ApplicantPanel({ id }: { id: string }) {
                   variant="outline"
                   onClick={async () => {
                     const { url } = await adminApi.getGraduateCv(a.graduate.id);
-                    if (USE_MOCKS) toast.info("In demo mode there's no CV file.");
-                    else window.open(url, "_blank", "noopener");
+                    window.open(url, "_blank", "noopener");
                   }}
                 >
                   <FileText /> CV

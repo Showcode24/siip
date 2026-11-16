@@ -1,4 +1,10 @@
-/* Seed data for local development and demos. Safe to re-run. */
+/*
+ * Seed. Safe to re-run.
+ *   Always: the super admin and the skill catalogue (the SIIP test's videos and
+ *   questions come from a migration).
+ *   Only with SEED_DEMO=true: demo interns, companies and openings for local
+ *   testing. Never set it on production.
+ */
 import "dotenv/config";
 import { hashPassword } from "better-auth/crypto";
 import type {
@@ -691,6 +697,11 @@ async function main() {
 
   const admin = await upsertUser(adminEmail, "SIIP Super Admin", "SUPER_ADMIN", adminPassword);
   const skillIds = await seedSkills();
+
+  if (process.env.SEED_DEMO !== "true") {
+    console.log(`Seed complete. Super admin: ${adminEmail}. ${skillIds.size} skills.`);
+    return;
+  }
   const cohort = await seedCohort();
   await seedCourse(cohort.id);
   await seedAssessments(cohort.id);

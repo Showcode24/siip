@@ -1,9 +1,6 @@
-// The single switch between mock data and the real backend.
-//   NEXT_PUBLIC_USE_MOCKS=true  → in-memory mocks (src/client/mocks) with fake latency
-//   NEXT_PUBLIC_USE_MOCKS=false → real /api/v1 routes (proxied to the backend)
-
-export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS !== "false";
-const ERROR_RATE = Number(process.env.NEXT_PUBLIC_MOCK_ERROR_RATE ?? 0.03);
+// Every request goes to the backend's /api/v1 routes. In the browser these are
+// same-origin and proxied to the backend (next.config.ts), so auth cookies stay
+// first-party and no CORS is needed.
 
 /** Same shape as the backend's AppError responses. */
 export class ApiError extends Error {
@@ -63,52 +60,15 @@ export async function request<T>(
   return json;
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-/**
- * Wraps a mock implementation with realistic latency (300–800ms), an occasional
- * failure on reads (so error states get exercised) and a deep copy (so callers
- * can't mutate the store by accident).
- */
-export async function mock<T>(fn: () => T | Promise<T>, opts: { read?: boolean } = {}): Promise<T> {
-  await sleep(300 + Math.random() * 500);
-  const capturing = typeof window !== "undefined" && new URLSearchParams(location.search).has("capture");
-  if (opts.read && !capturing && Math.random() < ERROR_RATE) {
-    throw new ApiError("INTERNAL_ERROR", "Something went wrong. Please try again.", 500);
-  }
-  try {
-    return structuredClone(await fn());
-  } catch (err) {
-    // Zod errors from the shared schemas: same shape as the backend's 422.
-    if (err && typeof err === "object" && "issues" in err && Array.isArray((err as { issues: unknown }).issues)) {
-      const issues = (err as { issues: Array<{ path: PropertyKey[]; message: string }> }).issues;
-      throw new ApiError(
-        "VALIDATION_ERROR",
-        issues[0]?.message ?? "Check the highlighted fields",
-        422,
-        issues.map((i) => ({ path: i.path.join("."), message: i.message })),
-      );
-    }
-    throw err;
-  }
-}
-
-/** Helper for endpoints that return a plain value: real `data`, or the mock. */
-export async function call<T>(
-  real: () => Promise<Envelope<T>>,
-  mockFn: () => T | Promise<T>,
-  opts: { read?: boolean } = {},
-): Promise<T> {
-  if (USE_MOCKS) return mock(mockFn, opts);
+/** Helper for endpoints that return a plain value: unwraps `data`. */
+export async function call<T>(real: () => Promise<Envelope<T>>): Promise<T> {
   return (await real()).data;
 }
 
 /** Page result for list endpoints (cursor in meta.nextCursor). */
 export async function callPage<T>(
   real: () => Promise<Envelope<T[]>>,
-  mockFn: () => T[] | Promise<T[]>,
 ): Promise<{ items: T[]; nextCursor: string | null }> {
-  if (USE_MOCKS) return { items: await mock(mockFn, { read: true }), nextCursor: null };
   const res = await real();
   return { items: res.data, nextCursor: (res.meta?.nextCursor as string | null) ?? null };
 }

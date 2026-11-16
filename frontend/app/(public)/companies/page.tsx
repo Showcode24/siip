@@ -14,7 +14,8 @@ const WHY = [
   {
     icon: UserCheck,
     title: "Skills you can trust",
-    body: "Every skill is checked against real certificates. You see the level SIIP verified, not the one claimed.",
+    body:
+      "Every prospective intern is properly verified by SkillzBridge before they are matched based on their skill level and the company's or client's request.",
   },
   {
     icon: GitMerge,

@@ -66,7 +66,7 @@ function client() {
   if (!configured) {
     const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = env();
     if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-      throw new AppError("INTERNAL_ERROR", "File uploads are not configured");
+      throw new AppError("INTERNAL_ERROR", "File uploads aren't available yet. Please try again later.");
     }
     cloudinary.config({
       cloud_name: CLOUDINARY_CLOUD_NAME,

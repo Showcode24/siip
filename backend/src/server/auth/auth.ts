@@ -18,7 +18,13 @@ function buildAuth() {
     baseURL: config.APP_URL,
     basePath: "/api/auth",
     secret: config.BETTER_AUTH_SECRET,
-    trustedOrigins: [config.APP_URL],
+    trustedOrigins: [
+      config.APP_URL,
+      ...(config.EXTRA_ORIGINS ?? "")
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ],
     database: prismaAdapter(db, { provider: "postgresql" }),
     advanced: {
       database: { generateId: false }, // Prisma's @default(cuid()) generates ids

@@ -6,6 +6,9 @@ const envSchema = z.object({
   DIRECT_URL: z.string().min(1).optional(),
 
   APP_URL: z.url().default("http://localhost:3000"),
+  // Other addresses the site is served from (comma-separated), e.g. the
+  // *.vercel.app URL alongside the custom domain. Sign-in is allowed from them.
+  EXTRA_ORIGINS: z.string().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),
 
   // When unset, emails are logged (not sent). Required in production.

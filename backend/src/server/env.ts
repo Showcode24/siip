@@ -34,7 +34,12 @@ let cached: Env | undefined;
 /** Parsed lazily so unit tests that never touch config don't need every variable. */
 export function env(): Env {
   if (cached) return cached;
-  const parsed = envSchema.safeParse(process.env);
+  // Upstash added through the Vercel Marketplace names its keys KV_REST_API_*.
+  const parsed = envSchema.safeParse({
+    ...process.env,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN,
+  });
   if (!parsed.success) {
     const fields = parsed.error.issues.map((i) => i.path.join(".")).join(", ");
     throw new Error(`Invalid environment configuration: ${fields}`);

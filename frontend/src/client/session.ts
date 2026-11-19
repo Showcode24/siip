@@ -5,7 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Me } from "./api/types";
 import { ApiError, get } from "./api/http";
 
-async function loadMe(): Promise<Me | null> {
+/** Who is signed in, or null. Pass as `queryFn` wherever `sessionKey` is fetched. */
+export async function loadMe(): Promise<Me | null> {
   try {
     return (await get<Me>("/auth/me")).data;
   } catch (err) {

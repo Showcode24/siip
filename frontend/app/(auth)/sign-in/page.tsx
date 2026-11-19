@@ -9,7 +9,7 @@ import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { authApi } from "@/client/api/auth";
-import { homeFor, sessionKey } from "@/client/session";
+import { homeFor, loadMe, sessionKey } from "@/client/session";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/form-controls";
@@ -37,8 +37,11 @@ function SignInForm() {
     try {
       await authApi.signIn(values);
       await qc.resetQueries();
-      const me = await qc.fetchQuery<Me | null>({ queryKey: sessionKey });
-      router.push(params.get("next") ?? homeFor(me));
+      // The sign-in page has no session observer, so the fetcher must be given here.
+      const me = await qc.fetchQuery<Me | null>({ queryKey: sessionKey, queryFn: loadMe });
+      const next = params.get("next");
+      // Only follow same-site paths (never "//host" or "https://…").
+      router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(me));
     } catch (err) {
       handleFormError(err, setError);
     }

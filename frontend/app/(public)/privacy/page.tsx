@@ -29,8 +29,8 @@ export default function PrivacyPage() {
           body: (
             <>
               <p>
-                Your name, email, phone number, location, education, NYSC status, skills and the proof you upload,
-                CV, SIIP test results and internship records.
+                Your name, email, phone number, location, education, NYSC status, skills and the proof you
+                upload, CV, SIIP test results and internship records.
               </p>
               <p>
                 For company users: your name, work email, job title and your company&apos;s registration
@@ -82,7 +82,19 @@ export default function PrivacyPage() {
             </p>
           ),
         },
-        { id: "contact", heading: "Contact", body: <p>Questions about your data? Email privacy@siip.ng.</p> },
+        {
+          id: "contact",
+          heading: "Contact",
+          body: (
+            <p>
+              Questions about your data? Email{" "}
+              <a href="mailto:skillzbridgeafrica@gmail.com" className="underline underline-offset-4">
+                skillzbridgeafrica@gmail.com
+              </a>
+              .
+            </p>
+          ),
+        },
       ]}
     />
   );

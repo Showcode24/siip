@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, Mail, MessageCircle } from "lucide-react";
+import { CheckCircle2, Mail } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
@@ -85,21 +85,18 @@ export default function ContactPage() {
           </form>
         )}
         <aside className="grid content-start gap-6 text-[15px]">
-          {[
-            [Mail, "Email", "hello@siip.ng"],
-            [MessageCircle, "WhatsApp", "+234 800 000 0000 (placeholder)"],
-          ].map(([Icon, label, value]) => {
-            const I = Icon as typeof Mail;
-            return (
-              <div key={label as string} className="flex gap-3">
-                <I className="mt-0.5 size-5 text-brand-text" />
-                <div>
-                  <p className="font-semibold">{label as string}</p>
-                  <p className="text-muted-foreground">{value as string}</p>
-                </div>
-              </div>
-            );
-          })}
+          <div className="flex gap-3">
+            <Mail className="mt-0.5 size-5 text-brand-text" />
+            <div className="min-w-0">
+              <p className="font-semibold">Email</p>
+              <a
+                href="mailto:skillzbridgeafrica@gmail.com"
+                className="break-all text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                skillzbridgeafrica@gmail.com
+              </a>
+            </div>
+          </div>
         </aside>
       </section>
     </>

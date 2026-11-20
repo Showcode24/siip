@@ -84,11 +84,25 @@ const allowed: Record<Area, (role: UserRole) => boolean> = {
 
 /** Protects a portal. Signed-out users go to sign-in; other roles see "no access". */
 export function RoleGate({ area, children }: { area: Area; children: ReactNode }) {
-  const { me, isLoading } = useSession();
+  const { me, isLoading, isError, signedOut, refetch } = useSession();
   const router = useRouter();
   useEffect(() => {
-    if (!isLoading && !me) router.replace("/sign-in");
-  }, [isLoading, me, router]);
+    // Only a confirmed sign-out leaves the portal; a network failure must not.
+    if (signedOut) router.replace("/sign-in");
+  }, [signedOut, router]);
+  if (isError && !me) {
+    return (
+      <div className="mx-auto grid min-h-dvh max-w-sm place-items-center p-6 text-center" role="alert">
+        <div>
+          <p className="text-lg font-semibold">We can&apos;t reach SIIP right now</p>
+          <p className="mt-2 text-muted-foreground">Check your internet connection, then try again.</p>
+          <Button className="mt-5" onClick={() => void refetch()}>
+            Try again
+          </Button>
+        </div>
+      </div>
+    );
+  }
   if (isLoading || !me) {
     return (
       <div className="grid min-h-dvh place-items-center" role="status" aria-label="Loading">

@@ -5,11 +5,11 @@ import { signInSchema } from "@siip/shared/validators/auth";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { authApi } from "@/client/api/auth";
-import { homeFor, loadMe, sessionKey } from "@/client/session";
+import { homeFor, loadMe, sessionKey, useSession } from "@/client/session";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/form-controls";
@@ -26,6 +26,13 @@ function SignInForm() {
   const qc = useQueryClient();
   const [showPw, setShowPw] = useState(false);
   const verified = params.get("verified");
+  // Already signed in (e.g. sent here after a dropped connection): go back in.
+  const { me: current } = useSession();
+  useEffect(() => {
+    if (!current) return;
+    const next = params.get("next");
+    router.replace(next && next.startsWith("/") && !next.startsWith("//") ? next : homeFor(current));
+  }, [current, params, router]);
   const {
     register,
     handleSubmit,

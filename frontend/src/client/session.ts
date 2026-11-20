@@ -17,9 +17,26 @@ export async function loadMe(): Promise<Me | null> {
 
 export const sessionKey = ["session"] as const;
 
+/**
+ * `signedOut` is true only when the server said so (401). A failed request
+ * (weak signal, a phone waking the tab after the file picker) is `isError`,
+ * never a sign-out: it is retried, and callers must not send people away.
+ */
 export function useSession() {
-  const q = useQuery({ queryKey: sessionKey, queryFn: loadMe, staleTime: Infinity, retry: false });
-  return { me: q.data ?? null, isLoading: q.isLoading, refetch: q.refetch };
+  const q = useQuery({
+    queryKey: sessionKey,
+    queryFn: loadMe,
+    staleTime: Infinity,
+    retry: (failures, err) => !(err instanceof ApiError && err.status < 500) && failures < 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
+  });
+  return {
+    me: q.data ?? null,
+    isLoading: q.isLoading,
+    isError: q.isError && q.data === undefined,
+    signedOut: q.isSuccess && q.data === null,
+    refetch: q.refetch,
+  };
 }
 
 /** Use after sign-in or sign-out: drops every cached query. */

@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import type { CompanyVerificationStatus } from "@/generated/prisma/enums";
 import type { CompanyContext, CurrentUser } from "@/server/auth/session";
 import { toAuditActor } from "@/server/auth/session";
@@ -35,6 +35,8 @@ const companySelect = {
   industry: true,
   description: true,
   address: true,
+  phone: true,
+  whatsapp: true,
   state: true,
   website: true,
   logoUrl: true,
@@ -61,6 +63,8 @@ export async function registerCompany(user: CurrentUser, input: RegisterCompanyI
       },
       select: companySelect,
     });
+    // The sign-up details are now on the company record.
+    await tx.user.update({ where: { id: user.id }, data: { signupCompany: Prisma.DbNull } });
     await recordAudit(tx, {
       actor: toAuditActor(user),
       action: "company.registered",

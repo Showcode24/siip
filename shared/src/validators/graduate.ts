@@ -2,22 +2,9 @@ import { z } from "zod";
 import { COUNTRY_CODES } from "../countries";
 import { Availability, DegreeClass, InternType, NyscStatus, ProfileVisibility, SkillLevel, WorkMode } from "../enums";
 import { NIGERIAN_STATES } from "../nigeria";
-import { normalisePhone } from "../phone";
-import { optionalText } from "./common";
+import { optionalText, phoneNumber } from "./common";
 
-const phone = z
-  .string()
-  .trim()
-  .nullish()
-  .transform((v, ctx) => {
-    if (!v) return null;
-    const normalised = normalisePhone(v);
-    if (!normalised) {
-      ctx.addIssue({ code: "custom", message: "Enter your number with its country code, e.g. +44 7700 900123" });
-      return z.NEVER;
-    }
-    return normalised;
-  });
+const phone = phoneNumber;
 
 const thisYear = new Date().getFullYear();
 

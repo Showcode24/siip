@@ -5,7 +5,7 @@ import { signUpSchema } from "@siip/shared/validators/auth";
 import { Building2, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 import { authApi } from "@/client/api/auth";
@@ -23,14 +23,25 @@ export default function SignUpPage() {
   const {
     register,
     control,
+    watch,
+    setValue,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors: formErrors, isSubmitting },
   } = useForm<Values>({
     resolver: zodResolver(signUpSchema),
     mode: "onTouched",
-    defaultValues: { accountType: "GRADUATE", firstName: "", lastName: "", email: "", password: "" },
+    defaultValues: { accountType: "GRADUATE", email: "", password: "" },
   });
+  // The two account types have different fields; read errors by name.
+  const errors = formErrors as Partial<Record<string, { message?: string }>>;
+  const isCompany = watch("accountType") === "COMPANY";
+  // WhatsApp is usually the same number as the phone.
+  const [whatsappSame, setWhatsappSame] = useState(true);
+  const phone = watch("phone" as never) as unknown as string | undefined;
+  useEffect(() => {
+    if (isCompany && whatsappSame) setValue("whatsapp" as never, (phone ?? "") as never);
+  }, [isCompany, whatsappSame, phone, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
@@ -67,14 +78,50 @@ export default function SignUpPage() {
             )}
           />
         </fieldset>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="First name" error={errors.firstName?.message} required>
-            <Input autoComplete="given-name" {...register("firstName")} />
-          </Field>
-          <Field label="Last name" error={errors.lastName?.message} required>
-            <Input autoComplete="family-name" {...register("lastName")} />
-          </Field>
-        </div>
+        {isCompany ? (
+          <>
+            <Field label="Company name" error={errors.companyName?.message} required>
+              <Input autoComplete="organization" {...register("companyName" as never)} />
+            </Field>
+            <Field
+              label="RC number"
+              hint="Your CAC registration number, e.g. RC1234567."
+              error={errors.registrationNumber?.message}
+              required
+            >
+              <Input autoCapitalize="characters" {...register("registrationNumber" as never)} />
+            </Field>
+            <Field label="Address" error={errors.address?.message} required>
+              <Input autoComplete="street-address" {...register("address" as never)} />
+            </Field>
+            <Field label="Phone number" error={errors.phone?.message} required>
+              <Input type="tel" inputMode="tel" autoComplete="tel" placeholder="+234" {...register("phone" as never)} />
+            </Field>
+            <div className="grid gap-3">
+              <label className="flex items-center gap-3 text-[15px]">
+                <Checkbox checked={whatsappSame} onCheckedChange={(v) => setWhatsappSame(v === true)} />
+                WhatsApp number is the same as the phone number
+              </label>
+              {whatsappSame ? null : (
+                <Field label="WhatsApp number" error={errors.whatsapp?.message} required>
+                  <Input type="tel" inputMode="tel" placeholder="+234" {...register("whatsapp" as never)} />
+                </Field>
+              )}
+              {whatsappSame && errors.whatsapp?.message && !errors.phone?.message ? (
+                <p className="text-sm text-danger">{errors.whatsapp.message}</p>
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="First name" error={errors.firstName?.message} required>
+              <Input autoComplete="given-name" {...register("firstName" as never)} />
+            </Field>
+            <Field label="Last name" error={errors.lastName?.message} required>
+              <Input autoComplete="family-name" {...register("lastName" as never)} />
+            </Field>
+          </div>
+        )}
         <Field label="Email address" error={errors.email?.message} required>
           <Input type="email" inputMode="email" autoComplete="email" {...register("email")} />
         </Field>

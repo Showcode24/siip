@@ -16,10 +16,20 @@ vi.mock("@/server/email/send", () => ({
 }));
 
 const password = "Secret123";
+const companySignUp = {
+  companyName: "Lagos Media Hub",
+  registrationNumber: "RC 7654321",
+  address: "12 Allen Avenue, Ikeja",
+  phone: "0803 000 0000",
+  whatsapp: "+234 803 000 0000",
+};
 
 async function signUpAndVerify(email: string, accountType: "GRADUATE" | "COMPANY") {
   const { res } = await call(signUp, {
-    body: { accountType, firstName: "Ada", lastName: "Obi", email, password, consent: true },
+    body:
+      accountType === "GRADUATE"
+        ? { accountType, firstName: "Ada", lastName: "Obi", email, password, consent: true }
+        : { accountType, ...companySignUp, email, password, consent: true },
   });
   expect(res.status).toBe(201);
   const verifyUrl = new URL(sent.findLast((e) => e.template === "welcome-verify")!.props.verifyUrl);
@@ -54,6 +64,42 @@ describe("auth", () => {
     });
     expect(user.role).toBe("COMPANY_MEMBER");
     expect(user.graduateProfile).toBeNull();
+    // Named after the company, with its sign-up details held for the details step.
+    expect(user.name).toBe("Lagos Media Hub");
+    expect(user.signupCompany).toEqual({
+      companyName: "Lagos Media Hub",
+      registrationNumber: "RC 7654321",
+      address: "12 Allen Avenue, Ikeja",
+      phone: "+2348030000000",
+      whatsapp: "+2348030000000",
+    });
+    // The verification email greets the company by its full name.
+    expect(sent.find((e) => e.template === "welcome-verify")!.props.firstName).toBe("Lagos Media Hub");
+  });
+
+  it("asks companies for their details, not a person's name", async () => {
+    const noDetails = await call(signUp, {
+      body: { accountType: "COMPANY", firstName: "Ada", lastName: "Obi", email: "x@co.example.com", password, consent: true },
+    });
+    expect(noDetails.res.status).toBe(422);
+    const paths = JSON.stringify(noDetails.json.error.details);
+    for (const f of ["companyName", "registrationNumber", "address", "phone", "whatsapp"]) expect(paths).toContain(f);
+
+    const badPhone = await call(signUp, {
+      body: { accountType: "COMPANY", ...companySignUp, phone: "12", email: "y@co.example.com", password, consent: true },
+    });
+    expect(badPhone.res.status).toBe(422);
+  });
+
+  it("refuses a company sign-up whose RC number is already registered", async () => {
+    await db.company.create({
+      data: { name: "Taken Ltd", rcNumber: "RC1112223", industry: "Media", address: "1 Marina, Lagos", country: "NG" },
+    });
+    const { res, json } = await call(signUp, {
+      body: { accountType: "COMPANY", ...companySignUp, registrationNumber: "rc 1112223", email: "dup@co.example.com", password, consent: true },
+    });
+    expect(res.status).toBe(409);
+    expect(json.error.message).toContain("RC number");
   });
 
   it("ignores attempts to self-assign a role", async () => {

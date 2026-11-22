@@ -2,7 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { guessTimeZone } from "@siip/shared/timezones";
-import { registerCompanySchema } from "@siip/shared/validators/company";
+import type { SignupCompany } from "@siip/shared/validators/auth";
+import { rcNumber, registerCompanySchema } from "@siip/shared/validators/company";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Clock, FileSearch, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -24,10 +25,23 @@ import { cn } from "@/lib/utils";
 export default function CompanyOnboardingPage() {
   const { me, isLoading } = useSession();
   if (isLoading) return <Skeleton className="h-96 rounded-xl" />;
-  return me?.companyMember ? <VerificationStatus /> : <RegisterCompany />;
+  return me?.companyMember ? <VerificationStatus /> : <RegisterCompany held={me?.signupCompany ?? null} />;
 }
 
-function RegisterCompany() {
+/** Pre-fill from what the company gave at sign-up. A CAC-style number means Nigeria. */
+function prefill(held: SignupCompany | null) {
+  if (!held) return {};
+  const cac = rcNumber.safeParse(held.registrationNumber);
+  return {
+    name: held.companyName,
+    address: held.address,
+    phone: held.phone,
+    whatsapp: held.whatsapp,
+    ...(cac.success ? { country: "NG", rcNumber: cac.data } : { businessRegNumber: held.registrationNumber }),
+  };
+}
+
+function RegisterCompany({ held }: { held: SignupCompany | null }) {
   const qc = useQueryClient();
   const {
     register,
@@ -40,13 +54,17 @@ function RegisterCompany() {
     resolver: zodResolver(registerCompanySchema),
     mode: "onTouched",
     // Pre-fill the visitor's own time zone; they choose the country themselves.
-    defaultValues: { timeZone: guessTimeZone() ?? undefined },
+    defaultValues: { timeZone: guessTimeZone() ?? undefined, ...prefill(held) } as never,
   });
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader
-        title="Register your company"
-        description="Tell us about your company. We verify every partner before they can host interns."
+        title={held ? "Finish your company details" : "Register your company"}
+        description={
+          held
+            ? "We've filled in what you gave at sign-up. Add the rest and submit: we verify every partner before they can host interns."
+            : "Tell us about your company. We verify every partner before they can host interns."
+        }
       />
       <Card>
         <CardBody>
@@ -79,6 +97,14 @@ function RegisterCompany() {
               <Input autoComplete="street-address" {...register("address")} />
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Phone number" error={errors.phone?.message} required>
+                <Input type="tel" inputMode="tel" autoComplete="tel" placeholder="+234" {...register("phone")} />
+              </Field>
+              <Field label="WhatsApp number" error={errors.whatsapp?.message} required>
+                <Input type="tel" inputMode="tel" placeholder="+234" {...register("whatsapp")} />
+              </Field>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
               <Field label="Website" optional error={errors.website?.message}>
                 <Input
                   type="url"
@@ -87,9 +113,6 @@ function RegisterCompany() {
                 />
               </Field>
             </div>
-            <Field label="Your job title" optional>
-              <Input {...register("jobTitle")} />
-            </Field>
             <Field label="About the company" optional error={errors.description?.message}>
               <Textarea rows={4} {...register("description")} />
             </Field>

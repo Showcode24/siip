@@ -32,6 +32,8 @@ model User {
   // NDPA 2023: consent captured at sign-up.
   consentAt      DateTime?
   consentVersion String?
+  // Company accounts: details given at sign-up, until the company is registered.
+  signupCompany  Json?
 
   // NDPA 2023: soft delete, then anonymise.
   deletedAt    DateTime?
@@ -666,6 +668,8 @@ model Company {
   industry           String
   description        String?
   address            String
+  phone              String?
+  whatsapp           String?
   // ISO 3166-1 alpha-2 and an IANA time zone, e.g. "GB" + "Europe/London".
   country            String?
   city               String?

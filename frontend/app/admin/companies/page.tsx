@@ -127,6 +127,8 @@ function CompanyPanel({ id }: { id: string }) {
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-[15px]">
               {[
                 ["Address", c.address],
+                ["Phone", c.phone ?? "Not given"],
+                ["WhatsApp", c.whatsapp ?? "Not given"],
                 ["Location", [formatLocation(c), c.state].filter(Boolean).join(", ") || "Not given"],
                 ["Time zone", c.timeZone ?? "Not given"],
                 ["Website", c.website ?? "Not given"],

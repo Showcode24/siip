@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requiredPhoneNumber } from "./common";
 
 const email = z
   .email("Enter a valid email address")
@@ -14,16 +15,46 @@ const password = z
 
 const personName = z.string().trim().min(1).max(80);
 
-export const signUpSchema = z.object({
-  accountType: z.enum(["GRADUATE", "COMPANY"]),
+// NDPA 2023: explicit consent to the privacy notice is required to register.
+const consent = z.literal(true, { error: "You must accept the privacy notice to continue" });
+
+export const graduateSignUpSchema = z.object({
+  accountType: z.literal("GRADUATE"),
   firstName: personName,
   lastName: personName,
   email,
   password,
-  // NDPA 2023: explicit consent to the privacy notice is required to register.
-  consent: z.literal(true, { error: "You must accept the privacy notice to continue" }),
+  consent,
 });
+
+/**
+ * Companies sign up with their business details, not a person's name. These are
+ * kept with the account and pre-fill the company details step after the email
+ * is verified, where the rest (industry, country, city) is added.
+ */
+export const companySignUpSchema = z.object({
+  accountType: z.literal("COMPANY"),
+  companyName: z.string().trim().min(2, "Enter your company name").max(160),
+  registrationNumber: z
+    .string()
+    .trim()
+    .min(3, "Enter your RC number")
+    .max(40)
+    .regex(/^[A-Za-z0-9][A-Za-z0-9 ./-]*$/, "Use letters, numbers, spaces, dots, slashes or dashes"),
+  address: z.string().trim().min(5, "Enter your company address").max(300),
+  phone: requiredPhoneNumber,
+  whatsapp: requiredPhoneNumber,
+  email,
+  password,
+  consent,
+});
+
+export const signUpSchema = z.discriminatedUnion("accountType", [graduateSignUpSchema, companySignUpSchema]);
 export type SignUpInput = z.infer<typeof signUpSchema>;
+export type CompanySignUpInput = z.infer<typeof companySignUpSchema>;
+
+/** What a company gave at sign-up, held until its company record is created. */
+export type SignupCompany = Pick<CompanySignUpInput, "companyName" | "registrationNumber" | "address" | "phone" | "whatsapp">;
 
 export const signInSchema = z.object({
   email,

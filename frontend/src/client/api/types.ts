@@ -1,3 +1,4 @@
+import type { SignupCompany } from "@siip/shared/validators/auth";
 // Response shapes of the backend's /api/v1 endpoints (see backend/src/server/services).
 // Enums come from the shared Prisma enums; request bodies use the shared Zod schemas.
 import type {
@@ -36,6 +37,8 @@ export interface Me {
   emailVerified: boolean;
   consentAt: ISODate | null;
   graduateProfile: { id: string; completenessScore: number } | null;
+  /** Company accounts: details from sign-up, until the company is registered. */
+  signupCompany?: SignupCompany | null;
   companyMember: {
     id: string;
     role: CompanyMemberRole;
@@ -404,6 +407,8 @@ export interface Company {
   industry: string;
   description: string | null;
   address: string;
+  phone: string | null;
+  whatsapp: string | null;
   /** Nigeria only. */
   state: string | null;
   website: string | null;

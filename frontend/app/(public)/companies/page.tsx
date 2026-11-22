@@ -48,7 +48,7 @@ const EXPECT = [
   {
     icon: FileCheck2,
     title: "One final evaluation",
-    body: "Rate five areas at the end. It's required before the certificate is issued.",
+    body: "Rate intern on key areas at the end. Good feedback is required for SIIP certification.",
   },
 ];
 

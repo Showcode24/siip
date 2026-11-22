@@ -39,6 +39,8 @@ const companyBody = (name: string, rc: string) => ({
   rcNumber: rc,
   industry: "Media",
   address: "12 Allen Avenue, Ikeja",
+  phone: "08030000000",
+  whatsapp: "08030000001",
   state: "Lagos",
   website: "https://example.ng",
 });
@@ -70,13 +72,21 @@ beforeAll(async () => {
 
 describe("company registration and verification", () => {
   it("registers a company as PENDING with the user as OWNER", async () => {
+    await db.user.update({ where: { id: ownerA.id }, data: { signupCompany: { companyName: "Acme Media" } } });
     const { res, json } = await call(register, {
       cookie: ownerA.cookie,
       body: companyBody("Acme Media", "rc 123456"),
     });
     expect(res.status).toBe(201);
-    expect(json.data).toMatchObject({ rcNumber: "RC123456", verificationStatus: "PENDING" });
+    expect(json.data).toMatchObject({
+      rcNumber: "RC123456",
+      verificationStatus: "PENDING",
+      phone: "+2348030000000",
+      whatsapp: "+2348030000001",
+    });
     companyA = json.data.id;
+    // The held sign-up details are cleared once the company exists.
+    expect((await db.user.findUniqueOrThrow({ where: { id: ownerA.id } })).signupCompany).toBeNull();
 
     expect(
       (await call(register, { cookie: ownerA.cookie, body: companyBody("Again", "RC999") })).res.status,
@@ -101,6 +111,8 @@ describe("company registration and verification", () => {
       timeZone: "Europe/London",
       industry: "Design",
       address: "10 Shoreditch High Street",
+      phone: "+44 7700 900123",
+      whatsapp: "+44 7700 900123",
     };
 
     const noNumber = await call(register, { cookie: ukOwner.cookie, body: uk });

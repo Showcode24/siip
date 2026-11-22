@@ -78,6 +78,8 @@ function CompanyForm({ company }: { company: Company }) {
       industry: company.industry,
       description: company.description ?? "",
       address: company.address,
+      phone: company.phone ?? undefined,
+      whatsapp: company.whatsapp ?? undefined,
       state: (company.state ?? null) as never,
       website: company.website ?? "",
     },
@@ -132,6 +134,14 @@ function CompanyForm({ company }: { company: Company }) {
             <Field label="Office address" error={errors.address?.message} required>
               <Input {...register("address")} />
             </Field>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Phone number" error={errors.phone?.message} required>
+                <Input type="tel" inputMode="tel" autoComplete="tel" placeholder="+234" {...register("phone")} />
+              </Field>
+              <Field label="WhatsApp number" error={errors.whatsapp?.message} required>
+                <Input type="tel" inputMode="tel" placeholder="+234" {...register("whatsapp")} />
+              </Field>
+            </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <Field label="Website" optional error={errors.website?.message}>
                 <Input type="url" {...register("website")} />

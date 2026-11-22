@@ -1,7 +1,37 @@
 import { z } from "zod";
+import { normalisePhone } from "../phone";
 
 /** Route `[id]` params. cuids are ~25 chars; the cap just rejects junk early. */
 export const idParam = z.object({ id: z.string().min(1).max(64) });
+
+/** A phone number, normalised to +countrycode form. Optional: empty becomes null. */
+export const phoneNumber = z
+  .string()
+  .trim()
+  .nullish()
+  .transform((v, ctx) => {
+    if (!v) return null;
+    const normalised = normalisePhone(v);
+    if (!normalised) {
+      ctx.addIssue({ code: "custom", message: "Enter the number with its country code, e.g. +234 803 000 0000" });
+      return z.NEVER;
+    }
+    return normalised;
+  });
+
+/** A phone number that must be given, normalised to +countrycode form. */
+export const requiredPhoneNumber = z
+  .string({ error: "Enter a phone number" })
+  .trim()
+  .min(1, "Enter a phone number")
+  .transform((v, ctx) => {
+    const normalised = normalisePhone(v);
+    if (!normalised) {
+      ctx.addIssue({ code: "custom", message: "Enter the number with its country code, e.g. +234 803 000 0000" });
+      return z.NEVER;
+    }
+    return normalised;
+  });
 
 /** Optional trimmed text; empty strings become null so fields can be cleared. */
 export const optionalText = (max: number) =>

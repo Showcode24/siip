@@ -7,8 +7,10 @@ import { signUpContext } from "./signup-context";
 
 const ONE_HOUR = 60 * 60;
 
-function firstName(name: string) {
-  return name.trim().split(/\s+/)[0] || "there";
+/** How emails greet someone: an intern by first name, a company by its full name. */
+function greeting(user: { name: string; role?: unknown }) {
+  if (user.role === "COMPANY_MEMBER") return user.name.trim() || "there";
+  return user.name.trim().split(/\s+/)[0] || "there";
 }
 
 function buildAuth() {
@@ -62,7 +64,7 @@ function buildAuth() {
           // Token is unique per request, so each new request gets its own email.
           idempotencyKey: `password-reset:${token}`,
           props: {
-            firstName: firstName(user.name),
+            firstName: greeting(user),
             resetUrl: `${config.APP_URL}/reset-password?token=${encodeURIComponent(token)}`,
           },
         });
@@ -79,7 +81,7 @@ function buildAuth() {
           toUserId: user.id,
           idempotencyKey: `verify-email:${token.slice(-32)}`,
           props: {
-            firstName: firstName(user.name),
+            firstName: greeting(user),
             verifyUrl: `${config.APP_URL}/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`,
           },
         });
@@ -104,7 +106,11 @@ function buildAuth() {
           },
           after: async (user) => {
             const ctx = signUpContext.getStore();
-            if (ctx?.role !== "GRADUATE") return;
+            if (ctx?.signupCompany) {
+              await db.user.update({ where: { id: user.id }, data: { signupCompany: ctx.signupCompany } });
+              return;
+            }
+            if (ctx?.role !== "GRADUATE" || !ctx.firstName || !ctx.lastName) return;
             await db.graduateProfile.upsert({
               where: { userId: user.id },
               update: {},

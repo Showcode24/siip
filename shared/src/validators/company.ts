@@ -4,6 +4,7 @@ import { COUNTRY_CODES } from "../countries";
 import { NIGERIAN_STATES } from "../nigeria";
 import { isTimeZone } from "../timezones";
 import { paginationQuery } from "../pagination";
+import { requiredPhoneNumber } from "./common";
 
 const id = z.string().min(1).max(64);
 
@@ -45,6 +46,8 @@ const companyFields = z.object({
   industry: z.string().trim().min(2).max(120),
   description: z.string().trim().max(3000).nullish(),
   address: z.string().trim().min(5).max(300),
+  phone: requiredPhoneNumber,
+  whatsapp: requiredPhoneNumber,
   website: z
     .url({ protocol: /^https?$/ })
     .max(300)

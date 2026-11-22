@@ -1,11 +1,12 @@
 import { isAPIError } from "better-auth/api";
 import { getAuth } from "@/server/auth/auth";
 import type { CurrentUser } from "@/server/auth/session";
-import { signUpContext } from "@/server/auth/signup-context";
+import { signUpContext, type SignUpContext } from "@/server/auth/signup-context";
 import { db } from "@/server/db";
 import { env } from "@/server/env";
 import { AppError, errors } from "@/server/lib/errors";
 import type { SignInInput, SignUpInput } from "@/server/validators/auth";
+import { rcNumber } from "@siip/shared/validators/company";
 
 /** Converts Better Auth errors into safe AppErrors. */
 function mapAuthError(err: unknown): never {
@@ -36,23 +37,28 @@ function mapAuthError(err: unknown): never {
 }
 
 export async function signUp(input: SignUpInput) {
-  const role = input.accountType === "GRADUATE" ? "GRADUATE" : "COMPANY_MEMBER";
-  try {
-    const result = await signUpContext.run(
-      {
-        role,
-        consentVersion: env().CONSENT_VERSION,
-        firstName: input.firstName,
-        lastName: input.lastName,
-      },
-      () =>
-        getAuth().api.signUpEmail({
-          body: {
-            name: `${input.firstName} ${input.lastName}`,
-            email: input.email,
-            password: input.password,
+  const role = input.accountType === "GRADUATE" ? ("GRADUATE" as const) : ("COMPANY_MEMBER" as const);
+  if (input.accountType === "COMPANY") await assertRegistrationNumberFree(input.registrationNumber);
+  const context: SignUpContext =
+    input.accountType === "GRADUATE"
+      ? { role, consentVersion: env().CONSENT_VERSION, firstName: input.firstName, lastName: input.lastName }
+      : {
+          role,
+          consentVersion: env().CONSENT_VERSION,
+          signupCompany: {
+            companyName: input.companyName,
+            registrationNumber: input.registrationNumber,
+            address: input.address,
+            phone: input.phone,
+            whatsapp: input.whatsapp,
           },
-        }),
+        };
+  // Company accounts are named after the company, not a person.
+  const name =
+    input.accountType === "GRADUATE" ? `${input.firstName} ${input.lastName}` : input.companyName;
+  try {
+    const result = await signUpContext.run(context, () =>
+      getAuth().api.signUpEmail({ body: { name, email: input.email, password: input.password } }),
     );
     return {
       user: { id: result.user.id, email: result.user.email, role },
@@ -61,6 +67,18 @@ export async function signUp(input: SignUpInput) {
   } catch (err) {
     mapAuthError(err);
   }
+}
+
+/** Refuses a sign-up whose RC number already belongs to a registered company. */
+async function assertRegistrationNumberFree(registrationNumber: string) {
+  const asRc = rcNumber.safeParse(registrationNumber);
+  const taken = await db.company.findFirst({
+    where: asRc.success && asRc.data
+      ? { rcNumber: asRc.data }
+      : { businessRegNumber: { equals: registrationNumber, mode: "insensitive" } },
+    select: { id: true },
+  });
+  if (taken) throw errors.conflict("A company with this RC number is already registered on SIIP");
 }
 
 /** Returns the user plus the Set-Cookie headers for the new session. */
@@ -155,6 +173,7 @@ export async function getMe(user: CurrentUser) {
       consentAt: true,
       consentVersion: true,
       createdAt: true,
+      signupCompany: true,
       graduateProfile: { select: { id: true, completenessScore: true } },
       companyMember: {
         select: {
